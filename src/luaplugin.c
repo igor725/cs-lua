@@ -6,6 +6,7 @@
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"
+#include "luaworld.h"
 
 static const luaL_Reg lualibs[]={
 	{"", luaopen_base},
@@ -14,6 +15,7 @@ static const luaL_Reg lualibs[]={
 	{"math", luaopen_math},
 	{"string", luaopen_string},
 	{"client", luaopen_client},
+	{"world", luaopen_world},
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
 	{NULL,NULL}
@@ -106,7 +108,7 @@ cs_bool LuaPlugin_Reload(LuaPlugin *plugin) {
 	LuaPlugin_Lock(plugin);
 	if(plugin->unloaded) return false;
 
-	if(LuaPlugin_GlobalLookup(plugin, "onReload")) {
+	if(LuaPlugin_GlobalLookup(plugin, "preReload")) {
 		if(!LuaPlugin_Call(plugin, 0, 1) || lua_isboolean(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
 			LuaPlugin_Unlock(plugin);
 			return false;

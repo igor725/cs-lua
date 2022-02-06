@@ -5,7 +5,7 @@
 #include "luaangle.h"
 
 Ang *lua_checkangle(lua_State *L, int idx) {
-	Ang *ud = luaL_checkudata(L, idx, "__anglemt");
+	Ang *ud = luaL_checkudata(L, idx, "Angle");
 	luaL_argcheck(L, ud != NULL, idx, "'Angle' expected");
 	return ud;
 }
@@ -101,7 +101,7 @@ static const luaL_Reg anglemeta[] = {
 static int ang_new(lua_State *L) {
 	Ang *ang = lua_newuserdata(L, sizeof(Ang));
 	Memory_Zero(&ang, sizeof(ang));
-	luaL_setmetatable(L, "__anglemt");
+	luaL_setmetatable(L, "Angle");
 	return 1;
 }
 
@@ -111,7 +111,7 @@ static const luaL_Reg anglelib[] = {
 };
 
 int luaopen_angle(lua_State *L) {
-	luaL_newmetatable(L, "__anglemt");
+	luaL_newmetatable(L, "Angle");
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, anglemeta, 0);

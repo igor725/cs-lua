@@ -5,7 +5,7 @@
 #include "luavector.h"
 
 LuaVector *lua_checkvector(lua_State *L, int idx) {
-	struct LuaVector *ud = luaL_checkudata(L, idx, "__vectormt");
+	struct LuaVector *ud = luaL_checkudata(L, idx, "Vector");
 	luaL_argcheck(L, ud != NULL, idx, "'Vector' expected");
 	return ud;
 }
@@ -227,7 +227,7 @@ static const luaL_Reg vectormeta[] = {
 static int vec_newfloat(lua_State *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value.f, sizeof(vec->value.f));
-	luaL_setmetatable(L, "__vectormt");
+	luaL_setmetatable(L, "Vector");
 	vec->type = 0;
 	return 1;
 }
@@ -235,7 +235,7 @@ static int vec_newfloat(lua_State *L) {
 static int vec_newshort(lua_State *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value.s, sizeof(vec->value.s));
-	luaL_setmetatable(L, "__vectormt");
+	luaL_setmetatable(L, "Vector");
 	vec->type = 1;
 	return 1;
 }
@@ -247,7 +247,7 @@ static const luaL_Reg vectorlib[] = {
 };
 
 int luaopen_vector(lua_State *L) {
-	luaL_newmetatable(L, "__vectormt");
+	luaL_newmetatable(L, "Vector");
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, vectormeta, 0);

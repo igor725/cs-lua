@@ -7,6 +7,7 @@
 #include <platform.h>
 #include "luaplugin.h"
 #include "luaclient.h"
+#include "luaworld.h"
 
 AListField *headPlugin = NULL;
 
@@ -31,6 +32,19 @@ static void evthandshake(void *param) {
 
 static void evtdisconnect(void *param) {
 	callallclient(param, "onDisconnect");
+}
+
+static void evtworldadded(void *param) {
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onWorldAdded")) {
+			lua_pushworld(plugin->L, param);
+			LuaPlugin_Call(plugin, 1, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
 }
 
 static void evtmove(void *param) {
@@ -187,6 +201,7 @@ static void evttick(void *param) {
 EventRegBunch events[] = {
 	{'v', EVT_ONHANDSHAKEDONE, evthandshake},
 	{'v', EVT_ONDISCONNECT, evtdisconnect},
+	{'v', EVT_WORLDADDED, evtworldadded},
 	{'v', EVT_ONMOVE, evtmove},
 	{'v', EVT_ONROTATE, evtrotate},
 	{'v', EVT_ONHELDBLOCKCHNG, evtheldchange},

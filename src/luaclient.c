@@ -6,7 +6,7 @@
 #include "luaangle.h"
 
 Client *lua_checkclient(lua_State *L, int idx) {
-	void **ud = luaL_checkudata(L, idx, "__clientmt");
+	void **ud = luaL_checkudata(L, idx, "Client");
 	luaL_argcheck(L, ud != NULL, idx, "'Client' expected");
 	return (Client *)*ud;
 }
@@ -26,7 +26,7 @@ void lua_pushclient(lua_State *L, Client *client) {
 		lua_pop(L, 1);
 		lua_pushnumber(L, id);
 		lua_newuserdata(L, sizeof(Client *));
-		luaL_setmetatable(L, "__clientmt");
+		luaL_setmetatable(L, "Client");
 		lua_settable(L, -3);
 		lua_pushnumber(L, id);
 		lua_gettable(L, -2);
@@ -142,7 +142,7 @@ int luaopen_client(lua_State *L) {
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
 
-	luaL_newmetatable(L, "__clientmt");
+	luaL_newmetatable(L, "Client");
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, clientmeta, 0);
