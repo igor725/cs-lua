@@ -4,6 +4,8 @@
 #include <platform.h>
 #include "luaplugin.h"
 #include "luaclient.h"
+#include "luavector.h"
+#include "luaangle.h"
 
 static const luaL_Reg lualibs[]={
 	{"", luaopen_base},
@@ -12,6 +14,8 @@ static const luaL_Reg lualibs[]={
 	{"math", luaopen_math},
 	{"string", luaopen_string},
 	{"client", luaopen_client},
+	{"vector", luaopen_vector},
+	{"angle", luaopen_angle},
 	{NULL,NULL}
 };
 

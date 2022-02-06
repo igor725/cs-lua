@@ -2,6 +2,8 @@
 #include <client.h>
 #include "luaplugin.h"
 #include "luaclient.h"
+#include "luavector.h"
+#include "luaangle.h"
 
 Client *lua_checkclient(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "__clientmt");
@@ -52,16 +54,23 @@ static int client_getname(lua_State *L) {
 	return 1;
 }
 
+static int client_getcount(lua_State *L) {
+	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 1);
+	lua_pushinteger(L, Clients_GetCount(state));
+	return 1;
+}
+
 static const luaL_Reg clientlib[] ={
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
 	{"getbroadcast", client_getbcast},
+	{"getcount", client_getcount},
 	{NULL, NULL}
 };
 
 static int meta_getid(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	lua_pushnumber(L, Client_GetID(client));
+	lua_pushinteger(L, Client_GetID(client));
 	return 1;
 }
 
@@ -71,9 +80,60 @@ static int meta_getname(lua_State *L) {
 	return 1;
 }
 
+static int meta_getappname(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushstring(L, Client_GetAppName(client));
+	return 1;
+}
+
+static int meta_getposition(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	LuaVector *vec = lua_checkvector(L, 2);
+	if(vec->type == 0)
+		lua_pushboolean(L, Client_GetPosition(client, &vec->value.f, NULL));
+	else lua_pushboolean(L, 0);
+
+	return 1;
+}
+
+static int meta_getrotation(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	Ang *ang = lua_checkangle(L, 2);
+	lua_pushboolean(L, Client_GetPosition(client, NULL, ang));
+	return 1;
+}
+
+static int meta_isinstate(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 2);
+	lua_pushboolean(L, Client_CheckState(client, state));
+	return 1;
+}
+
+static int meta_chat(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	EMesgType type = (EMesgType)luaL_checkinteger(L, 2);
+	cs_str mesg = luaL_checkstring(L, 3);
+	Client_Chat(client, type, mesg);
+	return 0;
+}
+
+static int meta_kick(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_str reason = luaL_checkstring(L, 2);
+	Client_Kick(client, reason);
+	return 0;
+}
+
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
 	{"getname", meta_getname},
+	{"getappname", meta_getappname},
+	{"getposition", meta_getposition},
+	{"getrotation", meta_getrotation},
+	{"isinstate", meta_isinstate},
+	{"kick", meta_kick},
+	{"chat", meta_chat},
 	{NULL, NULL}
 };
 

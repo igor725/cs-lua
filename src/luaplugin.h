@@ -5,6 +5,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <core.h>
+#include <platform.h>
 
 typedef struct LuaPlugin {
 	cs_bool hotreload, unloaded;

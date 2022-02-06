@@ -33,6 +33,32 @@ static void evtdisconnect(void *param) {
 	callallclient(param, "onDisconnect");
 }
 
+static void evtmove(void *param) {
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onMove")) {
+			lua_pushclient(plugin->L, param);
+			LuaPlugin_Call(plugin, 1, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
+}
+
+static void evtrotate(void *param) {
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onRotate")) {
+			lua_pushclient(plugin->L, param);
+			LuaPlugin_Call(plugin, 1, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
+}
+
 static void evtheldchange(void *param) {
 	onHeldBlockChange *a = (onHeldBlockChange *)param;
 	AListField *tmp;
@@ -161,6 +187,8 @@ static void evttick(void *param) {
 EventRegBunch events[] = {
 	{'v', EVT_ONHANDSHAKEDONE, evthandshake},
 	{'v', EVT_ONDISCONNECT, evtdisconnect},
+	{'v', EVT_ONMOVE, evtmove},
+	{'v', EVT_ONROTATE, evtrotate},
 	{'v', EVT_ONHELDBLOCKCHNG, evtheldchange},
 	{'b', EVT_ONMESSAGE, evtonmessage},
 	{'v', EVT_ONTICK, evttick},
@@ -184,13 +212,13 @@ cs_bool Plugin_Load(void) {
 	Iter_Close(&sIter);
 
 	COMMAND_ADD(Lua, CMDF_OP, "Lua manager");
-	return Event_RegisterBunch(&events);
+	return Event_RegisterBunch(events);
 }
 
 cs_bool Plugin_Unload(cs_bool force) {
 	(void)force;
 	COMMAND_REMOVE(Lua);
-	Event_UnregisterBunch(&events);
+	Event_UnregisterBunch(events);
 
 	AListField *tmp;
 	while((tmp = headPlugin) != NULL) {
