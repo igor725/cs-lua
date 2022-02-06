@@ -1,0 +1,23 @@
+#include "winver.h"
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_DLL
+{
+	BLOCK "StringFileInfo"
+	{
+		BLOCK "040904B0"
+		{
+			VALUE "FileDescription", "Lua plugin for CServer\000"
+			VALUE "ProductName", "Lua plugin\000"
+			VALUE "ProductVersion", "1.0\000"
+			VALUE "OriginalFilename", "lua.dll\000"
+		}
+	}
+
+	BLOCK "VarFileInfo"
+	{
+		VALUE "Translation", 0x0409, 1200
+	}
+}
