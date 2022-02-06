@@ -41,8 +41,8 @@ static void evtheldchange(void *param) {
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onHeldBlockChange")) {
 			lua_pushclient(plugin->L, a->client);
-			lua_pushinteger(plugin->L, a->prev);
 			lua_pushinteger(plugin->L, a->curr);
+			lua_pushinteger(plugin->L, a->prev);
 			LuaPlugin_Call(plugin, 3, 0);
 		}
 		LuaPlugin_Unlock(plugin);
@@ -158,6 +158,15 @@ static void evttick(void *param) {
 	}
 }
 
+EventRegBunch events[] = {
+	{'v', EVT_ONHANDSHAKEDONE, evthandshake},
+	{'v', EVT_ONDISCONNECT, evtdisconnect},
+	{'v', EVT_ONHELDBLOCKCHNG, evtheldchange},
+	{'b', EVT_ONMESSAGE, evtonmessage},
+	{'v', EVT_ONTICK, evttick},
+	{0, 0, NULL}
+};
+
 cs_bool Plugin_Load(void) {
 	DirIter sIter;
 	Directory_Ensure("scripts");
@@ -175,22 +184,13 @@ cs_bool Plugin_Load(void) {
 	Iter_Close(&sIter);
 
 	COMMAND_ADD(Lua, CMDF_OP, "Lua manager");
-	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, evthandshake);
-	Event_RegisterVoid(EVT_ONDISCONNECT, evtdisconnect);
-	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, evtheldchange);
-	Event_RegisterBool(EVT_ONMESSAGE, evtonmessage);
-	Event_RegisterVoid(EVT_ONTICK, evttick);
-	return true;
+	return Event_RegisterBunch(&events);
 }
 
 cs_bool Plugin_Unload(cs_bool force) {
 	(void)force;
 	COMMAND_REMOVE(Lua);
-	EVENT_UNREGISTER(EVT_ONHANDSHAKEDONE, evthandshake);
-	EVENT_UNREGISTER(EVT_ONDISCONNECT, evtdisconnect);
-	EVENT_UNREGISTER(EVT_ONHELDBLOCKCHNG, evtheldchange);
-	EVENT_UNREGISTER(EVT_ONMESSAGE, evtonmessage);
-	EVENT_UNREGISTER(EVT_ONTICK, evttick);
+	Event_UnregisterBunch(&events);
 
 	AListField *tmp;
 	while((tmp = headPlugin) != NULL) {
