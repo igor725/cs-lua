@@ -1,8 +1,8 @@
-set POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" "!ProgramFiles!\LuaJIT\" "!ProgramFiles(x86)!\LuaJIT\" ^
+SET POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" "!ProgramFiles!\LuaJIT\" "!ProgramFiles(x86)!\LuaJIT\" ^
 "!ProgramFiles!\Lua\" "!ProgramFiles(x86)!\Lua\" "!ProgramFiles!\Lua\5.1\" "!ProgramFiles(x86)!\Lua\5.1\"
-set POSSIBLE_LIBPATHS=".\" "lib\" "src\"
-set POSSIBLE_INCPATHS=".\" "include\" "src\"
-set POSSIBLE_LIBS="lua51.lib" "lua5.1.lib"
+SET POSSIBLE_LIBPATHS=".\" "lib\" "src\"
+SET POSSIBLE_INCPATHS=".\" "include\" "src\"
+SET POSSIBLE_LIBS="lua51.lib" "lua5.1.lib"
 
 FOR %%a IN (%POSSIBLE_PATHS%) DO (
 	IF EXIST %%a (
@@ -13,15 +13,15 @@ FOR %%a IN (%POSSIBLE_PATHS%) DO (
 GOTO :fail
 
 :done
-exit /b 0
+EXIT /b 0
 
 :testpath
-set __SUBINC=
-set __SUBLIB=
-set __SUBLIBPATH=
+SET __SUBINC=
+SET __SUBLIB=
+SET __SUBLIBPATH=
 FOR %%a IN (%POSSIBLE_INCPATHS%) DO (
 	IF EXIST %1\%%a\lua.h (
-		set __SUBINC=%%a
+		SET __SUBINC=%%a
 		GOTO :incfound
 	)
 )
@@ -31,25 +31,32 @@ GOTO subfail
 FOR %%a IN (%POSSIBLE_LIBPATHS%) DO (
 	FOR %%b IN (%POSSIBLE_LIBS%) DO (
 		IF EXIST %1\%%a\%%b (
-			set __SUBLIBPATH=%%a
-			set __SUBLIB=%%b
+			SET __SUBLIBPATH=%%a
+			SET __SUBLIB=%%b
 			GOTO :libfound
 		)
 	)
 )
 GOTO subfail
 
+:libfound
+SET LUAPATH=%1
+SET LUAPATH=%LUAPATH:~1,-1%
+ECHO Using Lua from %LUAPATH%
+SET LIBS=!__SUBLIB:~1,-1! !LIBS!
+SET LIB=%LUAPATH%!__SUBLIBPATH:~1,-1!;!LIB!
+SET INCLUDE=%LUAPATH%!__SUBINC:~1,-1!;!INCLUDE!
+SET __DLLNAME=!__SUBLIB:~1,-4!dll
+IF NOT EXIST "!SERVER_OUTROOT!\!__DLLNAME!" (
+	IF EXIST "%LUAPATH%!__SUBLIBPATH:~1,-1!\!__DLLNAME!" (
+		COPY "%LUAPATH%!__SUBLIBPATH:~1,-1!\!__DLLNAME!" "!SERVER_OUTROOT!\!__DLLNAME!"
+	)
+)
+EXIT /b 0
+
 :subfail
-exit /b 1
+EXIT /b 1
 
 :fail
-echo Lua not found
-exit /b 1
-
-:libfound
-set LUAPATH=%1
-set LUAPATH=%LUAPATH:~1,-1%
-echo Using Lua from %LUAPATH%
-set LIBS=!__SUBLIB:~1,-1! !LIBS!
-set LIB=%LUAPATH%!__SUBLIBPATH:~1,-1!;!LIB!
-set INCLUDE=%LUAPATH%!__SUBINC:~1,-1!;!INCLUDE!
+ECHO Lua not found
+EXIT /b 1
