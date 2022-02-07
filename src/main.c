@@ -199,14 +199,14 @@ static void evttick(void *param) {
 }
 
 EventRegBunch events[] = {
-	{'v', EVT_ONHANDSHAKEDONE, evthandshake},
-	{'v', EVT_ONDISCONNECT, evtdisconnect},
-	{'v', EVT_WORLDADDED, evtworldadded},
-	{'v', EVT_ONMOVE, evtmove},
-	{'v', EVT_ONROTATE, evtrotate},
-	{'v', EVT_ONHELDBLOCKCHNG, evtheldchange},
-	{'b', EVT_ONMESSAGE, evtonmessage},
-	{'v', EVT_ONTICK, evttick},
+	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
+	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
+	{'v', EVT_WORLDADDED, (void *)evtworldadded},
+	{'v', EVT_ONMOVE, (void *)evtmove},
+	{'v', EVT_ONROTATE, (void *)evtrotate},
+	{'v', EVT_ONHELDBLOCKCHNG, (void *)evtheldchange},
+	{'b', EVT_ONMESSAGE, (void *)evtonmessage},
+	{'v', EVT_ONTICK, (void *)evttick},
 	{0, 0, NULL}
 };
 
