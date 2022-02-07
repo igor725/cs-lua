@@ -7,7 +7,6 @@
 
 Client *lua_checkclient(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "Client");
-	luaL_argcheck(L, ud != NULL, idx, "'Client' expected");
 	return (Client *)*ud;
 }
 
@@ -70,7 +69,13 @@ static const luaL_Reg clientlib[] ={
 
 static int meta_getid(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	lua_pushinteger(L, Client_GetID(client));
+	lua_pushinteger(L, (lua_Integer)Client_GetID(client));
+	return 1;
+}
+
+static int meta_getping(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushinteger(L, (lua_Integer)Client_GetPing(client));
 	return 1;
 }
 
@@ -88,11 +93,8 @@ static int meta_getappname(lua_State *L) {
 
 static int meta_getposition(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	LuaVector *vec = lua_checkvector(L, 2);
-	if(vec->type == 0)
-		lua_pushboolean(L, Client_GetPosition(client, &vec->value.f, NULL));
-	else lua_pushboolean(L, 0);
-
+	Vec *vec = lua_checkfloatvector(L, 2);
+	lua_pushboolean(L, Client_GetPosition(client, vec, NULL));
 	return 1;
 }
 
@@ -103,11 +105,58 @@ static int meta_getrotation(lua_State *L) {
 	return 1;
 }
 
+static int meta_getmodel(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushinteger(L, (lua_Integer)Client_GetModel(client));
+	return 1;
+}
+
+static int meta_setop(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_bool state = (cs_bool)lua_toboolean(L, 2);
+	lua_pushboolean(L, Client_SetOP(client, state));
+	return 1;
+}
+
+static int meta_setmodel(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	if(lua_isnumber(L, 2))
+		lua_pushboolean(L, Client_SetModel(client, (cs_int16)luaL_checkinteger(L, 2)));
+	else
+		lua_pushboolean(L, Client_SetModelStr(L, luaL_checkstring(L, 2)));
+	return 1;
+}
+
+static int meta_setvelocity(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	Vec *vec = lua_checkfloatvector(L, 2);
+	lua_pushboolean(L, Client_SetVelocity(client, vec, true));
+	return 1;
+}
+
 static int meta_isinstate(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 2);
 	lua_pushboolean(L, Client_CheckState(client, state));
 	return 1;
+}
+
+static int meta_isop(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushboolean(L, Client_IsOP(client));
+	return 1;
+}
+
+static int meta_teleport(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	Vec *vec = lua_checkfloatvector(L, 2);
+}
+
+static int meta_kick(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_str reason = luaL_checkstring(L, 2);
+	Client_Kick(client, reason);
+	return 0;
 }
 
 static int meta_chat(lua_State *L) {
@@ -118,22 +167,26 @@ static int meta_chat(lua_State *L) {
 	return 0;
 }
 
-static int meta_kick(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	cs_str reason = luaL_checkstring(L, 2);
-	Client_Kick(client, reason);
-	return 0;
-}
-
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
+	{"getping", meta_getping},
 	{"getname", meta_getname},
 	{"getappname", meta_getappname},
 	{"getposition", meta_getposition},
 	{"getrotation", meta_getrotation},
+	{"getmodel", meta_getmodel},
+
+	{"setop", meta_setop},
+	{"setmodel", meta_setmodel},
+	{"setvelocity", meta_setvelocity},
+
 	{"isinstate", meta_isinstate},
+	{"isop", meta_isop},
+
+	{"teleport", meta_teleport},
 	{"kick", meta_kick},
 	{"chat", meta_chat},
+
 	{NULL, NULL}
 };
 

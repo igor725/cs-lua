@@ -247,5 +247,6 @@ cs_bool Plugin_Unload(cs_bool force) {
 		LuaPlugin_Unlock(plugin);
 		LuaPlugin_Close(plugin);
 	}
+
 	return true;
 }

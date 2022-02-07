@@ -88,13 +88,16 @@ static const luaL_Reg anglemeta[] = {
 	{"setyaw", ang_setyawvalue},
 	{"setpitch", ang_setpitchvalue},
 	{"set", ang_setvalue},
+
 	{"getx", ang_getyawvalue},
 	{"gety", ang_getpitchvalue},
 	{"get", ang_getvalue},
+
 	{"__add", ang_add},
 	{"__sub", ang_sub},
 	{"__mul", ang_mul},
 	{"__div", ang_div},
+
 	{NULL, NULL}
 };
 

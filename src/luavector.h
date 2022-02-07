@@ -13,5 +13,7 @@ typedef struct LuaVector {
 } LuaVector;
 
 LuaVector *lua_checkvector(lua_State *L, int idx);
+Vec *lua_checkfloatvector(lua_State *L, int idx);
+SVec *lua_checkshortvector(lua_State *L, int idx);
 int luaopen_vector(lua_State *L);
 #endif

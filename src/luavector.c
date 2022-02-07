@@ -5,9 +5,19 @@
 #include "luavector.h"
 
 LuaVector *lua_checkvector(lua_State *L, int idx) {
-	struct LuaVector *ud = luaL_checkudata(L, idx, "Vector");
-	luaL_argcheck(L, ud != NULL, idx, "'Vector' expected");
-	return ud;
+	return (LuaVector *)luaL_checkudata(L, idx, "Vector");
+}
+
+Vec *lua_checkfloatvector(lua_State *L, int idx) {
+	LuaVector *vec = lua_checkvector(L, idx);
+	luaL_argcheck(L, vec->type == 0, idx, "'FloatVector' expected");
+	return &vec->value.f;
+}
+
+SVec *lua_checkshortvector(lua_State *L, int idx) {
+	LuaVector *vec = lua_checkvector(L, idx);
+	luaL_argcheck(L, vec->type == 1, idx, "'ShortVector' expected");
+	return &vec->value.s;
 }
 
 static int vec_iszero(lua_State *L) {
@@ -209,14 +219,17 @@ static int vec_div(lua_State *L) {
 static const luaL_Reg vectormeta[] = {
 	{"iszero", vec_iszero},
 	{"scale", vec_scale},
+
 	{"setx", vec_setxvalue},
 	{"sety", vec_setyvalue},
 	{"setz", vec_setzvalue},
 	{"set", vec_setvalue},
+
 	{"getx", vec_getxvalue},
 	{"gety", vec_getyvalue},
 	{"getz", vec_getzvalue},
 	{"get", vec_getvalue},
+
 	{"__add", vec_add},
 	{"__sub", vec_sub},
 	{"__mul", vec_mul},
