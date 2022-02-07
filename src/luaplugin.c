@@ -109,7 +109,7 @@ cs_bool LuaPlugin_Reload(LuaPlugin *plugin) {
 	if(plugin->unloaded) return false;
 
 	if(LuaPlugin_GlobalLookup(plugin, "preReload")) {
-		if(!LuaPlugin_Call(plugin, 0, 1) || lua_isboolean(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
+		if(!LuaPlugin_Call(plugin, 0, 1) || (lua_isboolean(plugin->L, -1) && !lua_toboolean(plugin->L, -1))) {
 			LuaPlugin_Unlock(plugin);
 			return false;
 		}

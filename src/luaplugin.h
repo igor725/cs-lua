@@ -1,6 +1,8 @@
 #ifndef CSLUAPLUGIN_H
 #define CSLUAPLUGIN_H
+#ifdef CORE_USE_WINDOWS
 #define LUA_BUILD_AS_DLL
+#endif
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
