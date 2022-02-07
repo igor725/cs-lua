@@ -123,7 +123,7 @@ static int meta_setmodel(lua_State *L) {
 	if(lua_isnumber(L, 2))
 		lua_pushboolean(L, Client_SetModel(client, (cs_int16)luaL_checkinteger(L, 2)));
 	else
-		lua_pushboolean(L, Client_SetModelStr(L, luaL_checkstring(L, 2)));
+		lua_pushboolean(L, Client_SetModelStr(client, luaL_checkstring(L, 2)));
 	return 1;
 }
 
@@ -150,6 +150,9 @@ static int meta_isop(lua_State *L) {
 static int meta_teleport(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	Vec *vec = lua_checkfloatvector(L, 2);
+	Ang *ang = lua_checkangle(L, 3);
+	lua_pushboolean(L, Client_TeleportTo(client, vec, ang));
+	return 1;
 }
 
 static int meta_kick(lua_State *L) {
