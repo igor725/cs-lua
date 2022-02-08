@@ -147,12 +147,22 @@ COMMAND_FUNC(Lua) {
 			if(String_CaselessCompare(subcmd, "load")) {
 				if(plugin) {
 					COMMAND_PRINT("This script is already loaded");
+				}
+
+				plugin = LuaPlugin_Open(plname);
+				if(!plugin) {
+					COMMAND_PRINT("Failed to load specified script");
+				}
+
+				if(AList_AddField(&headPlugin, plugin)) {
+					COMMAND_PRINTF("Script \"%s\" loaded successfully", plname);
 				} else {
-					COMMAND_PRINT("Work in progress");
+					LuaPlugin_Close(plugin);
+					COMMAND_PRINT("Unexpected error");
 				}
 			} else {
 				if(!plugin) {
-					COMMAND_PRINTF("Script %s not found", plname);
+					COMMAND_PRINTF("Script \"%s\" not found", plname);
 				}
 
 				if(String_CaselessCompare(subcmd, "unload")) {
@@ -218,7 +228,7 @@ cs_bool Plugin_Load(void) {
 			if(sIter.isDir || !sIter.cfile) continue;
 			LuaPlugin *plugin = LuaPlugin_Open(sIter.cfile);
 			if(!plugin) {
-				Log_Error("Failed to load plugin %s", sIter.cfile);
+				Log_Error("Failed to load script \"%s\"", sIter.cfile);
 				continue;
 			}
 			AList_AddField(&headPlugin, plugin);
