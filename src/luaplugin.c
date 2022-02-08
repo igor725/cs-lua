@@ -7,6 +7,7 @@
 #include "luavector.h"
 #include "luaangle.h"
 #include "luaworld.h"
+#include "lualog.h"
 
 static const luaL_Reg lualibs[]={
 	{"", luaopen_base},
@@ -18,6 +19,7 @@ static const luaL_Reg lualibs[]={
 	{"world", luaopen_world},
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
+	// {"log", luaopen_log},
 	{NULL,NULL}
 };
 
