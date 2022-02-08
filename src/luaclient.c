@@ -1,9 +1,11 @@
 #include <core.h>
+#include <str.h>
 #include <client.h>
 #include "luaplugin.h"
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"
+#include "luaworld.h"
 
 Client *lua_checkclient(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "Client");
@@ -111,6 +113,12 @@ static int meta_getmodel(lua_State *L) {
 	return 1;
 }
 
+static int meta_getworld(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushworld(L, Client_GetWorld(client));
+	return 1;
+}
+
 static int meta_setop(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_bool state = (cs_bool)lua_toboolean(L, 2);
@@ -127,10 +135,38 @@ static int meta_setmodel(lua_State *L) {
 	return 1;
 }
 
+static int meta_setheld(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	BlockID block = (BlockID)luaL_checkinteger(L, 2);
+	cs_bool cc = (cs_bool)lua_toboolean(L, 3);
+	lua_pushboolean(L, Client_SetHeld(client, block, cc));
+	return 1;
+}
+
+static int meta_setskin(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_str url = (cs_str)luaL_checkstring(L, 2);
+	luaL_argcheck(L, String_Length(url) < 65, 2, "URL is too long");
+	lua_pushboolean(L, Client_SetSkin(client, url));
+	return 1;
+}
+
 static int meta_setvelocity(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	Vec *vec = lua_checkfloatvector(L, 2);
 	lua_pushboolean(L, Client_SetVelocity(client, vec, true));
+	return 1;
+}
+
+static int meta_islocal(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushboolean(L, Client_IsLocal(client));
+	return 1;
+}
+
+static int meta_isfirstspawn(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushboolean(L, Client_IsFirstSpawn(client));
 	return 1;
 }
 
@@ -144,6 +180,12 @@ static int meta_isinstate(lua_State *L) {
 static int meta_isop(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L, Client_IsOP(client));
+	return 1;
+}
+
+static int meta_update(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushboolean(L, Client_Update(client));
 	return 1;
 }
 
@@ -178,14 +220,20 @@ static const luaL_Reg clientmeta[] = {
 	{"getposition", meta_getposition},
 	{"getrotation", meta_getrotation},
 	{"getmodel", meta_getmodel},
+	{"getworld", meta_getworld},
 
 	{"setop", meta_setop},
 	{"setmodel", meta_setmodel},
+	{"setheld", meta_setheld},
+	{"setskin", meta_setskin},
 	{"setvelocity", meta_setvelocity},
 
+	{"islocal", meta_islocal},
+	{"isfirstspawn", meta_isfirstspawn},
 	{"isinstate", meta_isinstate},
 	{"isop", meta_isop},
 
+	{"update", meta_update},
 	{"teleport", meta_teleport},
 	{"kick", meta_kick},
 	{"chat", meta_chat},
