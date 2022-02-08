@@ -127,6 +127,7 @@ cs_bool LuaPlugin_Close(LuaPlugin *plugin) {
 	if(plugin->unloaded) return false;
 	if(plugin->L) lua_close(plugin->L);
 	Memory_Free((void *)plugin->scrname);
+	Mutex_Free(plugin->lock);
 	Memory_Free(plugin);
 	return false;
 }
