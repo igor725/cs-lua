@@ -105,6 +105,16 @@ static int ang_new(lua_State *L) {
 	Ang *ang = lua_newuserdata(L, sizeof(Ang));
 	Memory_Zero(&ang, sizeof(ang));
 	luaL_setmetatable(L, "Angle");
+
+	if(lua_gettop(L) > 1) {
+		lua_pushstring(L, "set");
+		lua_gettable(L, -2);
+		lua_pushvalue(L, -2);
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+		lua_call(L, 3, 0);
+	}
+
 	return 1;
 }
 

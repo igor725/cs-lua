@@ -242,6 +242,17 @@ static int vec_newfloat(lua_State *L) {
 	Memory_Zero(&vec->value.f, sizeof(vec->value.f));
 	luaL_setmetatable(L, "Vector");
 	vec->type = 0;
+
+	if(lua_gettop(L) > 2) {
+		lua_pushstring(L, "set");
+		lua_gettable(L, -2);
+		lua_pushvalue(L, -2);
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+		lua_pushvalue(L, 3);
+		lua_call(L, 4, 0);
+	}
+
 	return 1;
 }
 
@@ -250,6 +261,17 @@ static int vec_newshort(lua_State *L) {
 	Memory_Zero(&vec->value.s, sizeof(vec->value.s));
 	luaL_setmetatable(L, "Vector");
 	vec->type = 1;
+
+	if(lua_gettop(L) > 2) {
+		lua_pushstring(L, "set");
+		lua_gettable(L, -2);
+		lua_pushvalue(L, -2);
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+		lua_pushvalue(L, 3);
+		lua_call(L, 4, 0);
+	}
+
 	return 1;
 }
 
