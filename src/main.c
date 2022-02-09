@@ -8,6 +8,7 @@
 #include "luaplugin.h"
 #include "luaclient.h"
 #include "luaworld.h"
+#include "luavector.h"
 
 AListField *headPlugin = NULL;
 
@@ -47,6 +48,46 @@ static void evtdisconnect(void *param) {
 	callallclient(param, "onDisconnect");
 }
 
+static void evtonspawn(void *param) {
+	callallclient(param, "onSpawn");
+}
+
+static void evtondespawn(void *param) {
+	callallclient(param, "onDespawn");
+}
+
+static void evtonclick(void *param) {
+
+}
+
+static cs_bool evtonblockplace(void *param) {
+	onBlockPlace *a = (onBlockPlace *)param;
+	AListField *tmp;
+
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, a->mode ? "onBlockPlace" : "onBlockDestroy")) {
+			lua_pushclient(plugin->L, a->client);
+			LuaVector *vec = lua_newluavector(plugin->L);
+			vec->value.s = a->pos;
+			vec->type = 1;
+			lua_pushinteger(plugin->L, a->id);
+			if(LuaPlugin_Call(plugin, 3, 1)) {
+				if(!lua_isnil(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
+					lua_pop(plugin->L, 1);
+					LuaPlugin_Unlock(plugin);
+					return false;
+				}
+				lua_pop(plugin->L, 1);
+			}
+		}
+		LuaPlugin_Unlock(plugin);
+	}
+
+	return true;
+}
+
 static void evtworldadded(void *param) {
 	callallworld(param, "onWorldAdded");
 }
@@ -61,6 +102,14 @@ static void evtworldloaded(void *param) {
 
 static void evtworldunloaded(void *param) {
 	callallworld(param, "onWorldUnloaded");
+}
+
+static void evtonweather(void *param) {
+	callallworld(param, "onWeatherChange");
+}
+
+static void evtoncolor(void *param) {
+	callallworld(param, "onColorChange");
 }
 
 static void evtmove(void *param) {
@@ -226,6 +275,13 @@ static void evttick(void *param) {
 			AList_Remove(&headPlugin, tmp);
 			LuaPlugin_Close(plugin);
 			break;
+		} else {
+			LuaPlugin_Lock(plugin);
+			if(LuaPlugin_GlobalLookup(plugin, "onTick")) {
+				lua_pushinteger(plugin->L, (lua_Integer)*(cs_int32 *)param);
+				LuaPlugin_Call(plugin, 1, 0);
+			}
+			LuaPlugin_Unlock(plugin);
 		}
 	}
 }
@@ -237,10 +293,16 @@ EventRegBunch events[] = {
 	{'v', EVT_ONWORLDREMOVED, (void *)evtworldremoved},
 	{'v', EVT_ONWORLDLOADED, (void *)evtworldloaded},
 	{'v', EVT_ONWORLDUNLOADED, (void *)evtworldunloaded},
+	{'v', EVT_ONWEATHER, (void *)evtonweather},
+	{'v', EVT_ONCOLOR, (void *)evtoncolor},
 	{'v', EVT_ONMOVE, (void *)evtmove},
 	{'v', EVT_ONROTATE, (void *)evtrotate},
+	{'v', EVT_ONCLICK, (void *)evtonclick},
+	{'b', EVT_ONBLOCKPLACE, (void *)evtonblockplace},
 	{'v', EVT_ONHELDBLOCKCHNG, (void *)evtheldchange},
 	{'b', EVT_ONMESSAGE, (void *)evtonmessage},
+	{'v', EVT_ONSPAWN, (void *)evtonspawn},
+	{'v', EVT_ONDESPAWN, (void *)evtondespawn},
 	{'v', EVT_ONTICK, (void *)evttick},
 	{0, 0, NULL}
 };

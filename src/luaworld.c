@@ -18,18 +18,14 @@ void lua_pushworld(lua_State *L, World *world) {
 	}
 
 	cs_str name = World_GetName(world);
-	lua_pushstring(L, "__worlds");
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	lua_pushstring(L, name);
-	lua_gettable(L, -2);
+	lua_getfield(L, LUA_REGISTRYINDEX, "__worlds");
+	lua_getfield(L, -1, name);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
-		lua_pushstring(L, name);
 		lua_newuserdata(L, sizeof(World *));
 		luaL_setmetatable(L, "World");
-		lua_settable(L, -3);
-		lua_pushstring(L, name);
-		lua_gettable(L, -2);
+		lua_setfield(L, -2, name);
+		lua_getfield(L, -1, name);
 	}
 
 	lua_remove(L, -2);

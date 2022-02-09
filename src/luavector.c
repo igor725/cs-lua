@@ -4,6 +4,13 @@
 #include "luaplugin.h"
 #include "luavector.h"
 
+LuaVector *lua_newluavector(lua_State *L) {
+	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
+	Memory_Zero(&vec->value, sizeof(vec->value));
+	luaL_setmetatable(L, "Vector");
+	return vec;
+}
+
 LuaVector *lua_checkvector(lua_State *L, int idx) {
 	return (LuaVector *)luaL_checkudata(L, idx, "Vector");
 }
@@ -238,14 +245,11 @@ static const luaL_Reg vectormeta[] = {
 };
 
 static int vec_newfloat(lua_State *L) {
-	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
-	Memory_Zero(&vec->value.f, sizeof(vec->value.f));
-	luaL_setmetatable(L, "Vector");
+	LuaVector *vec = lua_newluavector(L);
 	vec->type = 0;
 
 	if(lua_gettop(L) > 2) {
-		lua_pushstring(L, "set");
-		lua_gettable(L, -2);
+		lua_getfield(L, -1, "set");
 		lua_pushvalue(L, -2);
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);
@@ -257,14 +261,11 @@ static int vec_newfloat(lua_State *L) {
 }
 
 static int vec_newshort(lua_State *L) {
-	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
-	Memory_Zero(&vec->value.s, sizeof(vec->value.s));
-	luaL_setmetatable(L, "Vector");
+	LuaVector *vec = lua_newluavector(L);
 	vec->type = 1;
 
 	if(lua_gettop(L) > 2) {
-		lua_pushstring(L, "set");
-		lua_gettable(L, -2);
+		lua_getfield(L, -1, "set");
 		lua_pushvalue(L, -2);
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);

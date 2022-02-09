@@ -12,6 +12,7 @@ typedef struct LuaVector {
 	} value;
 } LuaVector;
 
+LuaVector *lua_newluavector(lua_State *L);
 LuaVector *lua_checkvector(lua_State *L, int idx);
 Vec *lua_checkfloatvector(lua_State *L, int idx);
 SVec *lua_checkshortvector(lua_State *L, int idx);

@@ -27,14 +27,14 @@ static const luaL_Reg lualibs[]={
 };
 
 LuaPlugin *lua_getplugin(lua_State *L) {
-	lua_pushstring(L, "__plstruct");
-	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, LUA_REGISTRYINDEX, "__plstruct");
 	LuaPlugin *ud = (LuaPlugin *)lua_touserdata(L, -1);
 	lua_pop(L, 1);
 	return ud;
 }
 
 static cs_bool DoFile(LuaPlugin *plugin) {
+	if(plugin->unloaded) return false;
 	cs_char path[MAX_PATH] = {0};
 	String_Append(path, MAX_PATH, "scripts/");
 	String_Append(path, MAX_PATH, plugin->scrname);
@@ -50,6 +50,7 @@ static cs_bool DoFile(LuaPlugin *plugin) {
 }
 
 cs_bool LuaPlugin_GlobalLookup(LuaPlugin *plugin, cs_str key) {
+	if(plugin->unloaded) return false;
 	lua_getglobal(plugin->L, key);
 	if(lua_isnil(plugin->L, -1)) {
 		lua_pop(plugin->L, 1);
@@ -60,10 +61,9 @@ cs_bool LuaPlugin_GlobalLookup(LuaPlugin *plugin, cs_str key) {
 }
 
 cs_bool LuaPlugin_RegistryLookup(LuaPlugin *plugin, cs_str regtab, cs_str key) {
-	lua_pushstring(plugin->L, regtab);
-	lua_gettable(plugin->L, LUA_REGISTRYINDEX);
-	lua_pushstring(plugin->L, key);
-	lua_gettable(plugin->L, -2);
+	if(plugin->unloaded) return false;
+	lua_getfield(plugin->L, LUA_REGISTRYINDEX, regtab);
+	lua_getfield(plugin->L, -1, key);
 	if(lua_isnil(plugin->L, -1)) {
 		lua_pop(plugin->L, 1);
 		return false;
@@ -73,6 +73,8 @@ cs_bool LuaPlugin_RegistryLookup(LuaPlugin *plugin, cs_str regtab, cs_str key) {
 }
 
 cs_bool LuaPlugin_Call(LuaPlugin *plugin, int args, int ret) {
+	if(plugin->unloaded) return false;
+
 	if(lua_pcall(plugin->L, args, ret, 0) != 0) {
 		LuaPlugin_PrintError(plugin);
 		return false;
@@ -88,6 +90,13 @@ static int allowhotreload(lua_State *L) {
 	return 0;
 }
 
+static int sleepmillis(lua_State *L) {
+	lua_Integer ms = luaL_checkinteger(L, 1);
+	luaL_argcheck(L, ms > 0, 1, "Sleep timeout must be greater than zero");
+	Thread_Sleep((cs_uint32)ms);
+	return 0;
+}
+
 LuaPlugin *LuaPlugin_Open(cs_str name) {
 	LuaPlugin *plugin = Memory_TryAlloc(1, sizeof(LuaPlugin));
 
@@ -100,12 +109,14 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 			return NULL;
 		}
 
-		lua_pushstring(plugin->L, "__plstruct");
 		lua_pushlightuserdata(plugin->L, plugin);
-		lua_settable(plugin->L, LUA_REGISTRYINDEX);
+		lua_setfield(plugin->L, LUA_REGISTRYINDEX, "__plstruct");
 
 		lua_pushcfunction(plugin->L, allowhotreload);
 		lua_setglobal(plugin->L, "allowHotReload");
+
+		lua_pushcfunction(plugin->L, sleepmillis);
+		lua_setglobal(plugin->L, "sleepMillis");
 
 		for(const luaL_Reg *lib = lualibs; lib->func; lib++){
 			lua_pushcfunction(plugin->L, lib->func);

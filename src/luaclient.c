@@ -19,8 +19,7 @@ void lua_pushclient(lua_State *L, Client *client) {
 	}
 
 	ClientID id = Client_GetID(client);
-	lua_pushstring(L, "__clients");
-	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, LUA_REGISTRYINDEX, "__clients");
 	lua_pushnumber(L, id);
 	lua_gettable(L, -2);
 	if(lua_isnil(L, -1)) {
@@ -242,9 +241,8 @@ static const luaL_Reg clientlib[] ={
 };
 
 int luaopen_client(lua_State *L) {
-	lua_pushstring(L, "__clients");
 	lua_newtable(L);
-	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_setfield(L, LUA_REGISTRYINDEX, "__clients");
 
 	luaL_newmetatable(L, "Client");
 	lua_pushvalue(L, -1);

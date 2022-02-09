@@ -58,10 +58,8 @@ static int cmd_add(lua_State *L) {
 		return 2;
 	}
 
-	lua_pushstring(L, "__commands");
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	lua_pushvalue(L, 1);
-	lua_gettable(L, -2);
+	lua_getfield(L, LUA_REGISTRYINDEX, "__commands");
+	lua_getfield(L, -1, name);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		Command *cmd = Command_Register(name, descr, svcmd_luacmd, flags);
@@ -130,9 +128,8 @@ static const luaL_Reg cmdlib[] ={
 };
 
 int luaopen_command(lua_State *L) {
-	lua_pushstring(L, "__commands");
 	lua_newtable(L);
-	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_setfield(L, LUA_REGISTRYINDEX, "__commands");
 
 	lua_addnumconst(L, CMDF_NONE);
 	lua_addnumconst(L, CMDF_OP);
