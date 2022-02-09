@@ -340,6 +340,7 @@ cs_bool Plugin_Unload(cs_bool force) {
 			lua_pushboolean(plugin->L, 1);
 			LuaPlugin_Call(plugin, 1, 0);
 		}
+		LuaPlugin_Unlock(plugin);
 		LuaPlugin_Close(plugin);
 	}
 
