@@ -26,6 +26,19 @@ static void callallclient(Client *client, cs_str func) {
 	}
 }
 
+static void callallworld(World *world, cs_str func) {
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, func)) {
+			lua_pushworld(plugin->L, world);
+			LuaPlugin_Call(plugin, 1, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
+}
+
 static void evthandshake(void *param) {
 	callallclient(param, "onHandshake");
 }
@@ -35,16 +48,19 @@ static void evtdisconnect(void *param) {
 }
 
 static void evtworldadded(void *param) {
-	AListField *tmp;
-	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
-		LuaPlugin_Lock(plugin);
-		if(LuaPlugin_GlobalLookup(plugin, "onWorldAdded")) {
-			lua_pushworld(plugin->L, param);
-			LuaPlugin_Call(plugin, 1, 0);
-		}
-		LuaPlugin_Unlock(plugin);
-	}
+	callallworld(param, "onWorldAdded");
+}
+
+static void evtworldremoved(void *param) {
+	callallworld(param, "onWorldRemoved");
+}
+
+static void evtworldloaded(void *param) {
+	callallworld(param, "onWorldLoaded");
+}
+
+static void evtworldunloaded(void *param) {
+	callallworld(param, "onWorldUnloaded");
 }
 
 static void evtmove(void *param) {
@@ -211,7 +227,10 @@ static void evttick(void *param) {
 EventRegBunch events[] = {
 	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
 	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
-	{'v', EVT_WORLDADDED, (void *)evtworldadded},
+	{'v', EVT_ONWORLDADDED, (void *)evtworldadded},
+	{'v', EVT_ONWORLDREMOVED, (void *)evtworldremoved},
+	{'v', EVT_ONWORLDLOADED, (void *)evtworldloaded},
+	{'v', EVT_ONWORLDUNLOADED, (void *)evtworldunloaded},
 	{'v', EVT_ONMOVE, (void *)evtmove},
 	{'v', EVT_ONROTATE, (void *)evtrotate},
 	{'v', EVT_ONHELDBLOCKCHNG, (void *)evtheldchange},
@@ -245,16 +264,14 @@ cs_bool Plugin_Unload(cs_bool force) {
 	COMMAND_REMOVE(Lua);
 	Event_UnregisterBunch(events);
 
-	AListField *tmp;
-	while((tmp = headPlugin) != NULL) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+	while(headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(headPlugin).ptr;
 		LuaPlugin_Lock(plugin);
-		AList_Remove(&headPlugin, tmp);
+		AList_Remove(&headPlugin, headPlugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onStop")) {
 			lua_pushboolean(plugin->L, 1);
 			LuaPlugin_Call(plugin, 1, 0);
 		}
-		LuaPlugin_Unlock(plugin);
 		LuaPlugin_Close(plugin);
 	}
 
