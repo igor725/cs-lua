@@ -125,6 +125,7 @@ static cs_bool evtonmessage(void *param) {
 					if(!lua_isnil(plugin->L, -1))
 						a->message = (cs_char *)luaL_checkstring(plugin->L, -1);
 				}
+				lua_pop(plugin->L, 2);
 			}
 		}
 		LuaPlugin_Unlock(plugin);
@@ -185,9 +186,14 @@ COMMAND_FUNC(Lua) {
 					LuaPlugin_Lock(plugin);
 					if(LuaPlugin_GlobalLookup(plugin, "onStop")) {
 						lua_pushboolean(plugin->L, 0);
-						if(!LuaPlugin_Call(plugin, 1, 1) || (!lua_isnil(plugin->L, -1) && !lua_toboolean(plugin->L, -1))) {
+						if(!LuaPlugin_Call(plugin, 1, 1)) {
+							unlerr:
 							LuaPlugin_Unlock(plugin);
 							COMMAND_PRINT("This script cannot be unloaded right now");
+						}
+						if(!lua_isnil(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
+							lua_pop(plugin->L, 1);
+							goto unlerr;
 						}
 					}
 					plugin->unloaded = true;

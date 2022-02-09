@@ -7,6 +7,7 @@
 #include "luavector.h"
 #include "luaangle.h"
 #include "luaworld.h"
+#include "luacommand.h"
 #include "lualog.h"
 
 static const luaL_Reg lualibs[]={
@@ -19,6 +20,8 @@ static const luaL_Reg lualibs[]={
 	{"world", luaopen_world},
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
+	{"command", luaopen_command},
+	{"debug", luaopen_debug},
 	// {"log", luaopen_log},
 	{NULL,NULL}
 };
@@ -26,7 +29,9 @@ static const luaL_Reg lualibs[]={
 LuaPlugin *lua_getplugin(lua_State *L) {
 	lua_pushstring(L, "__plstruct");
 	lua_gettable(L, LUA_REGISTRYINDEX);
-	return (LuaPlugin *)lua_touserdata(L, -1);
+	LuaPlugin *ud = (LuaPlugin *)lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	return ud;
 }
 
 static cs_bool DoFile(LuaPlugin *plugin) {
@@ -46,6 +51,19 @@ static cs_bool DoFile(LuaPlugin *plugin) {
 
 cs_bool LuaPlugin_GlobalLookup(LuaPlugin *plugin, cs_str key) {
 	lua_getglobal(plugin->L, key);
+	if(lua_isnil(plugin->L, -1)) {
+		lua_pop(plugin->L, 1);
+		return false;
+	}
+
+	return true;
+}
+
+cs_bool LuaPlugin_RegistryLookup(LuaPlugin *plugin, cs_str regtab, cs_str key) {
+	lua_pushstring(plugin->L, regtab);
+	lua_gettable(plugin->L, LUA_REGISTRYINDEX);
+	lua_pushstring(plugin->L, key);
+	lua_gettable(plugin->L, -2);
 	if(lua_isnil(plugin->L, -1)) {
 		lua_pop(plugin->L, 1);
 		return false;
@@ -111,9 +129,14 @@ cs_bool LuaPlugin_Reload(LuaPlugin *plugin) {
 	if(plugin->unloaded) return false;
 
 	if(LuaPlugin_GlobalLookup(plugin, "preReload")) {
-		if(!LuaPlugin_Call(plugin, 0, 1) || (lua_isboolean(plugin->L, -1) && !lua_toboolean(plugin->L, -1))) {
+		if(!LuaPlugin_Call(plugin, 0, 1)) {
+			noreload:
 			LuaPlugin_Unlock(plugin);
 			return false;
+		}
+		if(!lua_isnil(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
+			lua_pop(plugin->L, 1);
+			goto noreload;
 		}
 	}
 

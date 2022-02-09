@@ -38,37 +38,6 @@ void lua_pushclient(lua_State *L, Client *client) {
 	*ud = client;
 }
 
-static int client_get(lua_State *L) {
-	ClientID id = (ClientID)luaL_checknumber(L, 1);
-	lua_pushclient(L, Client_GetByID(id));
-	return 1;
-}
-
-static int client_getbcast(lua_State *L) {
-	lua_pushclient(L, Broadcast);
-	return 1;
-}
-
-static int client_getname(lua_State *L) {
-	cs_str name = (cs_str)luaL_checkstring(L, 1);
-	lua_pushclient(L, Client_GetByName(name));
-	return 1;
-}
-
-static int client_getcount(lua_State *L) {
-	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 1);
-	lua_pushinteger(L, Clients_GetCount(state));
-	return 1;
-}
-
-static const luaL_Reg clientlib[] ={
-	{"getbyid", client_get},
-	{"getbyname", client_getname},
-	{"getbroadcast", client_getbcast},
-	{"getcount", client_getcount},
-	{NULL, NULL}
-};
-
 static int meta_getid(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushinteger(L, (lua_Integer)Client_GetID(client));
@@ -238,6 +207,37 @@ static const luaL_Reg clientmeta[] = {
 	{"kick", meta_kick},
 	{"chat", meta_chat},
 
+	{NULL, NULL}
+};
+
+static int client_get(lua_State *L) {
+	ClientID id = (ClientID)luaL_checknumber(L, 1);
+	lua_pushclient(L, Client_GetByID(id));
+	return 1;
+}
+
+static int client_getbcast(lua_State *L) {
+	lua_pushclient(L, Broadcast);
+	return 1;
+}
+
+static int client_getname(lua_State *L) {
+	cs_str name = (cs_str)luaL_checkstring(L, 1);
+	lua_pushclient(L, Client_GetByName(name));
+	return 1;
+}
+
+static int client_getcount(lua_State *L) {
+	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 1);
+	lua_pushinteger(L, Clients_GetCount(state));
+	return 1;
+}
+
+static const luaL_Reg clientlib[] ={
+	{"getbyid", client_get},
+	{"getbyname", client_getname},
+	{"getbroadcast", client_getbcast},
+	{"getcount", client_getcount},
 	{NULL, NULL}
 };
 

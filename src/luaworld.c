@@ -37,17 +37,6 @@ void lua_pushworld(lua_State *L, World *world) {
 	*ud = world;
 }
 
-static int world_getname(lua_State *L) {
-	cs_str name = (cs_str)luaL_checkstring(L, 1);
-	lua_pushworld(L, World_GetByName(name));
-	return 1;
-}
-
-static const luaL_Reg worldlib[] = {
-	{"getbyname", world_getname},
-	{NULL, NULL}
-};
-
 static int meta_getname(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	lua_pushstring(L, World_GetName(world));
@@ -172,6 +161,17 @@ static const luaL_Reg worldmeta[] = {
 
 	{"pushenvupdates", meta_pushenvupdates},
 
+	{NULL, NULL}
+};
+
+static int world_getname(lua_State *L) {
+	cs_str name = (cs_str)luaL_checkstring(L, 1);
+	lua_pushworld(L, World_GetByName(name));
+	return 1;
+}
+
+static const luaL_Reg worldlib[] = {
+	{"getbyname", world_getname},
 	{NULL, NULL}
 };
 
