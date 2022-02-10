@@ -6,7 +6,7 @@ if [ $? -ne 0 ]; then
 		exit 1
 	else
 		CFLAGS="$CFLAGS $(pkg-config --cflags lua)"
-	else
+	fi
 else
 	CFLAGS="$CFLAGS $(pkg-config --cflags luajit)"
 fi
