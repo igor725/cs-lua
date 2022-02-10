@@ -57,7 +57,33 @@ static void evtondespawn(void *param) {
 }
 
 static void evtonclick(void *param) {
-
+	onPlayerClick *a = (onPlayerClick *)param;
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onPlayerClick")) {
+			lua_pushclient(plugin->L, a->client);
+			lua_newtable(plugin->L);
+			lua_pushinteger(plugin->L, (lua_Integer)a->button);
+			lua_setfield(plugin->L, -2, "button");
+			lua_pushinteger(plugin->L, (lua_Integer)a->action);
+			lua_setfield(plugin->L, -2, "action");
+			lua_pushclient(plugin->L, Client_GetByID(a->tgid));
+			lua_setfield(plugin->L, -2, "target");
+			Ang *ang = lua_newangle(plugin->L);
+			*ang = a->angle;
+			lua_setfield(plugin->L, -2, "angle");
+			LuaVector *vec = lua_newluavector(plugin->L);
+			vec->value.s = a->tgpos;
+			vec->type = 1;
+			lua_setfield(plugin->L, -2, "position");
+			lua_pushinteger(plugin->L, (lua_Integer)a->tgface);
+			lua_setfield(plugin->L, -2, "face");
+			LuaPlugin_Call(plugin, 2, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
 }
 
 static cs_bool evtonblockplace(void *param) {
