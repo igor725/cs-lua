@@ -22,6 +22,10 @@ static const luaL_Reg lualibs[]={
 	{"angle", luaopen_angle},
 	{"command", luaopen_command},
 	{"debug", luaopen_debug},
+#ifdef LUA_JITLIBNAME
+	{LUA_FFILIBNAME, luaopen_ffi},
+	{LUA_JITLIBNAME, luaopen_jit},
+#endif
 	// {"log", luaopen_log},
 	{NULL,NULL}
 };

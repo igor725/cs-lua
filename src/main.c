@@ -336,7 +336,8 @@ EventRegBunch events[] = {
 
 cs_bool Plugin_Load(void) {
 	DirIter sIter;
-	Directory_Ensure("scripts");
+	Directory_Ensure("lua"); // Папка для библиотек, подключаемых скриптами
+	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
 	if(Iter_Init(&sIter, "scripts", "lua")) {
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
