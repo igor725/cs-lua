@@ -9,6 +9,7 @@
 #include "luaclient.h"
 #include "luaworld.h"
 #include "luavector.h"
+#include "luaangle.h"
 
 AListField *headPlugin = NULL;
 

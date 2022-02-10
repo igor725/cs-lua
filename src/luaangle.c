@@ -4,6 +4,13 @@
 #include "luaplugin.h"
 #include "luaangle.h"
 
+Ang *lua_newangle(lua_State *L) {
+	Ang *ang = lua_newuserdata(L, sizeof(Ang));
+	Memory_Zero(ang, sizeof(Ang));
+	luaL_setmetatable(L, "Angle");
+	return ang;
+}
+
 Ang *lua_checkangle(lua_State *L, int idx) {
 	Ang *ud = luaL_checkudata(L, idx, "Angle");
 	luaL_argcheck(L, ud != NULL, idx, "'Angle' expected");
@@ -102,9 +109,7 @@ static const luaL_Reg anglemeta[] = {
 };
 
 static int ang_new(lua_State *L) {
-	Ang *ang = lua_newuserdata(L, sizeof(Ang));
-	Memory_Zero(&ang, sizeof(ang));
-	luaL_setmetatable(L, "Angle");
+	lua_newangle(L);
 
 	if(lua_gettop(L) > 1) {
 		lua_getfield(L, -1, "set");
