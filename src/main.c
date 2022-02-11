@@ -15,10 +15,14 @@ AListField *headPlugin = NULL;
 
 Plugin_SetVersion(1)
 
+INL static LuaPlugin *getpluginptr(AListField *field) {
+	return (LuaPlugin *)AList_GetValue(field).ptr;
+}
+
 static void callallclient(Client *client, cs_str func) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, func)) {
 			lua_pushclient(plugin->L, client);
@@ -31,7 +35,7 @@ static void callallclient(Client *client, cs_str func) {
 static void callallworld(World *world, cs_str func) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, func)) {
 			lua_pushworld(plugin->L, world);
@@ -61,7 +65,7 @@ static void evtonclick(void *param) {
 	onPlayerClick *a = (onPlayerClick *)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onPlayerClick")) {
 			lua_pushclient(plugin->L, a->client);
@@ -92,7 +96,7 @@ static cs_bool evtonblockplace(void *param) {
 	AListField *tmp;
 
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, a->mode ? "onBlockPlace" : "onBlockDestroy")) {
 			lua_pushclient(plugin->L, a->client);
@@ -142,7 +146,7 @@ static void evtoncolor(void *param) {
 static void evtmove(void *param) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onMove")) {
 			lua_pushclient(plugin->L, param);
@@ -155,7 +159,7 @@ static void evtmove(void *param) {
 static void evtrotate(void *param) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onRotate")) {
 			lua_pushclient(plugin->L, param);
@@ -169,7 +173,7 @@ static void evtheldchange(void *param) {
 	onHeldBlockChange *a = (onHeldBlockChange *)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onHeldBlockChange")) {
 			lua_pushclient(plugin->L, a->client);
@@ -185,7 +189,7 @@ static cs_bool evtonmessage(void *param) {
 	onMessage *a = (onMessage *)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		LuaPlugin_Lock(plugin);
 		cs_bool ret = true;
 		if(LuaPlugin_GlobalLookup(plugin, "onMessage")) {
@@ -211,10 +215,27 @@ static cs_bool evtonmessage(void *param) {
 	return true;
 }
 
+static void evtpluginmsg(void *param) {
+	onPluginMessage *a = (onPluginMessage *)param;
+	
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onPluginMessage")) {
+			lua_pushclient(plugin->L, a->client);
+			lua_pushinteger(plugin->L, (lua_Integer)a->channel);
+			lua_pushlstring(plugin->L, a->message, 64);
+			LuaPlugin_Call(plugin, 3, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
+}
+
 static LuaPlugin *getplugin(cs_str name) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		if(String_Compare(plugin->scrname, name)) return plugin;
 	}
 
@@ -297,7 +318,7 @@ static void evttick(void *param) {
 	(void)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = (LuaPlugin *)AList_GetValue(tmp).ptr;
+		LuaPlugin *plugin = getpluginptr(tmp);;
 		if(plugin->unloaded) {
 			AList_Remove(&headPlugin, tmp);
 			LuaPlugin_Close(plugin);
@@ -331,6 +352,7 @@ EventRegBunch events[] = {
 	{'v', EVT_ONSPAWN, (void *)evtonspawn},
 	{'v', EVT_ONDESPAWN, (void *)evtondespawn},
 	{'v', EVT_ONTICK, (void *)evttick},
+	{'v', EVT_ONPLUGINMESSAGE, (void *)evtpluginmsg},
 	{0, 0, NULL}
 };
 
