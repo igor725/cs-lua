@@ -107,7 +107,7 @@ static int meta_setheld(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	BlockID block = (BlockID)luaL_checkinteger(L, 2);
 	cs_bool cc = (cs_bool)lua_toboolean(L, 3);
-	lua_pushboolean(L, Client_SetHeld(client, block, cc));
+	lua_pushboolean(L, Client_SetHeldBlock(client, block, cc));
 	return 1;
 }
 
