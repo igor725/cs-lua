@@ -10,6 +10,7 @@
 #include "luaworld.h"
 #include "luavector.h"
 #include "luaangle.h"
+#include "../../cs-survival/src/survitf.h"
 
 AListField *headPlugin = NULL;
 
@@ -22,7 +23,7 @@ INL static LuaPlugin *getpluginptr(AListField *field) {
 static void callallclient(Client *client, cs_str func) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, func)) {
 			lua_pushclient(plugin->L, client);
@@ -35,7 +36,7 @@ static void callallclient(Client *client, cs_str func) {
 static void callallworld(World *world, cs_str func) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, func)) {
 			lua_pushworld(plugin->L, world);
@@ -65,7 +66,7 @@ static void evtonclick(void *param) {
 	onPlayerClick *a = (onPlayerClick *)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onPlayerClick")) {
 			lua_pushclient(plugin->L, a->client);
@@ -96,7 +97,7 @@ static cs_bool evtonblockplace(void *param) {
 	AListField *tmp;
 
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, a->mode ? "onBlockPlace" : "onBlockDestroy")) {
 			lua_pushclient(plugin->L, a->client);
@@ -146,7 +147,7 @@ static void evtoncolor(void *param) {
 static void evtmove(void *param) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onMove")) {
 			lua_pushclient(plugin->L, param);
@@ -159,7 +160,7 @@ static void evtmove(void *param) {
 static void evtrotate(void *param) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onRotate")) {
 			lua_pushclient(plugin->L, param);
@@ -173,7 +174,7 @@ static void evtheldchange(void *param) {
 	onHeldBlockChange *a = (onHeldBlockChange *)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onHeldBlockChange")) {
 			lua_pushclient(plugin->L, a->client);
@@ -189,7 +190,7 @@ static cs_bool evtonmessage(void *param) {
 	onMessage *a = (onMessage *)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		cs_bool ret = true;
 		if(LuaPlugin_GlobalLookup(plugin, "onMessage")) {
@@ -220,7 +221,7 @@ static void evtpluginmsg(void *param) {
 
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, "onPluginMessage")) {
 			lua_pushclient(plugin->L, a->client);
@@ -235,7 +236,7 @@ static void evtpluginmsg(void *param) {
 static LuaPlugin *getplugin(cs_str name) {
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		if(String_Compare(plugin->scrname, name)) return plugin;
 	}
 
@@ -318,7 +319,7 @@ static void evttick(void *param) {
 	(void)param;
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);;
+		LuaPlugin *plugin = getpluginptr(tmp);
 		if(plugin->unloaded) {
 			AList_Remove(&headPlugin, tmp);
 			LuaPlugin_Close(plugin);
@@ -334,7 +335,21 @@ static void evttick(void *param) {
 	}
 }
 
+static void evtpoststart(void *param) {
+	(void)param;
+
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = getpluginptr(tmp);
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "postStart"))
+			LuaPlugin_Call(plugin, 0, 0);
+		LuaPlugin_Unlock(plugin);
+	}
+}
+
 EventRegBunch events[] = {
+	{'v', EVT_POSTSTART, (void *)evtpoststart},
 	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
 	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
 	{'v', EVT_ONWORLDADDED, (void *)evtworldadded},
@@ -353,8 +368,25 @@ EventRegBunch events[] = {
 	{'v', EVT_ONDESPAWN, (void *)evtondespawn},
 	{'v', EVT_ONTICK, (void *)evttick},
 	{'v', EVT_ONPLUGINMESSAGE, (void *)evtpluginmsg},
+
 	{0, 0, NULL}
 };
+
+void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = getpluginptr(tmp);
+		LuaPlugin_Lock(plugin);
+		if(String_Compare(name, SURV_ITF_NAME)) {
+			if(size == sizeof(SurvItf) && ptr != NULL)
+				lua_pushlightuserdata(plugin->L, ptr);
+			else
+				lua_pushnil(plugin->L);
+			lua_setfield(plugin->L, LUA_REGISTRYINDEX, "SurvItf");
+		}
+		LuaPlugin_Unlock(plugin);
+	}
+}
 
 cs_bool Plugin_Load(void) {
 	DirIter sIter;

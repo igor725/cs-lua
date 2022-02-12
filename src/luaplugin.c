@@ -9,10 +9,12 @@
 #include "luaworld.h"
 #include "luacommand.h"
 #include "lualog.h"
+#include "luasurvival.h"
 
 static const luaL_Reg lualibs[]={
 	{"", luaopen_base},
 	{"package", luaopen_package},
+	{"debug", luaopen_debug},
 	{"table", luaopen_table},
 	{"math", luaopen_math},
 	{"string", luaopen_string},
@@ -21,7 +23,6 @@ static const luaL_Reg lualibs[]={
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
 	{"command", luaopen_command},
-	{"debug", luaopen_debug},
 #ifdef LUA_JITLIBNAME
 	{LUA_FFILIBNAME, luaopen_ffi},
 	{LUA_JITLIBNAME, luaopen_jit},
@@ -121,6 +122,9 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 
 		lua_pushcfunction(plugin->L, sleepmillis);
 		lua_setglobal(plugin->L, "sleepMillis");
+
+		lua_pushcfunction(plugin->L, luasurv_request);
+		lua_setglobal(plugin->L, "requestSurvivalInterface");
 
 		for(const luaL_Reg *lib = lualibs; lib->func; lib++){
 			lua_pushcfunction(plugin->L, lib->func);
