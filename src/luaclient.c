@@ -75,6 +75,12 @@ static int meta_getrotation(lua_State *L) {
 	return 1;
 }
 
+static int meta_getclickdist(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(client));
+	return 1;
+}
+
 static int meta_getmodel(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushinteger(L, (lua_Integer)Client_GetModel(client));
@@ -94,6 +100,13 @@ static int meta_setop(lua_State *L) {
 	return 1;
 }
 
+static int meta_setclickdist(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_int16 dist = (cs_int16)luaL_checkinteger(L, 2);
+	lua_pushboolean(L, Client_SetClickDistance(client, dist));
+	return 1;
+}
+
 static int meta_setmodel(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	if(lua_isnumber(L, 2))
@@ -103,7 +116,7 @@ static int meta_setmodel(lua_State *L) {
 	return 1;
 }
 
-static int meta_setheld(lua_State *L) {
+static int meta_setheldblock(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	BlockID block = (BlockID)luaL_checkinteger(L, 2);
 	cs_bool cc = (cs_bool)lua_toboolean(L, 3);
@@ -187,12 +200,14 @@ static const luaL_Reg clientmeta[] = {
 	{"getappname", meta_getappname},
 	{"getposition", meta_getposition},
 	{"getrotation", meta_getrotation},
+	{"getclickdist", meta_getclickdist},
 	{"getmodel", meta_getmodel},
 	{"getworld", meta_getworld},
 
 	{"setop", meta_setop},
+	{"setclickdist", meta_setclickdist},
 	{"setmodel", meta_setmodel},
-	{"setheld", meta_setheld},
+	{"setheldblock", meta_setheldblock},
 	{"setskin", meta_setskin},
 	{"setvelocity", meta_setvelocity},
 
