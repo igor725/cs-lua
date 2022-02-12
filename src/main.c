@@ -217,7 +217,7 @@ static cs_bool evtonmessage(void *param) {
 
 static void evtpluginmsg(void *param) {
 	onPluginMessage *a = (onPluginMessage *)param;
-	
+
 	AListField *tmp;
 	List_Iter(tmp, headPlugin) {
 		LuaPlugin *plugin = getpluginptr(tmp);;
