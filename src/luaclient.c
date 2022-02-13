@@ -210,8 +210,16 @@ static int meta_kick(lua_State *L) {
 
 static int meta_chat(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	EMesgType type = (EMesgType)luaL_checkinteger(L, 2);
-	cs_str mesg = luaL_checkstring(L, 3);
+	EMesgType type = MESSAGE_TYPE_CHAT;
+	cs_str mesg = NULL;
+
+	if(lua_gettop(L) == 2)
+		mesg = luaL_checkstring(L, 2);
+	else {
+		type = (EMesgType)luaL_checkinteger(L, 2);
+		mesg = luaL_checkstring(L, 3);
+	}
+
 	Client_Chat(client, type, mesg);
 	return 0;
 }

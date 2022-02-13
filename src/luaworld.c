@@ -1,6 +1,7 @@
 #include <core.h>
 #include <str.h>
 #include <world.h>
+#include <client.h>
 #include "luaplugin.h"
 #include "luaworld.h"
 #include "luavector.h"
@@ -107,6 +108,22 @@ static int meta_setblock(lua_State *L) {
 	return 1;
 }
 
+static int meta_setblocknat(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	SVec *pos = lua_checkshortvector(L, 2);
+	BlockID id = (BlockID)luaL_checkinteger(L, 3);
+	if(World_SetBlock(world, pos, id)) {
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			Client *client = Clients_List[i];
+			if(!client || !Client_IsInWorld(client, world)) continue;
+			Client_SetBlock(client, pos, id);
+		}
+		lua_pushboolean(L, 1);
+	} else lua_pushboolean(L, 0);
+
+	return 1;
+}
+
 static int meta_setenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	EWorldColors ctype = (EWorldColors)luaL_checkinteger(L, 2);
@@ -159,6 +176,7 @@ static const luaL_Reg worldmeta[] = {
 	{"gettexpack", meta_gettexpack},
 
 	{"setblock", meta_setblock},
+	{"setblocknat", meta_setblocknat},
 	{"setenvcolor", meta_setenvcolor},
 	{"setenvprop", meta_setenvprop},
 	{"setweather", meta_setweather},

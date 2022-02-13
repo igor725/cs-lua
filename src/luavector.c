@@ -223,6 +223,25 @@ static int vec_div(lua_State *L) {
 	return 1;
 }
 
+static int vec_eq(lua_State *L) {
+	LuaVector *vec1 = lua_checkvector(L, 1);
+	LuaVector *vec2 = lua_checkvector(L, 2);
+
+	if(vec1->type == vec2->type) {
+		if(vec1->type == 1)
+			lua_pushboolean(L, SVec_Compare(&vec1->value.s, &vec2->value.s));
+		else if(vec1->type == 0)
+			lua_pushboolean(L, Vec_Compare(&vec1->value.f, &vec2->value.f));
+		else
+			lua_pushboolean(L, 0);
+
+		return 1;
+	}
+
+	lua_pushboolean(L, 0);
+	return 1;
+}
+
 static const luaL_Reg vectormeta[] = {
 	{"iszero", vec_iszero},
 	{"scale", vec_scale},
@@ -241,6 +260,8 @@ static const luaL_Reg vectormeta[] = {
 	{"__sub", vec_sub},
 	{"__mul", vec_mul},
 	{"__div", vec_div},
+	{"__eq", vec_eq},
+
 	{NULL, NULL}
 };
 
