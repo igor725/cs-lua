@@ -5,6 +5,7 @@
 #include <event.h>
 #include <command.h>
 #include <platform.h>
+#include <plugin.h>
 #include "luaplugin.h"
 #include "luaclient.h"
 #include "luaworld.h"
