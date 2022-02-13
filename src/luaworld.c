@@ -49,6 +49,14 @@ static int meta_getdimensions(lua_State *L) {
 	return 1;
 }
 
+static int meta_getdimensionsa(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	LuaVector *vec = lua_newluavector(L);
+	World_GetDimensions(world, &vec->value.s);
+	vec->type = 1;
+	return 1;
+}
+
 static int meta_getblock(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	LuaVector *vec = lua_checkvector(L, 2);
@@ -143,6 +151,7 @@ static int meta_pushenvupdates(lua_State *L) {
 static const luaL_Reg worldmeta[] = {
 	{"getname", meta_getname},
 	{"getdimensions", meta_getdimensions},
+	{"getdimensionsa", meta_getdimensionsa},
 	{"getblock", meta_getblock},
 	{"getenvcolor", meta_getenvcolor},
 	{"getenvprop", meta_getenvprop},

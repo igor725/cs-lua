@@ -68,10 +68,33 @@ static int meta_getposition(lua_State *L) {
 	return 1;
 }
 
+static int meta_getpositiona(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	LuaVector *vec = lua_newluavector(L);
+	if(Client_GetPosition(client, &vec->value.f, NULL))
+		vec->type = 0;
+	else {
+		lua_pop(L, 1);
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 static int meta_getrotation(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	Ang *ang = lua_checkangle(L, 2);
 	lua_pushboolean(L, Client_GetPosition(client, NULL, ang));
+	return 1;
+}
+
+static int meta_getrotationa(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	Ang *ang = lua_newangle(L);
+	if(Client_GetPosition(client, NULL, ang))
+		return 1;
+	
+	lua_pop(L, 1);
+	lua_pushnil(L);
 	return 1;
 }
 
@@ -199,7 +222,9 @@ static const luaL_Reg clientmeta[] = {
 	{"getname", meta_getname},
 	{"getappname", meta_getappname},
 	{"getposition", meta_getposition},
+	{"getpositiona", meta_getpositiona},
 	{"getrotation", meta_getrotation},
+	{"getrotationa", meta_getrotationa},
 	{"getclickdist", meta_getclickdist},
 	{"getmodel", meta_getmodel},
 	{"getworld", meta_getworld},
