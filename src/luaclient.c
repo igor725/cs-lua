@@ -92,7 +92,7 @@ static int meta_getrotationa(lua_State *L) {
 	Ang *ang = lua_newangle(L);
 	if(Client_GetPosition(client, NULL, ang))
 		return 1;
-	
+
 	lua_pop(L, 1);
 	lua_pushnil(L);
 	return 1;
