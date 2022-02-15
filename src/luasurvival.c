@@ -16,6 +16,50 @@ static SurvItf *surv_getitf(lua_State *L) {
 	return ptr;
 }
 
+static int surv_isgod(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	SurvItf *itf = surv_getitf(L);
+	if(itf) {
+		SrvData *data = itf->getSrvData(client);
+		lua_pushboolean(L, itf->isInGodMode(data));
+	} else lua_pushboolean(L, 0);
+	return 1;
+}
+
+static int surv_ispvp(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	SurvItf *itf = surv_getitf(L);
+	if(itf) {
+		SrvData *data = itf->getSrvData(client);
+		lua_pushboolean(L, itf->isInPvPMode(data));
+	} else lua_pushboolean(L, 0);
+	return 1;
+}
+
+static int surv_setgod(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	luaL_checktype(L, 2, LUA_TBOOLEAN);
+	SurvItf *itf = surv_getitf(L);
+	if(itf) {
+		SrvData *data = itf->getSrvData(client);
+		itf->setGodMode(data, (cs_bool)lua_toboolean(L, 2));
+		lua_pushboolean(L, 1);
+	} else lua_pushboolean(L, 0);
+	return 1;
+}
+
+static int surv_setpvp(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	luaL_checktype(L, 2, LUA_TBOOLEAN);
+	SurvItf *itf = surv_getitf(L);
+	if(itf) {
+		SrvData *data = itf->getSrvData(client);
+		itf->setPvPMode(data, (cs_bool)lua_toboolean(L, 2));
+		lua_pushboolean(L, 1);
+	} else lua_pushboolean(L, 0);
+	return 1;
+}
+
 static int surv_hurt(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_byte dmg = (cs_byte)luaL_checkinteger(L, 2);
@@ -61,6 +105,12 @@ static int surv_kill(lua_State *L) {
 }
 
 static luaL_Reg survivalmeta[] = {
+	{"isingod", surv_isgod},
+	{"isinpvp", surv_ispvp},
+
+	{"setgod", surv_setgod},
+	{"setpvp", surv_setpvp},
+
 	{"hurt", surv_hurt},
 	{"heal", surv_heal},
 	{"kill", surv_kill},
