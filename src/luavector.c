@@ -107,13 +107,16 @@ static int meta_index(lua_State *L) {
 		switch(ax) {
 			case 'x':
 				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.x);
-				else lua_pushinteger(L, (lua_Integer)vec->value.s.x); break;
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.x);
+				break;
 			case 'y':
 				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.y);
-				else lua_pushinteger(L, (lua_Integer)vec->value.s.y); break;
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.y);
+				break;
 			case 'z':
 				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.z);
-				else lua_pushinteger(L, (lua_Integer)vec->value.s.z); break;
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.z);
+				break;
 		}
 
 		return 1;
@@ -131,13 +134,16 @@ static int meta_newindex(lua_State *L) {
 		switch(ax) {
 			case 'x':
 				if(vec->type == 0) vec->value.f.x = (cs_float)luaL_checknumber(L, 3);
-				else vec->value.s.x = (cs_int16)luaL_checkinteger(L, 3); break;
+				else vec->value.s.x = (cs_int16)luaL_checkinteger(L, 3);
+				break;
 			case 'y':
 				if(vec->type == 0) vec->value.f.y = (cs_float)luaL_checknumber(L, 3);
-				else vec->value.s.y = (cs_int16)luaL_checkinteger(L, 3); break;
+				else vec->value.s.y = (cs_int16)luaL_checkinteger(L, 3);
+				break;
 			case 'z':
 				if(vec->type == 0) vec->value.f.z = (cs_float)luaL_checknumber(L, 3);
-				else vec->value.s.z = (cs_int16)luaL_checkinteger(L, 3); break;
+				else vec->value.s.z = (cs_int16)luaL_checkinteger(L, 3);
+				break;
 		}
 
 		return 1;

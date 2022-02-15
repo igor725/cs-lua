@@ -50,8 +50,8 @@ static int meta_index(lua_State *L) {
 	cs_char axis = 0;
 	if(getaxis(luaL_checkstring(L, 2), &axis)) {
 		switch(axis) {
-			case 'y': lua_pushnumber(L, (lua_Number)ang->yaw);
-			case 'p': lua_pushnumber(L, (lua_Number)ang->pitch);
+			case 'y': lua_pushnumber(L, (lua_Number)ang->yaw); break;
+			case 'p': lua_pushnumber(L, (lua_Number)ang->pitch); break;
 		}
 
 		return 1;
@@ -67,8 +67,8 @@ static int meta_newindex(lua_State *L) {
 	cs_char axis = 0;
 	if(getaxis(luaL_checkstring(L, 2), &axis)) {
 		switch(axis) {
-			case 'y': ang->yaw = (cs_float)luaL_checknumber(L, 3);
-			case 'p': ang->pitch = (cs_float)luaL_checknumber(L, 3);
+			case 'y': ang->yaw = (cs_float)luaL_checknumber(L, 3); break;
+			case 'p': ang->pitch = (cs_float)luaL_checknumber(L, 3); break;
 		}
 
 		return 1;
