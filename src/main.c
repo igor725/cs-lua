@@ -373,20 +373,11 @@ EventRegBunch events[] = {
 	{0, 0, NULL}
 };
 
+void *SurvInterface = NULL;
+
 void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
-	AListField *tmp;
-	List_Iter(tmp, headPlugin) {
-		LuaPlugin *plugin = getpluginptr(tmp);
-		LuaPlugin_Lock(plugin);
-		if(String_Compare(name, SURV_ITF_NAME)) {
-			if(size == sizeof(SurvItf) && ptr != NULL)
-				lua_pushlightuserdata(plugin->L, ptr);
-			else
-				lua_pushnil(plugin->L);
-			lua_setfield(plugin->L, LUA_REGISTRYINDEX, "SurvItf");
-		}
-		LuaPlugin_Unlock(plugin);
-	}
+	if(String_Compare(name, SURV_ITF_NAME))
+		SurvInterface = size == sizeof(SurvItf) ? ptr : NULL;
 }
 
 cs_bool Plugin_Load(void) {
