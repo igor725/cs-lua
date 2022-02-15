@@ -311,6 +311,6 @@ int luaopen_client(lua_State *L) {
 	lua_addnumconst(L, PLAYER_STATE_MOTD);
 	lua_addnumconst(L, PLAYER_STATE_INGAME);
 
-	luaL_register(L, "client", clientlib);
+	luaL_register(L, luaL_checkstring(L, 1), clientlib);
 	return 1;
 }

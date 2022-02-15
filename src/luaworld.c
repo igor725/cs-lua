@@ -226,6 +226,6 @@ int luaopen_world(lua_State *L) {
 	lua_addnumconst(L, WORLD_PROP_EXPFOG);
 	lua_addnumconst(L, WORLD_PROP_SIDEOFFSET);
 
-	luaL_register(L, "world", worldlib);
+	luaL_register(L, luaL_checkstring(L, 1), worldlib);
 	return 1;
 }

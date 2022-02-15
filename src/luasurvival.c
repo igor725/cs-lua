@@ -2,7 +2,7 @@
 #include <plugin.h>
 #include "luaclient.h"
 #include "luasurvival.h"
-#include "../../cs-survival/src/survitf.h"
+#include "cs-survival/src/survitf.h"
 
 static SurvItf *surv_getitf(lua_State *L) {
 	lua_getfield(L, LUA_REGISTRYINDEX, "SurvItf");
@@ -74,9 +74,6 @@ int luasurv_request(lua_State *L) {
 		luaL_setfuncs(L, survivalmeta, 0);
 		lua_pop(L, 1);
 		lua_pushboolean(L, 1);
-		return 1;
-	}
-
-	lua_pushboolean(L, 0);
-	return 0;
+	} else lua_pushboolean(L, 0);
+	return 1;
 }

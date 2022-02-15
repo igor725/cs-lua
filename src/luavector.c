@@ -50,39 +50,6 @@ static int vec_scale(lua_State *L) {
 	return 0;
 }
 
-static int vec_setxvalue(lua_State *L) {
-	LuaVector *vec = lua_checkvector(L, 1);
-
-	if(vec->type == 0)
-		vec->value.f.x = (cs_float)luaL_checknumber(L, 2);
-	else if(vec->type == 1)
-		vec->value.s.x = (cs_int16)luaL_checkinteger(L, 2);
-
-	return 0;
-}
-
-static int vec_setyvalue(lua_State *L) {
-	LuaVector *vec = lua_checkvector(L, 1);
-
-	if(vec->type == 0)
-		vec->value.f.y = (cs_float)luaL_checknumber(L, 2);
-	else if(vec->type == 1)
-		vec->value.s.y = (cs_int16)luaL_checkinteger(L, 2);
-
-	return 0;
-}
-
-static int vec_setzvalue(lua_State *L) {
-	LuaVector *vec = lua_checkvector(L, 1);
-
-	if(vec->type == 0)
-		vec->value.f.z = (cs_float)luaL_checknumber(L, 2);
-	else if(vec->type == 1)
-		vec->value.s.z = (cs_int16)luaL_checkinteger(L, 2);
-
-	return 0;
-}
-
 static int vec_setvalue(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
@@ -97,42 +64,6 @@ static int vec_setvalue(lua_State *L) {
 	}
 
 	return 0;
-}
-
-static int vec_getxvalue(lua_State *L) {
-	LuaVector *vec = lua_checkvector(L, 1);
-
-	if(vec->type == 0)
-		lua_pushnumber(L, (lua_Number)vec->value.f.x);
-	else if(vec->type == 1)
-		lua_pushinteger(L, (lua_Integer)vec->value.s.x);
-	else return 0;
-
-	return 1;
-}
-
-static int vec_getyvalue(lua_State *L) {
-	LuaVector *vec = lua_checkvector(L, 1);
-
-	if(vec->type == 0)
-		lua_pushnumber(L, (lua_Number)vec->value.f.y);
-	else if(vec->type == 1)
-		lua_pushinteger(L, (lua_Integer)vec->value.s.y);
-	else return 0;
-
-	return 1;
-}
-
-static int vec_getzvalue(lua_State *L) {
-	LuaVector *vec = lua_checkvector(L, 1);
-
-	if(vec->type == 0)
-		lua_pushnumber(L, (lua_Number)vec->value.f.z);
-	else if(vec->type == 1)
-		lua_pushinteger(L, (lua_Integer)vec->value.s.z);
-	else return 0;
-
-	return 1;
 }
 
 static int vec_getvalue(lua_State *L) {
@@ -151,79 +82,136 @@ static int vec_getvalue(lua_State *L) {
 	return 3;
 }
 
-static int vec_add(lua_State *L) {
-	LuaVector *dst = lua_checkvector(L, 1);
-	LuaVector *src = lua_checkvector(L, 2);
+static cs_bool getaxis(cs_str str, cs_char *ax) {
+	if(*(str + 1) != '\0') return false;
 
-	if(dst->type == 0) {
-		dst->value.f.x += src->type == 0 ? src->value.f.x : (cs_float)src->value.s.x;
-		dst->value.f.y += src->type == 0 ? src->value.f.y : (cs_float)src->value.s.y;
-		dst->value.f.z += src->type == 0 ? src->value.f.z : (cs_float)src->value.s.z;
-	} else if(dst->type == 1) {
-		dst->value.s.x += src->type == 1 ? src->value.s.x : (cs_int16)src->value.f.x;
-		dst->value.s.y += src->type == 1 ? src->value.s.y : (cs_int16)src->value.f.y;
-		dst->value.s.z += src->type == 1 ? src->value.s.z : (cs_int16)src->value.f.z;
+	switch(*str) {
+		case 'x': case 'X':
+			*ax = 'x'; break;
+		case 'y': case 'Y':
+			*ax = 'y'; break;
+		case 'z': case 'Z':
+			*ax = 'z'; break;
+		default: return false;
 	}
 
-	lua_pushvalue(L, 1);
+	return true;
+}
+
+static int meta_index(lua_State *L) {
+	LuaVector *vec = lua_checkvector(L, 1);
+	cs_str field = luaL_checkstring(L, 2);
+
+	cs_char ax = 0;
+	if(getaxis(field, &ax)) {
+		switch(ax) {
+			case 'x':
+				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.x);
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.x); break;
+			case 'y':
+				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.y);
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.y); break;
+			case 'z':
+				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.z);
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.z); break;
+		}
+
+		return 1;
+	}
+
+	luaL_getmetafield(L, 1, field);
 	return 1;
 }
 
-static int vec_sub(lua_State *L) {
-	LuaVector *dst = lua_checkvector(L, 1);
-	LuaVector *src = lua_checkvector(L, 2);
+static int meta_newindex(lua_State *L) {
+	LuaVector *vec = lua_checkvector(L, 1);
 
-	if(dst->type == 0) {
-		dst->value.f.x -= src->type == 0 ? src->value.f.x : (cs_float)src->value.s.x;
-		dst->value.f.y -= src->type == 0 ? src->value.f.y : (cs_float)src->value.s.y;
-		dst->value.f.z -= src->type == 0 ? src->value.f.z : (cs_float)src->value.s.z;
-	} else if(dst->type == 1) {
-		dst->value.s.x -= src->type == 1 ? src->value.s.x : (cs_int16)src->value.f.x;
-		dst->value.s.y -= src->type == 1 ? src->value.s.y : (cs_int16)src->value.f.y;
-		dst->value.s.z -= src->type == 1 ? src->value.s.z : (cs_int16)src->value.f.z;
+	cs_char ax = 0;
+	if(getaxis(luaL_checkstring(L, 2), &ax)) {
+		switch(ax) {
+			case 'x':
+				if(vec->type == 0) vec->value.f.x = (cs_float)luaL_checknumber(L, 3);
+				else vec->value.s.x = (cs_int16)luaL_checkinteger(L, 3); break;
+			case 'y':
+				if(vec->type == 0) vec->value.f.y = (cs_float)luaL_checknumber(L, 3);
+				else vec->value.s.y = (cs_int16)luaL_checkinteger(L, 3); break;
+			case 'z':
+				if(vec->type == 0) vec->value.f.z = (cs_float)luaL_checknumber(L, 3);
+				else vec->value.s.z = (cs_int16)luaL_checkinteger(L, 3); break;
+		}
+
+		return 1;
 	}
 
-	lua_pushvalue(L, 1);
+	luaL_argerror(L, 2, "Vector axis expected");
+	return 0;
+}
+
+static int meta_add(lua_State *L) {
+	LuaVector *src1 = lua_checkvector(L, 1);
+	LuaVector *src2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
+
+	LuaVector *dst = lua_newluavector(L);
+	dst->type = src1->type;
+
+	if(dst->type == 0)
+		Vec_Add(dst->value.f, src1->value.f, src2->value.f);
+	else if(dst->type == 1)
+		Vec_Add(dst->value.s, src1->value.s, src2->value.s);
+
 	return 1;
 }
 
-static int vec_mul(lua_State *L) {
-	LuaVector *dst = lua_checkvector(L, 1);
-	LuaVector *src = lua_checkvector(L, 2);
+static int meta_sub(lua_State *L) {
+	LuaVector *src1 = lua_checkvector(L, 1);
+	LuaVector *src2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
 
-	if(dst->type == 0) {
-		dst->value.f.x *= src->type == 0 ? src->value.f.x : (cs_float)src->value.s.x;
-		dst->value.f.y *= src->type == 0 ? src->value.f.y : (cs_float)src->value.s.y;
-		dst->value.f.z *= src->type == 0 ? src->value.f.z : (cs_float)src->value.s.z;
-	} else if(dst->type == 1) {
-		dst->value.s.x *= src->type == 1 ? src->value.s.x : (cs_int16)src->value.f.x;
-		dst->value.s.y *= src->type == 1 ? src->value.s.y : (cs_int16)src->value.f.y;
-		dst->value.s.z *= src->type == 1 ? src->value.s.z : (cs_int16)src->value.f.z;
-	}
+	LuaVector *dst = lua_newluavector(L);
+	dst->type = src1->type;
 
-	lua_pushvalue(L, 1);
+	if(dst->type == 0)
+		Vec_Sub(dst->value.f, src1->value.f, src2->value.f);
+	else if(dst->type == 1)
+		Vec_Sub(dst->value.s, src1->value.s, src2->value.s);
+
 	return 1;
 }
 
-static int vec_div(lua_State *L) {
-	LuaVector *dst = lua_checkvector(L, 1);
-	LuaVector *src = lua_checkvector(L, 2);
+static int meta_mul(lua_State *L) {
+	LuaVector *src1 = lua_checkvector(L, 1);
+	LuaVector *src2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
 
-	if(dst->type == 0) {
-		dst->value.f.x /= src->type == 0 ? src->value.f.x : (cs_float)src->value.s.x;
-		dst->value.f.y /= src->type == 0 ? src->value.f.y : (cs_float)src->value.s.y;
-		dst->value.f.z /= src->type == 0 ? src->value.f.z : (cs_float)src->value.s.z;
-	} else if(dst->type == 1) {
-		dst->value.s.x /= src->type == 1 ? src->value.s.x : (cs_int16)src->value.f.x;
-		dst->value.s.y /= src->type == 1 ? src->value.s.y : (cs_int16)src->value.f.y;
-		dst->value.s.z /= src->type == 1 ? src->value.s.z : (cs_int16)src->value.f.z;
-	}
+	LuaVector *dst = lua_newluavector(L);
+	dst->type = src1->type;
 
-	lua_pushvalue(L, 1);
+	if(dst->type == 0)
+		Vec_Mul(dst->value.f, src1->value.f, src2->value.f);
+	else if(dst->type == 1)
+		Vec_Mul(dst->value.s, src1->value.s, src2->value.s);
+
 	return 1;
 }
 
-static int vec_eq(lua_State *L) {
+static int meta_div(lua_State *L) {
+	LuaVector *src1 = lua_checkvector(L, 1);
+	LuaVector *src2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
+
+	LuaVector *dst = lua_newluavector(L);
+	dst->type = src1->type;
+
+	if(dst->type == 0)
+		Vec_Div(dst->value.f, src1->value.f, src2->value.f);
+	else if(dst->type == 1)
+		Vec_Div(dst->value.s, src1->value.s, src2->value.s);
+
+	return 1;
+}
+
+static int meta_eq(lua_State *L) {
 	LuaVector *vec1 = lua_checkvector(L, 1);
 	LuaVector *vec2 = lua_checkvector(L, 2);
 
@@ -246,21 +234,16 @@ static const luaL_Reg vectormeta[] = {
 	{"iszero", vec_iszero},
 	{"scale", vec_scale},
 
-	{"setx", vec_setxvalue},
-	{"sety", vec_setyvalue},
-	{"setz", vec_setzvalue},
 	{"set", vec_setvalue},
-
-	{"getx", vec_getxvalue},
-	{"gety", vec_getyvalue},
-	{"getz", vec_getzvalue},
 	{"get", vec_getvalue},
 
-	{"__add", vec_add},
-	{"__sub", vec_sub},
-	{"__mul", vec_mul},
-	{"__div", vec_div},
-	{"__eq", vec_eq},
+	{"__index", meta_index},
+	{"__newindex", meta_newindex},
+	{"__add", meta_add},
+	{"__sub", meta_sub},
+	{"__mul", meta_mul},
+	{"__div", meta_div},
+	{"__eq", meta_eq},
 
 	{NULL, NULL}
 };
@@ -305,11 +288,9 @@ static const luaL_Reg vectorlib[] = {
 
 int luaopen_vector(lua_State *L) {
 	luaL_newmetatable(L, "Vector");
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, vectormeta, 0);
 	lua_pop(L, 1);
 
-	luaL_register(L, "vector", vectorlib);
+	luaL_register(L, luaL_checkstring(L, 1), vectorlib);
 	return 1;
 }

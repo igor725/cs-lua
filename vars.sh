@@ -12,3 +12,4 @@ else
 fi
 
 LIBS="$LIBS $LUA_LIB"
+CFLAGS="$CFLAGS -I../"

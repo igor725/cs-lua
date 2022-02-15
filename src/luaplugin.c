@@ -126,7 +126,7 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 		lua_pushcfunction(plugin->L, luasurv_request);
 		lua_setglobal(plugin->L, "requestSurvivalInterface");
 
-		for(const luaL_Reg *lib = lualibs; lib->func; lib++){
+		for(const luaL_Reg *lib = lualibs; lib->func; lib++) {
 			lua_pushcfunction(plugin->L, lib->func);
 			lua_pushstring(plugin->L, lib->name);
 			lua_call(plugin->L, 1, 0);

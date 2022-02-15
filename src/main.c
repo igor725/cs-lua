@@ -11,7 +11,7 @@
 #include "luaworld.h"
 #include "luavector.h"
 #include "luaangle.h"
-#include "../../cs-survival/src/survitf.h"
+#include "cs-survival/src/survitf.h"
 
 AListField *headPlugin = NULL;
 
