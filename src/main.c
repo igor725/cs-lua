@@ -47,8 +47,10 @@ static void callallworld(World *world, cs_str func) {
 	}
 }
 
+// TODO: Дать скриптам возможность менять параметр world
 static void evthandshake(void *param) {
-	callallclient(param, "onHandshake");
+	onHandshakeDone *a = (onHandshakeDone *)param;
+	callallclient(a->client, "onHandshake");
 }
 
 static void evtdisconnect(void *param) {
