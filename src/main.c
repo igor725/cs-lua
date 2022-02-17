@@ -58,7 +58,8 @@ static void evtdisconnect(void *param) {
 }
 
 static void evtonspawn(void *param) {
-	callallclient(param, "onSpawn");
+	onSpawn *a = (onSpawn *)param;
+	callallclient(a->client, "onSpawn");
 }
 
 static void evtondespawn(void *param) {
