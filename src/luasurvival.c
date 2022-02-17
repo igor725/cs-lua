@@ -36,6 +36,26 @@ static int surv_setgod(lua_State *L) {
 	return 0;
 }
 
+static int surv_giveblock(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	BlockID id = (BlockID)luaL_checkinteger(L, 2);
+	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
+	SurvItf *itf = surv_getitf(L);
+	SrvData *data = itf->getSrvData(client);
+	lua_pushinteger(L, (lua_Integer)itf->giveToInventory(data, id, ammount));
+	return 1;
+}
+
+static int surv_takeblock(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	BlockID id = (BlockID)luaL_checkinteger(L, 2);
+	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
+	SurvItf *itf = surv_getitf(L);
+	SrvData *data = itf->getSrvData(client);
+	lua_pushinteger(L, (lua_Integer)itf->takeFromInventory(data, id, ammount));
+	return 1;
+}
+
 static int surv_setpvp(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	luaL_checktype(L, 2, LUA_TBOOLEAN);
@@ -77,6 +97,9 @@ static luaL_Reg survivalmeta[] = {
 
 	{"setgod", surv_setgod},
 	{"setpvp", surv_setpvp},
+
+	{"giveblock", surv_giveblock},
+	{"takeblock", surv_takeblock},
 
 	{"hurt", surv_hurt},
 	{"heal", surv_heal},
