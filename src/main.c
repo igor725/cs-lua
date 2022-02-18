@@ -54,7 +54,17 @@ static void evthandshake(void *param) {
 }
 
 static void evtdisconnect(void *param) {
-	callallclient(param, "onDisconnect");
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = getpluginptr(tmp);
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onDisconnect")) {
+			lua_pushclient(plugin->L, param);
+			lua_pushstring(plugin->L, Client_GetDisconnectReason(param));
+			LuaPlugin_Call(plugin, 2, 0);
+		}
+		LuaPlugin_Unlock(plugin);
+	}
 }
 
 static void evtonspawn(void *param) {
