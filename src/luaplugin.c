@@ -23,6 +23,9 @@ static const luaL_Reg lualibs[]={
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
 	{"command", luaopen_command},
+#ifdef LUA_BITLIBNAME
+	{LUA_BITLIBNAME, luaopen_bit},
+#endif
 #ifdef LUA_JITLIBNAME
 	{LUA_FFILIBNAME, luaopen_ffi},
 	{LUA_JITLIBNAME, luaopen_jit},
