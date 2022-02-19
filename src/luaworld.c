@@ -69,7 +69,7 @@ static int meta_getblock(lua_State *L) {
 
 static int meta_getenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EWorldColors ctype = (EWorldColors)luaL_checkinteger(L, 2);
+	EColors ctype = (EColors)luaL_checkinteger(L, 2);
 	Color3 *color = World_GetEnvColor(world, ctype);
 	if(color) {
 		lua_pushinteger(L, color->r);
@@ -83,7 +83,7 @@ static int meta_getenvcolor(lua_State *L) {
 
 static int meta_getenvprop(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EWorldProp ptype = (EWorldProp)luaL_checkinteger(L, 2);
+	EProp ptype = (EProp)luaL_checkinteger(L, 2);
 	lua_pushinteger(L, (lua_Integer)World_GetEnvProp(world, ptype));
 	return 1;
 }
@@ -126,7 +126,7 @@ static int meta_setblocknat(lua_State *L) {
 
 static int meta_setenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EWorldColors ctype = (EWorldColors)luaL_checkinteger(L, 2);
+	EColors ctype = (EColors)luaL_checkinteger(L, 2);
 	Color3 color = {
 		.r = (cs_int16)luaL_checkinteger(L, 3),
 		.g = (cs_int16)luaL_checkinteger(L, 4),
@@ -138,7 +138,7 @@ static int meta_setenvcolor(lua_State *L) {
 
 static int meta_setenvprop(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EWorldProp ptype = (EWorldProp)luaL_checkinteger(L, 2);
+	EProp ptype = (EProp)luaL_checkinteger(L, 2);
 	cs_int32 pvalue = (cs_int32)luaL_checkinteger(L, 3);
 	lua_pushboolean(L, World_SetEnvProp(world, ptype, pvalue));
 	return 1;
@@ -146,7 +146,7 @@ static int meta_setenvprop(lua_State *L) {
 
 static int meta_setweather(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EWorldWeather wtype = (cs_int32)luaL_checkinteger(L, 2);
+	EWeather wtype = (cs_int32)luaL_checkinteger(L, 2);
 	lua_pushboolean(L, World_SetWeather(world, wtype));
 	return 1;
 }

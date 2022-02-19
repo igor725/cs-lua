@@ -123,6 +123,13 @@ static int meta_setop(lua_State *L) {
 	return 1;
 }
 
+static int meta_setweather(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	EWeather weather = (EWeather)luaL_checkinteger(L, 2);
+	lua_pushboolean(L, Client_SetWeather(client, weather));
+	return 1;
+}
+
 static int meta_setclickdist(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_int16 dist = (cs_int16)luaL_checkinteger(L, 2);
@@ -245,6 +252,7 @@ static const luaL_Reg clientmeta[] = {
 	{"getworld", meta_getworld},
 
 	{"setop", meta_setop},
+	{"setweather", meta_setweather},
 	{"setclickdist", meta_setclickdist},
 	{"setmodel", meta_setmodel},
 	{"setheldblock", meta_setheldblock},
