@@ -43,6 +43,18 @@ static int meta_getid(lua_State *L) {
 	return 1;
 }
 
+static int meta_getaddr(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_uint32 addr = Client_GetAddr(client);
+	lua_pushfstring(L, "%d.%d.%d.%d",
+		(addr >> 24) & 0xFF,
+		(addr >> 16) & 0xFF,
+		(addr >> 8) & 0xFF,
+		(addr & 0xFF)
+	);
+	return 1;
+}
+
 static int meta_getping(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushinteger(L, (lua_Integer)Client_GetPing(client));
@@ -240,6 +252,7 @@ static int meta_chat(lua_State *L) {
 
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
+	{"getaddr", meta_getaddr},
 	{"getping", meta_getping},
 	{"getname", meta_getname},
 	{"getappname", meta_getappname},
