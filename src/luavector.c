@@ -4,7 +4,7 @@
 #include "luaplugin.h"
 #include "luavector.h"
 
-LuaVector *lua_newluavector(lua_State *L) {
+LuaVector *lua_newvector(lua_State *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value, sizeof(vec->value));
 	luaL_setmetatable(L, "Vector");
@@ -146,7 +146,7 @@ static int meta_newindex(lua_State *L) {
 				break;
 		}
 
-		return 1;
+		return 0;
 	}
 
 	luaL_argerror(L, 2, "Vector axis expected");
@@ -158,7 +158,7 @@ static int meta_add(lua_State *L) {
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
 
-	LuaVector *dst = lua_newluavector(L);
+	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
 	if(dst->type == 0)
@@ -174,7 +174,7 @@ static int meta_sub(lua_State *L) {
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
 
-	LuaVector *dst = lua_newluavector(L);
+	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
 	if(dst->type == 0)
@@ -190,7 +190,7 @@ static int meta_mul(lua_State *L) {
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
 
-	LuaVector *dst = lua_newluavector(L);
+	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
 	if(dst->type == 0)
@@ -206,7 +206,7 @@ static int meta_div(lua_State *L) {
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
 
-	LuaVector *dst = lua_newluavector(L);
+	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
 	if(dst->type == 0)
@@ -255,7 +255,7 @@ static const luaL_Reg vectormeta[] = {
 };
 
 static int vec_newfloat(lua_State *L) {
-	LuaVector *vec = lua_newluavector(L);
+	LuaVector *vec = lua_newvector(L);
 	vec->type = 0;
 
 	if(lua_gettop(L) > 2) {
@@ -271,7 +271,7 @@ static int vec_newfloat(lua_State *L) {
 }
 
 static int vec_newshort(lua_State *L) {
-	LuaVector *vec = lua_newluavector(L);
+	LuaVector *vec = lua_newvector(L);
 	vec->type = 1;
 
 	if(lua_gettop(L) > 2) {

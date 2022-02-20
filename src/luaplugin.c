@@ -6,12 +6,13 @@
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"
+#include "luacolor.h"
 #include "luaworld.h"
 #include "luacommand.h"
 #include "lualog.h"
 #include "luasurvival.h"
 
-static const luaL_Reg lualibs[]={
+static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
 	{"package", luaopen_package},
 	{"debug", luaopen_debug},
@@ -22,6 +23,7 @@ static const luaL_Reg lualibs[]={
 	{"world", luaopen_world},
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
+	{"color", luaopen_color},
 	{"command", luaopen_command},
 #ifdef LUA_BITLIBNAME
 	{LUA_BITLIBNAME, luaopen_bit},

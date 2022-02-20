@@ -6,6 +6,7 @@
 #include "luavector.h"
 #include "luaangle.h"
 #include "luaworld.h"
+#include "luacolor.h"
 
 Client *lua_checkclient(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "Client");
@@ -55,6 +56,12 @@ static int meta_getaddr(lua_State *L) {
 	return 1;
 }
 
+static int meta_getaddrn(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushinteger(L, (lua_Integer)Client_GetAddr(client));
+	return 1;
+}
+
 static int meta_getping(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushinteger(L, (lua_Integer)Client_GetPing(client));
@@ -82,7 +89,7 @@ static int meta_getposition(lua_State *L) {
 
 static int meta_getpositiona(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	LuaVector *vec = lua_newluavector(L);
+	LuaVector *vec = lua_newvector(L);
 	if(Client_GetPosition(client, &vec->value.f, NULL))
 		vec->type = 0;
 	else {
@@ -213,6 +220,23 @@ static int meta_isop(lua_State *L) {
 	return 1;
 }
 
+static int meta_makeselection(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_byte id = (cs_byte)luaL_checkinteger(L, 2);
+	SVec *start = lua_checkshortvector(L, 3);
+	SVec *end = lua_checkshortvector(L, 4);
+	Color4 *col = lua_checkcolor4(L, 5);
+	lua_pushboolean(L, Client_MakeSelection(client, id, start, end, col));
+	return 1;
+}
+
+static int meta_removeselection(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_byte id = (cs_byte)luaL_checkinteger(L, 2);
+	lua_pushboolean(L, Client_RemoveSelection(client, id));
+	return 1;
+}
+
 static int meta_update(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L, Client_Update(client));
@@ -253,6 +277,7 @@ static int meta_chat(lua_State *L) {
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
 	{"getaddr", meta_getaddr},
+	{"getaddrn", meta_getaddrn},
 	{"getping", meta_getping},
 	{"getname", meta_getname},
 	{"getappname", meta_getappname},
@@ -278,6 +303,8 @@ static const luaL_Reg clientmeta[] = {
 	{"isinstate", meta_isinstate},
 	{"isop", meta_isop},
 
+	{"makesel", meta_makeselection},
+	{"remsel", meta_removeselection},
 	{"update", meta_update},
 	{"teleport", meta_teleport},
 	{"kick", meta_kick},

@@ -94,7 +94,7 @@ static void evtonclick(void *param) {
 			Ang *ang = lua_newangle(plugin->L);
 			*ang = a->angle;
 			lua_setfield(plugin->L, -2, "angle");
-			LuaVector *vec = lua_newluavector(plugin->L);
+			LuaVector *vec = lua_newvector(plugin->L);
 			vec->value.s = a->tgpos;
 			vec->type = 1;
 			lua_setfield(plugin->L, -2, "position");
@@ -115,7 +115,7 @@ static cs_bool evtonblockplace(void *param) {
 		LuaPlugin_Lock(plugin);
 		if(LuaPlugin_GlobalLookup(plugin, a->mode ? "onBlockPlace" : "onBlockDestroy")) {
 			lua_pushclient(plugin->L, a->client);
-			LuaVector *vec = lua_newluavector(plugin->L);
+			LuaVector *vec = lua_newvector(plugin->L);
 			vec->value.s = a->pos;
 			vec->type = 1;
 			lua_pushinteger(plugin->L, a->id);
@@ -410,7 +410,7 @@ cs_bool Plugin_Load(void) {
 	}
 	Iter_Close(&sIter);
 
-	COMMAND_ADD(Lua, CMDF_OP, "Lua manager");
+	COMMAND_ADD(Lua, CMDF_OP, "Lua scripts management");
 	return Event_RegisterBunch(events);
 }
 

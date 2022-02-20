@@ -6,6 +6,7 @@
 #include "luaworld.h"
 #include "luavector.h"
 #include "luaangle.h"
+#include "luacolor.h"
 
 World *lua_checkworld(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "World");
@@ -52,7 +53,7 @@ static int meta_getdimensions(lua_State *L) {
 
 static int meta_getdimensionsa(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	LuaVector *vec = lua_newluavector(L);
+	LuaVector *vec = lua_newvector(L);
 	World_GetDimensions(world, &vec->value.s);
 	vec->type = 1;
 	return 1;
@@ -70,15 +71,18 @@ static int meta_getblock(lua_State *L) {
 static int meta_getenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	EColors ctype = (EColors)luaL_checkinteger(L, 2);
-	Color3 *color = World_GetEnvColor(world, ctype);
-	if(color) {
-		lua_pushinteger(L, color->r);
-		lua_pushinteger(L, color->g);
-		lua_pushinteger(L, color->b);
-		return 3;
-	}
+	Color3 *col = lua_checkcolor3(L, 3);
+	*col = *World_GetEnvColor(world, ctype);
+	return 1;
+}
 
-	return 0;
+static int meta_getenvcolora(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	EColors ctype = (EColors)luaL_checkinteger(L, 2);
+	LuaColor *col = lua_newcolor(L);
+	col->value.c3 = *World_GetEnvColor(world, ctype);
+	col->hasAlpha = false;
+	return 1;
 }
 
 static int meta_getenvprop(lua_State *L) {
@@ -127,12 +131,8 @@ static int meta_setblocknat(lua_State *L) {
 static int meta_setenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	EColors ctype = (EColors)luaL_checkinteger(L, 2);
-	Color3 color = {
-		.r = (cs_int16)luaL_checkinteger(L, 3),
-		.g = (cs_int16)luaL_checkinteger(L, 4),
-		.b = (cs_int16)luaL_checkinteger(L, 5)
-	};
-	lua_pushboolean(L, World_SetEnvColor(world, ctype, &color));
+	Color3 *col = lua_checkcolor3(L, 3);
+	lua_pushboolean(L, World_SetEnvColor(world, ctype, col));
 	return 1;
 }
 
@@ -171,6 +171,7 @@ static const luaL_Reg worldmeta[] = {
 	{"getdimensionsa", meta_getdimensionsa},
 	{"getblock", meta_getblock},
 	{"getenvcolor", meta_getenvcolor},
+	{"getenvcolora", meta_getenvcolora},
 	{"getenvprop", meta_getenvprop},
 	{"getweather", meta_getweather},
 	{"gettexpack", meta_gettexpack},

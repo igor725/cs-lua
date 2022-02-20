@@ -71,7 +71,7 @@ static int meta_newindex(lua_State *L) {
 			case 'p': ang->pitch = (cs_float)luaL_checknumber(L, 3); break;
 		}
 
-		return 1;
+		return 0;
 	}
 
 	luaL_argerror(L, 2, "Angle axis expected");
