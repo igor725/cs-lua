@@ -19,7 +19,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../core/src",
-                "${workspaceFolder}/../../LuaJIT/src",
+                "${workspaceFolder}/../LuaJIT/src",
                 "${workspaceFolder}/../**"
             ],
             "defines": [
