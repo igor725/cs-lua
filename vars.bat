@@ -1,3 +1,4 @@
+:detectlua
 SET POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" "!ProgramFiles!\LuaJIT\" "!ProgramFiles(x86)!\LuaJIT\" ^
 "!ProgramFiles!\Lua\" "!ProgramFiles(x86)!\Lua\" "!ProgramFiles!\Lua\5.1\" "!ProgramFiles(x86)!\Lua\5.1\"
 SET POSSIBLE_LIBPATHS=".\" "lib\" "src\"
@@ -59,4 +60,28 @@ EXIT /b 1
 
 :fail
 ECHO Lua not found
+ECHO Would you like the script to automatically clone and build LuaJIT?
+ECHO Note: The LuaJIT will be cloned from Mike Pall's GitHub, then compiled.
+ECHO Warning: If "..\LuaJIT" exists it will be removed!
+SET /P LQUESTION="[Y/n]>"
+IF "!ZQUESTION!"=="" GOTO downlj
+IF "!ZQUESTION!"=="y" GOTO downlj
+IF "!ZQUESTION!"=="Y" GOTO downlj
 EXIT /b 1
+
+:downlj
+IF "%GITOK%"=="0" (
+	ECHO Looks like you don't have Git for Windows
+	ECHO You can download it from https://git-scm.com/download/win
+) ELSE (
+	RMDIR /S /Q "..\LuaJIT"
+	git clone https://luajit.org/git/luajit.git "..\LuaJIT"
+	GOTO buildlj
+)
+EXIT /b 1
+
+:buildlj
+PUSHD ..\LuaJIT\src\
+CALL msvcbuild
+POPD
+GOTO detectlua
