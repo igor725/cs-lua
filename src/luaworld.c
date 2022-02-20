@@ -7,6 +7,7 @@
 #include "luavector.h"
 #include "luaangle.h"
 #include "luacolor.h"
+#include "luaclient.h"
 
 World *lua_checkworld(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "World");
@@ -159,9 +160,81 @@ static int meta_settexpack(lua_State *L) {
 	return 1;
 }
 
-static int meta_pushenvupdates(lua_State *L) {
+static int meta_isready(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushboolean(L, World_IsReadyToPlay(world));
+	return 1;
+}
+
+static int meta_haserror(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushboolean(L, World_HasError(world));
+	return 1;
+}
+
+static int meta_poperror(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	EWorldExtra extra = WORLD_EXTRA_NOINFO;
+	EWorldError err = World_PopError(world, &extra);
+	lua_pushinteger(L, (lua_Integer)err);
+	lua_pushinteger(L, (lua_Integer)extra);
+	return 2;
+}
+
+static int meta_update(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	World_FinishEnvUpdate(world);
+	return 0;
+}
+
+static int meta_iterplayers(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	World_Lock(world, 0);
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(client && Client_IsInWorld(client, world)) {
+			lua_pushvalue(L, 2);
+			lua_pushclient(L, client);
+			if(lua_pcall(L, 1, 0, 0) != 0) {
+				World_Unlock(world);
+				lua_error(L);
+				return 0;
+			}
+		}
+	}
+	World_Unlock(world);
+
+	return 0;
+}
+
+static int meta_unload(lua_State *L) {
+	World_Unload(lua_checkworld(L, 1));
+	return 0;
+}
+
+static int meta_save(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushboolean(L, World_Save(world));
+	return 1;
+}
+
+static int meta_load(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushboolean(L, World_Load(world));
+	return 1;
+}
+
+static int meta_lock(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	cs_ulong timeout = (cs_ulong)luaL_optinteger(L, 2, 0);
+	lua_pushboolean(L, World_Lock(world, timeout));
+	return 1;
+}
+
+static int meta_unlock(lua_State *L) {
+	World_Unlock(lua_checkworld(L, 1));
 	return 0;
 }
 
@@ -183,7 +256,20 @@ static const luaL_Reg worldmeta[] = {
 	{"setweather", meta_setweather},
 	{"settexpack", meta_settexpack},
 
-	{"pushenvupdates", meta_pushenvupdates},
+	{"isready", meta_isready},
+
+	{"haserror", meta_haserror},
+	{"poperror", meta_poperror},
+
+	{"lock", meta_lock},
+	{"unlock", meta_unlock},
+
+	{"update", meta_update},
+	{"iterplayers", meta_iterplayers},
+
+	{"unload", meta_unload},
+	{"save", meta_save},
+	{"load", meta_load},
 
 	{NULL, NULL}
 };
