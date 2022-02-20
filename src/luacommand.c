@@ -92,6 +92,10 @@ static int cmd_remove(lua_State *L) {
 		lua_pushstring(L, errors[2]);
 	} else {
 		Command_Unregister(cmd);
+		lua_getfield(L, LUA_REGISTRYINDEX, "__commands");
+		lua_pushnil(L);
+		lua_setfield(L, -2, name);
+		lua_pop(L, 1);
 		lua_pushboolean(L, 1);
 		lua_pushnil(L);
 	}
