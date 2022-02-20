@@ -342,11 +342,30 @@ static int client_getcount(lua_State *L) {
 	return 1;
 }
 
+static int client_iterall(lua_State *L) {
+	luaL_checktype(L, 1, LUA_TFUNCTION);
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(client) {
+			lua_pushvalue(L, 1);
+			lua_pushclient(L, client);
+			if(lua_pcall(L, 1, 0, 0) != 0) {
+				lua_error(L);
+				return 0;
+			}
+		}
+	}
+
+	return 0;
+}
+
 static const luaL_Reg clientlib[] ={
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
 	{"getbroadcast", client_getbcast},
 	{"getcount", client_getcount},
+	{"iterall", client_iterall},
 	{NULL, NULL}
 };
 

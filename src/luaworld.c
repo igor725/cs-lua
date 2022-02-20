@@ -1,5 +1,6 @@
 #include <core.h>
 #include <str.h>
+#include <list.h>
 #include <world.h>
 #include <client.h>
 #include "luaplugin.h"
@@ -280,8 +281,26 @@ static int world_getname(lua_State *L) {
 	return 1;
 }
 
+static int world_iterall(lua_State *L) {
+	luaL_checktype(L, 1, LUA_TFUNCTION);
+
+	AListField *tmp;
+	List_Iter(tmp, World_Head) {
+		World *world = AList_GetValue(tmp).ptr;
+		lua_pushvalue(L, 1);
+		lua_pushworld(L, world);
+		if(lua_pcall(L, 1, 0, 0) != 0) {
+			lua_error(L);
+			return 0;
+		}
+	}
+
+	return 0;
+}
+
 static const luaL_Reg worldlib[] = {
 	{"getbyname", world_getname},
+	{"iterall", world_iterall},
 	{NULL, NULL}
 };
 
