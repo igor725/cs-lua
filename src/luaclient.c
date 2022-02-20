@@ -10,6 +10,7 @@
 
 Client *lua_checkclient(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "Client");
+	luaL_argcheck(L, *ud != NULL, idx, "Invalid client");
 	return (Client *)*ud;
 }
 
@@ -36,6 +37,18 @@ void lua_pushclient(lua_State *L, Client *client) {
 	lua_remove(L, -2);
 	void **ud = lua_touserdata(L, -1);
 	*ud = client;
+}
+
+void lua_clearclient(lua_State *L, Client *client) {
+	lua_getfield(L, LUA_REGISTRYINDEX, "__clients");
+	lua_pushnumber(L, Client_GetID(client));
+	lua_gettable(L, -2);
+	if(!lua_isuserdata(L, -1)) {
+		lua_pop(L, 1);
+		return;
+	}
+	void **ud = lua_touserdata(L, -1);
+	*ud = NULL;
 }
 
 static int meta_getid(lua_State *L) {

@@ -12,6 +12,7 @@
 
 World *lua_checkworld(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, "World");
+	luaL_argcheck(L, *ud != NULL, idx, "Invalid world");
 	return (World *)*ud;
 }
 
@@ -35,6 +36,18 @@ void lua_pushworld(lua_State *L, World *world) {
 	lua_remove(L, -2);
 	void **ud = lua_touserdata(L, -1);
 	*ud = world;
+}
+
+void lua_clearworld(lua_State *L, World *world) {
+	lua_getfield(L, LUA_REGISTRYINDEX, "__worlds");
+	lua_pushstring(L, World_GetName(world));
+	lua_gettable(L, -2);
+	if(!lua_isuserdata(L, -1)) {
+		lua_pop(L, 1);
+		return;
+	}
+	void **ud = lua_touserdata(L, -1);
+	*ud = NULL;
 }
 
 static int meta_getname(lua_State *L) {

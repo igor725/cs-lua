@@ -5,6 +5,7 @@
 #include "luaplugin.h"
 
 World *lua_checkworld(lua_State *L, int idx);
-void lua_pushworld(lua_State *L, World *client);
+void lua_pushworld(lua_State *L, World *world);
+void lua_clearworld(lua_State *L, World *world);
 int luaopen_world(lua_State *L);
 #endif

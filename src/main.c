@@ -63,6 +63,7 @@ static void evtdisconnect(void *param) {
 			lua_pushstring(plugin->L, Client_GetDisconnectReason(param));
 			LuaPlugin_Call(plugin, 2, 0);
 		}
+		lua_clearclient(plugin->L, param);
 		LuaPlugin_Unlock(plugin);
 	}
 }
@@ -139,7 +140,17 @@ static void evtworldadded(void *param) {
 }
 
 static void evtworldremoved(void *param) {
-	callallworld(param, "onWorldRemoved");
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = getpluginptr(tmp);
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onWorldRemoved")) {
+			lua_pushworld(plugin->L, param);
+			LuaPlugin_Call(plugin, 1, 0);
+		}
+		lua_clearworld(plugin->L, param);
+		LuaPlugin_Unlock(plugin);
+	}
 }
 
 static void evtworldloaded(void *param) {
