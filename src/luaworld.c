@@ -119,6 +119,12 @@ static int meta_gettexpack(lua_State *L) {
 	return 1;
 }
 
+static int meta_isinmemory(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushboolean(L, World_IsInMemory(world));
+	return 1;
+}
+
 static int meta_setblock(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	SVec *pos = lua_checkshortvector(L, 2);
@@ -172,6 +178,12 @@ static int meta_settexpack(lua_State *L) {
 	luaL_argcheck(L, String_Length(texpack) < 64, 2, "URL too long");
 	lua_pushboolean(L, World_SetTexturePack(world, texpack));
 	return 1;
+}
+
+static int meta_setinmemory(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	World_SetInMemory(world, (cs_bool)lua_toboolean(L, 2));
+	return 0;
 }
 
 static int meta_isready(lua_State *L) {
@@ -269,8 +281,10 @@ static const luaL_Reg worldmeta[] = {
 	{"setenvprop", meta_setenvprop},
 	{"setweather", meta_setweather},
 	{"settexpack", meta_settexpack},
+	{"setinmemory", meta_setinmemory},
 
 	{"isready", meta_isready},
+	{"isinmemory", meta_isinmemory},
 
 	{"haserror", meta_haserror},
 	{"poperror", meta_poperror},
