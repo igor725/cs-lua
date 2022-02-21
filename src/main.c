@@ -50,7 +50,22 @@ static void callallworld(World *world, cs_str func) {
 // TODO: Дать скриптам возможность менять параметр world
 static void evthandshake(void *param) {
 	onHandshakeDone *a = (onHandshakeDone *)param;
-	callallclient(a->client, "onHandshake");
+	AListField *tmp;
+	List_Iter(tmp, headPlugin) {
+		LuaPlugin *plugin = getpluginptr(tmp);
+		LuaPlugin_Lock(plugin);
+		if(LuaPlugin_GlobalLookup(plugin, "onHandshake")) {
+			lua_pushclient(plugin->L, a->client);
+			if(LuaPlugin_Call(plugin, 1, 1)) {
+				if(luaL_testudata(plugin->L, -1, "World")) {
+					a->world = lua_checkworld(plugin->L, -1);
+					LuaPlugin_Unlock(plugin);
+					break;
+				}
+			}
+		}
+		LuaPlugin_Unlock(plugin);
+	}
 }
 
 static void evtdisconnect(void *param) {
