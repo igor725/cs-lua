@@ -108,19 +108,35 @@ static luaL_Reg survivalmeta[] = {
 	{NULL, NULL}
 };
 
-int luasurv_request(lua_State *L) {
+INL static void surv_addfuncs(lua_State *L) {
+	luaL_getmetatable(L, "Client");
+	luaL_setfuncs(L, survivalmeta, 0);
+	lua_pop(L, 1);
+}
+
+int surv_init(lua_State *L) {
 	if(SurvInterface) {
+		surv_addfuncs(L);
 		lua_pushboolean(L, 1);
 		return 1;
 	}
 
 	if(Plugin_RequestInterface(Plugin_RecvInterface, SURV_ITF_NAME)) {
-		luaL_getmetatable(L, "Client");
-		luaL_setfuncs(L, survivalmeta, 0);
-		lua_pop(L, 1);
+		surv_addfuncs(L);
 		lua_pushboolean(L, 1);
 	} else
 		lua_pushboolean(L, 0);
 
+	return 1;
+}
+
+static luaL_Reg survlib[] = {
+	{"init", surv_init},
+
+	{NULL, NULL}
+};
+
+int luaopen_survival(lua_State *L) {
+	luaL_register(L, luaL_checkstring(L, 1), survlib);
 	return 1;
 }

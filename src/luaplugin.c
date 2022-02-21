@@ -34,6 +34,7 @@ static const luaL_Reg lualibs[] = {
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
 	{"color", luaopen_color},
+	{"survival", luaopen_survival},
 
 	{NULL,NULL}
 };
@@ -129,9 +130,6 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 
 		lua_pushcfunction(plugin->L, sleepmillis);
 		lua_setglobal(plugin->L, "sleepMillis");
-
-		lua_pushcfunction(plugin->L, luasurv_request);
-		lua_setglobal(plugin->L, "requestSurvivalInterface");
 
 		for(const luaL_Reg *lib = lualibs; lib->func; lib++) {
 			lua_pushcfunction(plugin->L, lib->func);

@@ -15,7 +15,7 @@
 
 AListField *headPlugin = NULL;
 
-Plugin_SetVersion(1)
+Plugin_SetVersion(1);
 
 INL static LuaPlugin *getpluginptr(AListField *field) {
 	return (LuaPlugin *)AList_GetValue(field).ptr;

@@ -34,6 +34,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/../**",
                 "${workspaceFolder}/../core/src/**",
                 "/usr/local/include/luajit-2.1"
             ],

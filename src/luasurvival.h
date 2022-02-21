@@ -3,5 +3,5 @@
 #include <core.h>
 #include "luaplugin.h"
 
-int luasurv_request(lua_State *L);
+int luaopen_survival(lua_State *L);
 #endif
