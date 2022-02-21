@@ -41,7 +41,7 @@ void lua_pushclient(lua_State *L, Client *client) {
 
 void lua_clearclient(lua_State *L, Client *client) {
 	lua_getfield(L, LUA_REGISTRYINDEX, "__clients");
-	lua_pushnumber(L, Client_GetID(client));
+	lua_pushinteger(L, Client_GetID(client));
 	lua_gettable(L, -2);
 	if(!lua_isuserdata(L, -1)) {
 		lua_pop(L, 1);

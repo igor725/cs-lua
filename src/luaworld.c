@@ -235,6 +235,12 @@ static int meta_iterplayers(lua_State *L) {
 	return 0;
 }
 
+static int meta_remove(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushboolean(L, World_Remove(world));
+	return 1;
+}
+
 static int meta_unload(lua_State *L) {
 	World_Unload(lua_checkworld(L, 1));
 	return 0;
@@ -295,12 +301,32 @@ static const luaL_Reg worldmeta[] = {
 	{"update", meta_update},
 	{"iterplayers", meta_iterplayers},
 
+	{"remove", meta_remove},
 	{"unload", meta_unload},
 	{"save", meta_save},
 	{"load", meta_load},
 
 	{NULL, NULL}
 };
+
+static int world_create(lua_State *L) {
+	cs_str wname = luaL_checkstring(L, 1);
+	SVec *dims = lua_checkshortvector(L, 2);
+	luaL_argcheck(L,
+		!Vec_IsNegative(*dims) && !Vec_HaveZero(*dims),
+		2, "Invalid vector received"
+	);
+	World *world = World_Create(wname);
+	World_SetDimensions(world, dims);
+	World_AllocBlockArray(world);
+	if(!World_IsReadyToPlay(world)) {
+		luaL_error(L, "Failed to create world");
+		return 0;
+	}
+	World_Add(world);
+	lua_pushworld(L, world);
+	return 1;
+}
 
 static int world_getname(lua_State *L) {
 	cs_str name = (cs_str)luaL_checkstring(L, 1);
@@ -326,6 +352,7 @@ static int world_iterall(lua_State *L) {
 }
 
 static const luaL_Reg worldlib[] = {
+	{"create", world_create},
 	{"getbyname", world_getname},
 	{"iterall", world_iterall},
 	{NULL, NULL}
