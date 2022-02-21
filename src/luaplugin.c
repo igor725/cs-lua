@@ -14,17 +14,11 @@
 
 static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
-	{"package", luaopen_package},
-	{"debug", luaopen_debug},
-	{"table", luaopen_table},
-	{"math", luaopen_math},
-	{"string", luaopen_string},
-	{"client", luaopen_client},
-	{"world", luaopen_world},
-	{"vector", luaopen_vector},
-	{"angle", luaopen_angle},
-	{"color", luaopen_color},
-	{"command", luaopen_command},
+	{LUA_MATHLIBNAME, luaopen_math},
+	{LUA_STRLIBNAME, luaopen_string},
+	{LUA_TABLIBNAME, luaopen_table},
+	{LUA_LOADLIBNAME, luaopen_package},
+	{LUA_DBLIBNAME, luaopen_debug},
 #ifdef LUA_BITLIBNAME
 	{LUA_BITLIBNAME, luaopen_bit},
 #endif
@@ -32,7 +26,15 @@ static const luaL_Reg lualibs[] = {
 	{LUA_FFILIBNAME, luaopen_ffi},
 	{LUA_JITLIBNAME, luaopen_jit},
 #endif
-	// {"log", luaopen_log},
+
+	{"log", luaopen_log},
+	{"world", luaopen_world},
+	{"client", luaopen_client},
+	{"command", luaopen_command},
+	{"vector", luaopen_vector},
+	{"angle", luaopen_angle},
+	{"color", luaopen_color},
+
 	{NULL,NULL}
 };
 
@@ -135,6 +137,15 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 			lua_pushcfunction(plugin->L, lib->func);
 			lua_pushstring(plugin->L, lib->name);
 			lua_call(plugin->L, 1, 0);
+		}
+
+		if(LuaPlugin_GlobalLookup(plugin, "log")) {
+			lua_getfield(plugin->L, -1, "info");
+			if(lua_isfunction(plugin->L, -1)) {
+				lua_setglobal(plugin->L, "print");
+				lua_pop(plugin->L, 1);
+			} else
+				lua_pop(plugin->L, 2);
 		}
 
 		if(!DoFile(plugin)) {
