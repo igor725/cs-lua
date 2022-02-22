@@ -384,9 +384,8 @@ static const luaL_Reg worldlib[] = {
 };
 
 int luaopen_world(lua_State *L) {
-	lua_pushstring(L, "__worlds");
 	lua_newtable(L);
-	lua_settable(L, LUA_REGISTRYINDEX);
+	lua_setfield(L, LUA_REGISTRYINDEX, "__worlds");
 
 	luaL_newmetatable(L, "World");
 	lua_pushvalue(L, -1);

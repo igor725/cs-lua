@@ -381,7 +381,7 @@ static int client_iterall(lua_State *L) {
 	return 0;
 }
 
-static const luaL_Reg clientlib[] ={
+static const luaL_Reg clientlib[] = {
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
 	{"getbroadcast", client_getbcast},
