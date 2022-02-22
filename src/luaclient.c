@@ -208,6 +208,13 @@ static int meta_gotoworld(lua_State *L) {
 	return 1;
 }
 
+static int meta_reload(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	World *world = Client_GetWorld(client);
+	lua_pushboolean(L, Client_ChangeWorld(client, world));
+	return 1;
+}
+
 static int meta_islocal(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L, Client_IsLocal(client));
@@ -310,6 +317,7 @@ static const luaL_Reg clientmeta[] = {
 	{"setskin", meta_setskin},
 	{"setvelocity", meta_setvelocity},
 	{"gotoworld", meta_gotoworld},
+	{"reload", meta_reload},
 
 	{"islocal", meta_islocal},
 	{"isfirstspawn", meta_isfirstspawn},

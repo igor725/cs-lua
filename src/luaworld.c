@@ -3,6 +3,7 @@
 #include <list.h>
 #include <world.h>
 #include <client.h>
+#include <generators.h>
 #include "luaplugin.h"
 #include "luaworld.h"
 #include "luavector.h"
@@ -213,6 +214,29 @@ static int meta_update(lua_State *L) {
 	return 0;
 }
 
+static int meta_generate(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	cs_str gname = luaL_checkstring(L, 2);
+	GeneratorRoutine func = Generators_Get(gname);
+	if(!func) {
+		lua_pushboolean(L, 0);
+		lua_pushstring(L, "Invalid generator");
+	} else {
+		World_Lock(world, 0);
+		if(!func(world, NULL)) {
+			lua_pushboolean(L, 0);
+			lua_pushstring(L, "Generator failed");
+		} else {
+			lua_pushboolean(L, 1);
+			World_Unlock(world);
+			return 1;
+		}
+		World_Unlock(world);
+	}
+
+	return 2;
+}
+
 static int meta_iterplayers(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -299,6 +323,7 @@ static const luaL_Reg worldmeta[] = {
 	{"unlock", meta_unlock},
 
 	{"update", meta_update},
+	{"generate", meta_generate},
 	{"iterplayers", meta_iterplayers},
 
 	{"remove", meta_remove},
