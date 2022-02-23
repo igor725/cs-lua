@@ -3,7 +3,7 @@ SET POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" "!ProgramFiles!\Lu
 "!ProgramFiles!\Lua\" "!ProgramFiles(x86)!\Lua\" "!ProgramFiles!\Lua\5.1\" "!ProgramFiles(x86)!\Lua\5.1\"
 SET POSSIBLE_LIBPATHS=".\" "lib\" "src\"
 SET POSSIBLE_INCPATHS=".\" "include\" "src\"
-SET POSSIBLE_LIBS="lua51.lib" "lua5.1.lib"
+SET POSSIBLE_LIBS="lua51." "lua5.1."
 
 FOR %%a IN (%POSSIBLE_PATHS%) DO (
 	IF EXIST %%a (
@@ -31,9 +31,11 @@ GOTO subfail
 :incfound
 FOR %%a IN (%POSSIBLE_LIBPATHS%) DO (
 	FOR %%b IN (%POSSIBLE_LIBS%) DO (
-		IF EXIST %1\%%a\%%b (
+		IF EXIST "%1\%%a\%%blib" (
 			SET __SUBLIBPATH=%%a
+			SET __SUBLIBPATH=!__SUBLIBPATH:~1,-1!
 			SET __SUBLIB=%%b
+			SET __SUBLIB=!__SUBLIB:~1,-1!
 			GOTO :libfound
 		)
 	)
@@ -44,13 +46,17 @@ GOTO subfail
 SET LUAPATH=%1
 SET LUAPATH=%LUAPATH:~1,-1%
 ECHO Using Lua from %LUAPATH%
-SET LIBS=!__SUBLIB:~1,-1! !LIBS!
-SET LIB=%LUAPATH%!__SUBLIBPATH:~1,-1!;!LIB!
+SET LIBS=!__SUBLIB!lib !LIBS!
+SET LIB=%LUAPATH%!__SUBLIBPATH!;!LIB!
 SET INCLUDE=%LUAPATH%!__SUBINC:~1,-1!;..;!INCLUDE!
-SET __DLLNAME=!__SUBLIB:~1,-4!dll
-IF NOT EXIST "!SERVER_OUTROOT!\!__DLLNAME!" (
-	IF EXIST "%LUAPATH%!__SUBLIBPATH:~1,-1!\!__DLLNAME!" (
-		COPY "%LUAPATH%!__SUBLIBPATH:~1,-1!\!__DLLNAME!" "!SERVER_OUTROOT!\!__DLLNAME!"
+IF NOT EXIST "!SERVER_OUTROOT!\!__SUBLIB!dll" (
+	IF EXIST "%LUAPATH%!__SUBLIBPATH!\!__SUBLIB!dll" (
+		COPY "%LUAPATH%!__SUBLIBPATH!\!__SUBLIB!dll" "!SERVER_OUTROOT!\!__SUBLIB!dll"
+	)
+)
+IF NOT EXIST "!SERVER_OUTROOT!\!__SUBLIB!pdb" IF "!DEBUG!"=="1" (
+	IF EXIST "%LUAPATH%!__SUBLIBPATH!\!__SUBLIB!pdb" (
+		COPY "%LUAPATH%!__SUBLIBPATH!\!__SUBLIB!pdb" "!SERVER_OUTROOT!\!__SUBLIB!pdb"
 	)
 )
 EXIT /b 0
@@ -81,7 +87,11 @@ IF "%GITOK%"=="0" (
 EXIT /b 1
 
 :buildlj
+set LJBUILDFLAGS=
+IF "!DEBUG!"=="1" (
+	set LJBUILDFLAGS=debug
+)
 PUSHD ..\LuaJIT\src\
-CALL msvcbuild
+CALL msvcbuild !LJBUILDFLAGS!
 POPD
 GOTO detectlua

@@ -113,8 +113,8 @@ static int sleepmillis(lua_State *L) {
 
 static cs_str iodel[] = {
 	"input", "output", "stdout",
-	"stderr", "stdin",
-	NULL
+	"stderr", "stdin", "read",
+	"write", NULL
 };
 
 static int dir_ensure(lua_State *L) {
