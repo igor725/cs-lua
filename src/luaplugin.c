@@ -17,6 +17,7 @@ static const luaL_Reg lualibs[] = {
 	{LUA_MATHLIBNAME, luaopen_math},
 	{LUA_STRLIBNAME, luaopen_string},
 	{LUA_TABLIBNAME, luaopen_table},
+	{LUA_IOLIBNAME, luaopen_io},
 	{LUA_LOADLIBNAME, luaopen_package},
 	{LUA_DBLIBNAME, luaopen_debug},
 #ifdef LUA_BITLIBNAME
@@ -110,6 +111,18 @@ static int sleepmillis(lua_State *L) {
 	return 0;
 }
 
+static cs_str iodel[] = {
+	"input", "output", "stdout",
+	"stderr", "stdin",
+	NULL
+};
+
+static int dir_ensure(lua_State *L) {
+	cs_str path = luaL_checkstring(L, 1);
+	lua_pushboolean(L, Directory_Ensure(path));
+	return 1;
+}
+
 LuaPlugin *LuaPlugin_Open(cs_str name) {
 	LuaPlugin *plugin = Memory_TryAlloc(1, sizeof(LuaPlugin));
 
@@ -135,6 +148,16 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 			lua_pushcfunction(plugin->L, lib->func);
 			lua_pushstring(plugin->L, lib->name);
 			lua_call(plugin->L, 1, 0);
+		}
+
+		if(LuaPlugin_GlobalLookup(plugin, LUA_IOLIBNAME)) {
+			for(cs_int32 i = 0; iodel[i]; i++) {
+				lua_pushnil(plugin->L);
+				lua_setfield(plugin->L, -2, iodel[i]);
+			}
+			lua_pushcfunction(plugin->L, dir_ensure);
+			lua_setfield(plugin->L, -2, "ensure");
+			lua_pop(plugin->L, 1);
 		}
 
 		if(LuaPlugin_GlobalLookup(plugin, "log")) {
