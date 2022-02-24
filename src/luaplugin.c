@@ -18,6 +18,7 @@ static const luaL_Reg lualibs[] = {
 	{LUA_STRLIBNAME, luaopen_string},
 	{LUA_TABLIBNAME, luaopen_table},
 	{LUA_IOLIBNAME, luaopen_io},
+	{LUA_OSLIBNAME, luaopen_os},
 	{LUA_LOADLIBNAME, luaopen_package},
 	{LUA_DBLIBNAME, luaopen_debug},
 #ifdef LUA_BITLIBNAME
@@ -117,6 +118,11 @@ static cs_str iodel[] = {
 	"write", NULL
 };
 
+static cs_str osdel[] = {
+	"setlocale", "execute", "exit",
+	"getenv", NULL
+};
+
 static int dir_ensure(lua_State *L) {
 	cs_str path = luaL_checkstring(L, 1);
 	lua_pushboolean(L, Directory_Ensure(path));
@@ -157,6 +163,14 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 			}
 			lua_pushcfunction(plugin->L, dir_ensure);
 			lua_setfield(plugin->L, -2, "ensure");
+			lua_pop(plugin->L, 1);
+		}
+
+		if(LuaPlugin_GlobalLookup(plugin, LUA_OSLIBNAME)) {
+			for(cs_int32 i = 0; osdel[i]; i++) {
+				lua_pushnil(plugin->L);
+				lua_setfield(plugin->L, -2, osdel[i]);
+			}
 			lua_pop(plugin->L, 1);
 		}
 
