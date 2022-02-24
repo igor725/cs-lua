@@ -87,6 +87,12 @@ static int meta_getname(lua_State *L) {
 	return 1;
 }
 
+static int meta_getdispname(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushstring(L, Client_GetDisplayName(client));
+	return 1;
+}
+
 static int meta_getappname(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushstring(L, Client_GetAppName(client));
@@ -175,6 +181,13 @@ static int meta_setmodel(lua_State *L) {
 		lua_pushboolean(L, Client_SetModel(client, (cs_int16)luaL_checkinteger(L, 2)));
 	else
 		lua_pushboolean(L, Client_SetModelStr(client, luaL_checkstring(L, 2)));
+	return 1;
+}
+
+static int meta_setdispname(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	cs_str name = luaL_checkstring(L, 2);
+	lua_pushboolean(L, Client_SetDisplayName(client, name));
 	return 1;
 }
 
@@ -300,6 +313,7 @@ static const luaL_Reg clientmeta[] = {
 	{"getaddrn", meta_getaddrn},
 	{"getping", meta_getping},
 	{"getname", meta_getname},
+	{"getdispname", meta_getdispname},
 	{"getappname", meta_getappname},
 	{"getposition", meta_getposition},
 	{"getpositiona", meta_getpositiona},
@@ -313,6 +327,7 @@ static const luaL_Reg clientmeta[] = {
 	{"setweather", meta_setweather},
 	{"setclickdist", meta_setclickdist},
 	{"setmodel", meta_setmodel},
+	{"setdispname", meta_setdispname},
 	{"setheldblock", meta_setheldblock},
 	{"setskin", meta_setskin},
 	{"setvelocity", meta_setvelocity},
