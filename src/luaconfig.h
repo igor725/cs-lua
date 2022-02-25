@@ -5,4 +5,5 @@
 #include "luaplugin.h"
 
 CStore *lua_checkcfgstore(lua_State *L, int idx);
+int luaopen_config(lua_State *L);
 #endif

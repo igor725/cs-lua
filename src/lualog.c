@@ -7,7 +7,15 @@ static void pushfmt(lua_State *L) {
 	lua_getglobal(L, LUA_STRLIBNAME);
 	lua_getfield(L, -1, "format");
 	lua_remove(L, -2);
-	for(int i = 1; i <= count; i++)
+	lua_getglobal(L, "tostring");
+	if(count > 0)
+		lua_pushvalue(L, 1);
+	else {
+		lua_pushnil(L);
+		count++;
+	}
+	lua_call(L, 1, 1);
+	for(int i = 2; i <= count; i++)
 		lua_pushvalue(L, i);
 	lua_call(L, count, 1);
 }

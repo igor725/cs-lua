@@ -11,6 +11,7 @@
 #include "luacommand.h"
 #include "lualog.h"
 #include "luasurvival.h"
+#include "luaconfig.h"
 
 static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
@@ -32,6 +33,7 @@ static const luaL_Reg lualibs[] = {
 	{"log", luaopen_log},
 	{"world", luaopen_world},
 	{"client", luaopen_client},
+	{"config", luaopen_config},
 	{"command", luaopen_command},
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},

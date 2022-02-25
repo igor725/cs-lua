@@ -9,7 +9,98 @@ CStore *lua_checkcfgstore(lua_State *L, int idx) {
 	return (CStore *)*ud;
 }
 
+static int meta_get(lua_State *L) {
+	CStore *store = lua_checkcfgstore(L, 1);
+	cs_str key = luaL_checkstring(L, 2);
+	CEntry *ent = Config_GetEntry(store, key);
+	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
+	switch (ent->type) {
+		case CONFIG_TYPE_BOOL:
+			lua_pushboolean(L, ent->value.vbool);
+			break;
+		case CONFIG_TYPE_INT16:
+			lua_pushinteger(L, (lua_Integer)Config_GetInt16(ent));
+			break;
+		case CONFIG_TYPE_INT32:
+			lua_pushinteger(L, (lua_Integer)Config_GetInt32(ent));
+			break;
+		case CONFIG_TYPE_INT8:
+			lua_pushinteger(L, (lua_Integer)Config_GetInt8(ent));
+			break;
+		case CONFIG_TYPE_STR:
+			lua_pushstring(L, Config_GetStr(ent));
+			break;
+		
+		case CONFIG_MAX_TYPE:
+		default:
+			lua_pushstring(L, "Internal error");
+			lua_error(L);
+			return 0;
+	}
+
+	return 1;
+}
+
+static int meta_set(lua_State *L) {
+	CStore *store = lua_checkcfgstore(L, 1);
+	cs_str key = luaL_checkstring(L, 2);
+	CEntry *ent = Config_GetEntry(store, key);
+	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
+	switch (ent->type) {
+		case CONFIG_TYPE_BOOL:
+			Config_SetBool(ent, lua_toboolean(L, 3));
+			break;
+		case CONFIG_TYPE_INT16:
+			Config_SetInt16(ent, (cs_int16)lua_tointeger(L, 3));
+			break;
+		case CONFIG_TYPE_INT32:
+			Config_SetInt32(ent, (cs_int32)lua_tointeger(L, 3));
+			break;
+		case CONFIG_TYPE_INT8:
+			Config_SetInt8(ent, (cs_int8)lua_tointeger(L, 3));
+			break;
+		case CONFIG_TYPE_STR:
+			Config_SetStr(ent, luaL_checkstring(L, 3));
+			break;
+		
+		case CONFIG_MAX_TYPE:
+		default:
+			lua_pushstring(L, "Internal error");
+			lua_error(L);
+			break;
+	}
+
+	return 0;
+}
+
+static int meta_load(lua_State *L) {
+	CStore *store = lua_checkcfgstore(L, 1);
+	lua_pushboolean(L, Config_Load(store));
+	return 1;
+}
+
+static int meta_save(lua_State *L) {
+	CStore *store = lua_checkcfgstore(L, 1);
+	lua_pushboolean(L, Config_Save(store));
+	return 1;
+}
+
+static int meta_destroy(lua_State *L) {
+	CStore *store = lua_checkcfgstore(L, 1);
+	*(void **)lua_touserdata(L, 1) = NULL;
+	Config_DestroyStore(store);
+	return 0;
+}
+
 const luaL_Reg configmeta[] = {
+	{"get", meta_get},
+	{"set", meta_set},
+
+	{"load", meta_load},
+	{"save", meta_save},
+
+	{"destroy", meta_destroy},
+	{"__gc", meta_destroy},
 	{NULL, NULL}
 };
 
@@ -26,7 +117,7 @@ static int config_new(lua_State *L) {
 		return 0;
 	}
 
-	for(size_t i = 1; i < itemcnt; i++) {
+	for(size_t i = 1; i <= itemcnt; i++) {
 		lua_rawgeti(L, -1, (int)i);
 		lua_getfield(L, -1, "name");
 		lua_getfield(L, -2, "type");
@@ -35,7 +126,6 @@ static int config_new(lua_State *L) {
 		ECTypes type = lua_tointeger(L, -3);
 		if(!lua_isstring(L, -4) || !lua_isnumber(L, -3)
 		|| type >= CONFIG_MAX_TYPE) {
-			lua_pop(L, 7);
 			Config_DestroyStore(store);
 			luaL_error(L, "Invalid store entry #%d", i);
 			return 0;
@@ -44,6 +134,34 @@ static int config_new(lua_State *L) {
 		CEntry *ent = Config_NewEntry(store, key, type);
 		if(lua_isstring(L, -2))
 			Config_SetComment(ent, lua_tostring(L, -2));
+		if(!lua_isnil(L, -1)) {
+			switch(type) {
+				case CONFIG_TYPE_BOOL:
+					Config_SetDefaultBool(ent, lua_toboolean(L, -1));
+					break;
+				case CONFIG_TYPE_INT16:
+					Config_SetDefaultInt16(ent, (cs_int16)lua_tointeger(L, -1));
+					break;
+				case CONFIG_TYPE_INT32:
+					Config_SetDefaultInt32(ent, (cs_int32)lua_tointeger(L, -1));
+					break;
+				case CONFIG_TYPE_INT8:
+					Config_SetDefaultInt8(ent, (cs_int8)lua_tointeger(L, -1));
+					break;
+				case CONFIG_TYPE_STR:
+					Config_SetDefaultStr(ent,
+						lua_isstring(L, -1) ? lua_tostring(L, -1) : ""
+					);
+					break;
+
+				case CONFIG_MAX_TYPE:
+				default:
+					Config_DestroyStore(store);
+					lua_pushstring(L, "Internal error");
+					lua_error(L);
+					break;
+			}
+		}
 		lua_pop(L, 5);
 	}
 	lua_pop(L, 2);
