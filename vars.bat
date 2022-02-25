@@ -128,7 +128,7 @@ IF NOT "!PREFER_LVERSION!"=="" IF NOT "!PREFER_LVERSION!"=="jit" (
 )
 
 ECHO Would you like the script to automatically clone and build LuaJIT?
-ECHO Note: The LuaJIT will be cloned from Mike Pall's GitHub, then compiled.
+ECHO Note: The LuaJIT will be cloned from Mike Pall's Git, then compiled.
 ECHO Warning: If "..\LuaJIT" exists it will be removed!
 SET /P LQUESTION="[Y/n]>"
 IF "!LQUESTION!"=="" GOTO downlj
