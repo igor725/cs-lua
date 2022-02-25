@@ -284,7 +284,7 @@ static LuaPlugin *getplugin(cs_str name) {
 }
 
 COMMAND_FUNC(Lua) {
-	COMMAND_SETUSAGE("/lua <list/load/unload/reload> [scriptname]");
+	COMMAND_SETUSAGE("/lua <list/load/unload/reload/disable/enable> [scriptname]");
 
 	cs_char subcmd[64], plname[64];
 	if(COMMAND_GETARG(subcmd, 64, 0)) {
@@ -315,6 +315,10 @@ COMMAND_FUNC(Lua) {
 					LuaPlugin_Close(plugin);
 					COMMAND_PRINT("Unexpected error");
 				}
+			} else if(String_CaselessCompare(subcmd, "enable")) {
+				COMMAND_PRINT("Work in progress");
+			} else if(String_CaselessCompare(subcmd, "disable")) {
+				COMMAND_PRINT("Work in progress");
 			} else {
 				if(!plugin) {
 					COMMAND_PRINTF("Script \"%s\" not found", plname);
@@ -423,6 +427,7 @@ cs_bool Plugin_Load(void) {
 	DirIter sIter;
 	Directory_Ensure("lua"); // Папка для библиотек, подключаемых скриптами
 	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
+	Directory_Ensure("scripts" PATH_DELIM "disabled"); // Сюда будут переноситься выключенные скрипты
 	if(Iter_Init(&sIter, "scripts", "lua")) {
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
