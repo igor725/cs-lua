@@ -17,6 +17,11 @@ typedef struct LuaPlugin {
 	Mutex *lock;
 } LuaPlugin;
 
+#if LUA_VERSION_NUM > 501
+#define luaL_register(L, n, lib) luaL_newlib(L, lib)
+#define lua_objlen(L, idx) lua_rawlen(L, idx)
+#endif
+
 #define lua_addnumconst(L, n) lua_pushnumber(L, n); lua_setglobal(L, #n);
 #define LuaPlugin_Lock(p) Mutex_Lock((p)->lock)
 #define LuaPlugin_Unlock(p) Mutex_Unlock((p)->lock)

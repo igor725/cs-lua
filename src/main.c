@@ -242,7 +242,7 @@ static cs_bool evtonmessage(void *param) {
 					ret = (cs_bool)lua_toboolean(plugin->L, -2);
 				} else {
 					if(!lua_isnil(plugin->L, -2))
-						a->type = (cs_byte)luaL_checkint(plugin->L, -2);
+						a->type = (cs_byte)luaL_checkinteger(plugin->L, -2);
 					if(!lua_isnil(plugin->L, -1))
 						a->message = (cs_char *)luaL_checkstring(plugin->L, -1);
 				}

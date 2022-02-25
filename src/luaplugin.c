@@ -153,9 +153,14 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 		lua_setglobal(plugin->L, "sleepMillis");
 
 		for(const luaL_Reg *lib = lualibs; lib->func; lib++) {
+#if LUA_VERSION_NUM < 502
 			lua_pushcfunction(plugin->L, lib->func);
 			lua_pushstring(plugin->L, lib->name);
 			lua_call(plugin->L, 1, 0);
+#else
+			luaL_requiref(plugin->L, lib->name, lib->func, 1);
+			lua_pop(plugin->L, 1);
+#endif
 		}
 
 		if(LuaPlugin_GlobalLookup(plugin, LUA_IOLIBNAME)) {

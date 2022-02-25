@@ -48,7 +48,7 @@ static int meta_set(lua_State *L) {
 	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
 	switch (ent->type) {
 		case CONFIG_TYPE_BOOL:
-			Config_SetBool(ent, lua_toboolean(L, 3));
+			Config_SetBool(ent, (cs_bool)lua_toboolean(L, 3));
 			break;
 		case CONFIG_TYPE_INT16:
 			Config_SetInt16(ent, (cs_int16)lua_tointeger(L, 3));
@@ -137,7 +137,7 @@ static int config_new(lua_State *L) {
 		if(!lua_isnil(L, -1)) {
 			switch(type) {
 				case CONFIG_TYPE_BOOL:
-					Config_SetDefaultBool(ent, lua_toboolean(L, -1));
+					Config_SetDefaultBool(ent, (cs_bool)lua_toboolean(L, -1));
 					break;
 				case CONFIG_TYPE_INT16:
 					Config_SetDefaultInt16(ent, (cs_int16)lua_tointeger(L, -1));
