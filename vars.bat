@@ -1,9 +1,19 @@
 :detectlua
-SET POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" "!ProgramFiles!\LuaJIT\" "!ProgramFiles(x86)!\LuaJIT\" ^
-"!ProgramFiles!\Lua\" "!ProgramFiles(x86)!\Lua\" "!ProgramFiles!\Lua\5.1\" "!ProgramFiles(x86)!\Lua\5.1\"
+SET POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" ^
+"!ProgramFiles!\LuaJIT\" "!ProgramFiles(x86)!\LuaJIT\" ^
+"!ROOT!\..\..\Lua\" "!ROOT!\..\Lua\" ^
+"!ROOT!\..\..\Lua\5.1\" "!ROOT!\..\Lua\5.1\" ^
+"!ROOT!\..\..\Lua\5.2\" "!ROOT!\..\Lua\5.2\" ^
+"!ROOT!\..\..\Lua\5.3\" "!ROOT!\..\Lua\5.3\" ^
+"!ProgramFiles!\Lua\" "!ProgramFiles(x86)!\Lua\" ^
+"!ProgramFiles!\Lua\5.1\" "!ProgramFiles(x86)!\Lua\5.1\" ^
+"!ProgramFiles!\Lua\5.2\" "!ProgramFiles(x86)!\Lua\5.2\" ^
+"!ProgramFiles!\Lua\5.3\" "!ProgramFiles(x86)!\Lua\5.3\"
+
 SET POSSIBLE_LIBPATHS=".\" "lib\" "src\"
 SET POSSIBLE_INCPATHS=".\" "include\" "src\"
-SET POSSIBLE_LIBS="lua51." "lua5.1."
+SET POSSIBLE_LIBS="lua51." "lua5.1." ^
+"lua52." "lua5.2." "lua53." "lua5.3."
 
 FOR %%a IN (%POSSIBLE_PATHS%) DO (
 	IF EXIST %%a (
