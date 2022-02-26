@@ -289,7 +289,7 @@ COMMAND_FUNC(Lua) {
 	cs_char subcmd[64], plname[64];
 	if(COMMAND_GETARG(subcmd, 64, 0)) {
 		if(String_CaselessCompare(subcmd, "list")) {
-			COMMAND_PRINT("Work in progress");
+			COMMAND_PRINT("&7Work in progress");
 		} else {
 			if(!COMMAND_GETARG(plname, 64, 1)) {
 				COMMAND_PRINTUSAGE;
@@ -301,27 +301,27 @@ COMMAND_FUNC(Lua) {
 
 			if(String_CaselessCompare(subcmd, "load")) {
 				if(plugin) {
-					COMMAND_PRINT("This script is already loaded");
+					COMMAND_PRINT("&cThis script is already loaded");
 				}
 
 				plugin = LuaPlugin_Open(plname);
 				if(!plugin) {
-					COMMAND_PRINT("Failed to load specified script");
+					COMMAND_PRINT("&cFailed to load specified script");
 				}
 
 				if(AList_AddField(&headPlugin, plugin)) {
-					COMMAND_PRINTF("Script \"%s\" loaded successfully", plname);
+					COMMAND_PRINTF("&aScript \"%s\" loaded successfully", plname);
 				} else {
 					LuaPlugin_Close(plugin);
-					COMMAND_PRINT("Unexpected error");
+					COMMAND_PRINT("&cUnexpected error");
 				}
 			} else if(String_CaselessCompare(subcmd, "enable")) {
-				COMMAND_PRINT("Work in progress");
+				COMMAND_PRINT("&7Work in progress");
 			} else if(String_CaselessCompare(subcmd, "disable")) {
-				COMMAND_PRINT("Work in progress");
+				COMMAND_PRINT("&7Work in progress");
 			} else {
 				if(!plugin) {
-					COMMAND_PRINTF("Script \"%s\" not found", plname);
+					COMMAND_PRINTF("&cScript \"%s\" not found", plname);
 				}
 
 				if(String_CaselessCompare(subcmd, "unload")) {
@@ -331,7 +331,7 @@ COMMAND_FUNC(Lua) {
 						if(!LuaPlugin_Call(plugin, 1, 1)) {
 							unlerr:
 							LuaPlugin_Unlock(plugin);
-							COMMAND_PRINT("This script cannot be unloaded right now");
+							COMMAND_PRINT("&cThis script cannot be unloaded right now");
 						}
 						if(!lua_isnil(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
 							lua_pop(plugin->L, 1);
@@ -340,16 +340,16 @@ COMMAND_FUNC(Lua) {
 					}
 					plugin->unloaded = true;
 					LuaPlugin_Unlock(plugin);
-					COMMAND_PRINTF("Script unloaded successfully", plname);
+					COMMAND_PRINTF("&aScript unloaded successfully", plname);
 				} else if(String_CaselessCompare(subcmd, "reload")) {
 					if(!plugin->hotreload) {
-						COMMAND_PRINT("Hot reload was disabled for this script");
+						COMMAND_PRINT("&cThis script does not support hot reloading");
 					}
 
 					if(LuaPlugin_Reload(plugin)) {
-						COMMAND_PRINT("Script reloaded successfully");
+						COMMAND_PRINT("&aScript reloaded successfully");
 					} else {
-						COMMAND_PRINT("This script cannot be reloaded right now");
+						COMMAND_PRINT("&cThis script cannot be reloaded right now");
 					}
 				}
 			}
