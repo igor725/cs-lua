@@ -112,7 +112,6 @@ const luaL_Reg configmeta[] = {
 	{"save", meta_save},
 	{"poperror", meta_poperror},
 
-	{"destroy", meta_destroy},
 	{"__gc", meta_destroy},
 	{NULL, NULL}
 };
