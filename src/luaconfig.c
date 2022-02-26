@@ -81,7 +81,8 @@ static int meta_load(lua_State *L) {
 
 static int meta_save(lua_State *L) {
 	CStore *store = lua_checkcfgstore(L, 1);
-	lua_pushboolean(L, Config_Save(store));
+	cs_bool force = (cs_bool)lua_toboolean(L, 2);
+	lua_pushboolean(L, Config_Save(store, force));
 	return 1;
 }
 
