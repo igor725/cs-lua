@@ -83,6 +83,16 @@ static void evtdisconnect(void *param) {
 	}
 }
 
+static void evtclientfinish(void *param) {
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		LuaScript_Lock(script);
+		lua_clearclient(script->L, param);
+		LuaScript_Unlock(script);
+	}
+}
+
 static void evtonspawn(void *param) {
 	onSpawn *a = (onSpawn *)param;
 	callallclient(a->client, "onSpawn");
@@ -406,6 +416,7 @@ EventRegBunch events[] = {
 	{'v', EVT_POSTSTART, (void *)evtpoststart},
 	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
 	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
+	{'v', EVT_ONCLIENTFINISH, (void *)evtclientfinish},
 	{'v', EVT_ONWORLDADDED, (void *)evtworldadded},
 	{'v', EVT_ONWORLDREMOVED, (void *)evtworldremoved},
 	{'v', EVT_ONWORLDLOADED, (void *)evtworldloaded},
