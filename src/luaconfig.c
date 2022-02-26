@@ -86,6 +86,17 @@ static int meta_save(lua_State *L) {
 	return 1;
 }
 
+static int meta_poperror(lua_State *L) {
+	CStore *store = lua_checkcfgstore(L, 1);
+	ECExtra extra = CONFIG_EXTRA_NOINFO;
+	cs_int32 line = 0;
+	ECError error = Config_PopError(store, &extra, &line);
+	lua_pushinteger(L, (lua_Integer)error);
+	lua_pushinteger(L, (lua_Integer)extra);
+	lua_pushinteger(L, (lua_Integer)line);
+	return 3;
+}
+
 static int meta_destroy(lua_State *L) {
 	CStore *store = lua_checkcfgstore(L, 1);
 	*(void **)lua_touserdata(L, 1) = NULL;
@@ -99,6 +110,7 @@ const luaL_Reg configmeta[] = {
 
 	{"load", meta_load},
 	{"save", meta_save},
+	{"poperror", meta_poperror},
 
 	{"destroy", meta_destroy},
 	{"__gc", meta_destroy},
