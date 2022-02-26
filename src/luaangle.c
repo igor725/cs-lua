@@ -2,7 +2,7 @@
 #include <str.h>
 #include <vector.h>
 #include <platform.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luaangle.h"
 
 Ang *lua_newangle(lua_State *L) {

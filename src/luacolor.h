@@ -2,7 +2,7 @@
 #define CSLUACOLOR_H
 #include <core.h>
 #include <types/cpe.h>
-#include "luaplugin.h"
+#include "luascript.h"
 
 typedef struct _LuaColor {
 	cs_bool hasAlpha;

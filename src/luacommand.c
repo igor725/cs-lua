@@ -1,7 +1,7 @@
 #include <core.h>
 #include <client.h>
 #include <command.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"
@@ -23,19 +23,19 @@ static const char *errors[] = {
 COMMAND_FUNC(luacmd) {
 	cs_str output = NULL;
 	Command *cmd = ccdata->command;
-	LuaPlugin *plugin = Command_GetUserData(cmd);
+	LuaScript *plugin = Command_GetUserData(cmd);
 
-	LuaPlugin_Lock(plugin);
-	if(LuaPlugin_RegistryLookup(plugin, "__commands", Command_GetName(cmd))) {
+	LuaScript_Lock(plugin);
+	if(LuaScript_RegistryLookup(plugin, "__commands", Command_GetName(cmd))) {
 		lua_pushclient(plugin->L, ccdata->caller);
 		lua_pushstring(plugin->L, ccdata->args);
-		if(LuaPlugin_Call(plugin, 2, 1)) {
+		if(LuaScript_Call(plugin, 2, 1)) {
 			if(lua_isstring(plugin->L, -1))
 				output = luaL_checkstring(plugin->L, -1);
 			lua_pop(plugin->L, 1);
 		} else output = errors[6];
 	} else output = errors[5];
-	LuaPlugin_Unlock(plugin);
+	LuaScript_Unlock(plugin);
 
 	if(output) {
 		COMMAND_PRINT(output);

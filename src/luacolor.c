@@ -1,6 +1,6 @@
 #include <core.h>
 #include <types/cpe.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luacolor.h"
 
 LuaColor *lua_newcolor(lua_State *L) {

@@ -2,7 +2,7 @@
 #define CSLUACLIENT_H
 #include <core.h>
 #include <client.h>
-#include "luaplugin.h"
+#include "luascript.h"
 
 Client *lua_checkclient(lua_State *L, int idx);
 void lua_pushclient(lua_State *L, Client *client);

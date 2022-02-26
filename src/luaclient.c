@@ -1,7 +1,7 @@
 #include <core.h>
 #include <str.h>
 #include <client.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"

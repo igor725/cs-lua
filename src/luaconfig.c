@@ -1,6 +1,6 @@
 #include <core.h>
 #include <config.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luaconfig.h"
 
 CStore *lua_checkcfgstore(lua_State *L, int idx) {

@@ -2,7 +2,7 @@
 #define CSLUAVECTOR_H
 #include <core.h>
 #include <vector.h>
-#include "luaplugin.h"
+#include "luascript.h"
 
 typedef struct LuaVector {
 	cs_int8 type;

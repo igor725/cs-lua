@@ -2,7 +2,7 @@
 #include <str.h>
 #include <log.h>
 #include <platform.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"
@@ -45,30 +45,30 @@ static const luaL_Reg lualibs[] = {
 	{NULL,NULL}
 };
 
-LuaPlugin *lua_getplugin(lua_State *L) {
+LuaScript *lua_getplugin(lua_State *L) {
 	lua_getfield(L, LUA_REGISTRYINDEX, "__plstruct");
-	LuaPlugin *ud = (LuaPlugin *)lua_touserdata(L, -1);
+	LuaScript *ud = (LuaScript *)lua_touserdata(L, -1);
 	lua_pop(L, 1);
 	return ud;
 }
 
-static cs_bool DoFile(LuaPlugin *plugin) {
+static cs_bool DoFile(LuaScript *plugin) {
 	if(plugin->unloaded) return false;
 	cs_char path[MAX_PATH] = {0};
 	String_Append(path, MAX_PATH, "scripts/");
 	String_Append(path, MAX_PATH, plugin->scrname);
 	if(luaL_dofile(plugin->L, path)) {
-		LuaPlugin_PrintError(plugin);
+		LuaScript_PrintError(plugin);
 		return false;
 	}
 
-	if(LuaPlugin_GlobalLookup(plugin, "onStart"))
-		return LuaPlugin_Call(plugin, 0, 0);
+	if(LuaScript_GlobalLookup(plugin, "onStart"))
+		return LuaScript_Call(plugin, 0, 0);
 
 	return true;
 }
 
-cs_bool LuaPlugin_GlobalLookup(LuaPlugin *plugin, cs_str key) {
+cs_bool LuaScript_GlobalLookup(LuaScript *plugin, cs_str key) {
 	if(plugin->unloaded) return false;
 	lua_getglobal(plugin->L, key);
 	if(lua_isnil(plugin->L, -1)) {
@@ -79,7 +79,7 @@ cs_bool LuaPlugin_GlobalLookup(LuaPlugin *plugin, cs_str key) {
 	return true;
 }
 
-cs_bool LuaPlugin_RegistryLookup(LuaPlugin *plugin, cs_str regtab, cs_str key) {
+cs_bool LuaScript_RegistryLookup(LuaScript *plugin, cs_str regtab, cs_str key) {
 	if(plugin->unloaded) return false;
 	lua_getfield(plugin->L, LUA_REGISTRYINDEX, regtab);
 	lua_getfield(plugin->L, -1, key);
@@ -91,11 +91,11 @@ cs_bool LuaPlugin_RegistryLookup(LuaPlugin *plugin, cs_str regtab, cs_str key) {
 	return true;
 }
 
-cs_bool LuaPlugin_Call(LuaPlugin *plugin, int args, int ret) {
+cs_bool LuaScript_Call(LuaScript *plugin, int args, int ret) {
 	if(plugin->unloaded) return false;
 
 	if(lua_pcall(plugin->L, args, ret, 0) != 0) {
-		LuaPlugin_PrintError(plugin);
+		LuaScript_PrintError(plugin);
 		return false;
 	}
 
@@ -104,7 +104,7 @@ cs_bool LuaPlugin_Call(LuaPlugin *plugin, int args, int ret) {
 
 static int allowhotreload(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TBOOLEAN);
-	LuaPlugin *plugin = lua_getplugin(L);
+	LuaScript *plugin = lua_getplugin(L);
 	plugin->hotreload = (cs_bool)lua_toboolean(L, 1);
 	return 0;
 }
@@ -133,15 +133,15 @@ static int dir_ensure(lua_State *L) {
 	return 1;
 }
 
-LuaPlugin *LuaPlugin_Open(cs_str name) {
-	LuaPlugin *plugin = Memory_TryAlloc(1, sizeof(LuaPlugin));
+LuaScript *LuaScript_Open(cs_str name) {
+	LuaScript *plugin = Memory_TryAlloc(1, sizeof(LuaScript));
 
 	if(plugin) {
 		plugin->scrname = String_AllocCopy(name);
 		plugin->lock = Mutex_Create();
 		plugin->L = luaL_newstate();
 		if(!plugin->L) {
-			LuaPlugin_Close(plugin);
+			LuaScript_Close(plugin);
 			return NULL;
 		}
 
@@ -165,7 +165,7 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 #endif
 		}
 
-		if(LuaPlugin_GlobalLookup(plugin, LUA_IOLIBNAME)) {
+		if(LuaScript_GlobalLookup(plugin, LUA_IOLIBNAME)) {
 			for(cs_int32 i = 0; iodel[i]; i++) {
 				lua_pushnil(plugin->L);
 				lua_setfield(plugin->L, -2, iodel[i]);
@@ -175,7 +175,7 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 			lua_pop(plugin->L, 1);
 		}
 
-		if(LuaPlugin_GlobalLookup(plugin, LUA_OSLIBNAME)) {
+		if(LuaScript_GlobalLookup(plugin, LUA_OSLIBNAME)) {
 			for(cs_int32 i = 0; osdel[i]; i++) {
 				lua_pushnil(plugin->L);
 				lua_setfield(plugin->L, -2, osdel[i]);
@@ -183,7 +183,7 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 			lua_pop(plugin->L, 1);
 		}
 
-		if(LuaPlugin_GlobalLookup(plugin, "log")) {
+		if(LuaScript_GlobalLookup(plugin, "log")) {
 			lua_getfield(plugin->L, -1, "info");
 			if(lua_isfunction(plugin->L, -1)) {
 				lua_setglobal(plugin->L, "print");
@@ -193,7 +193,7 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 		}
 
 		if(!DoFile(plugin)) {
-			LuaPlugin_Close(plugin);
+			LuaScript_Close(plugin);
 			return NULL;
 		}
 
@@ -203,14 +203,14 @@ LuaPlugin *LuaPlugin_Open(cs_str name) {
 	return NULL;
 }
 
-cs_bool LuaPlugin_Reload(LuaPlugin *plugin) {
-	LuaPlugin_Lock(plugin);
+cs_bool LuaScript_Reload(LuaScript *plugin) {
+	LuaScript_Lock(plugin);
 	if(plugin->unloaded) return false;
 
-	if(LuaPlugin_GlobalLookup(plugin, "preReload")) {
-		if(!LuaPlugin_Call(plugin, 0, 1)) {
+	if(LuaScript_GlobalLookup(plugin, "preReload")) {
+		if(!LuaScript_Call(plugin, 0, 1)) {
 			noreload:
-			LuaPlugin_Unlock(plugin);
+			LuaScript_Unlock(plugin);
 			return false;
 		}
 		if(!lua_isnil(plugin->L, -1) && !lua_toboolean(plugin->L, -1)) {
@@ -220,12 +220,12 @@ cs_bool LuaPlugin_Reload(LuaPlugin *plugin) {
 	}
 
 	DoFile(plugin);
-	LuaPlugin_Unlock(plugin);
+	LuaScript_Unlock(plugin);
 
 	return true;
 }
 
-cs_bool LuaPlugin_Close(LuaPlugin *plugin) {
+cs_bool LuaScript_Close(LuaScript *plugin) {
 	if(plugin->unloaded) return false;
 	if(plugin->L) lua_close(plugin->L);
 	Memory_Free((void *)plugin->scrname);

@@ -4,7 +4,7 @@
 #include <world.h>
 #include <client.h>
 #include <generators.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luaworld.h"
 #include "luavector.h"
 #include "luaangle.h"

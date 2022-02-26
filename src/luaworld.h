@@ -2,7 +2,7 @@
 #define CSLUAWORLD_H
 #include <core.h>
 #include <world.h>
-#include "luaplugin.h"
+#include "luascript.h"
 
 World *lua_checkworld(lua_State *L, int idx);
 void lua_pushworld(lua_State *L, World *world);

@@ -1,7 +1,7 @@
 #include <core.h>
 #include <vector.h>
 #include <platform.h>
-#include "luaplugin.h"
+#include "luascript.h"
 #include "luavector.h"
 
 LuaVector *lua_newvector(lua_State *L) {
