@@ -3,5 +3,6 @@
 #include <core.h>
 #include "luaplugin.h"
 
+BlockDef *lua_checkblockdef(lua_State *L, int idx);
 int luaopen_block(lua_State *L);
 #endif

@@ -7,6 +7,7 @@
 #include "luavector.h"
 #include "luaangle.h"
 #include "luacolor.h"
+#include "luablock.h"
 #include "luaworld.h"
 #include "luacommand.h"
 #include "lualog.h"
@@ -31,6 +32,7 @@ static const luaL_Reg lualibs[] = {
 #endif
 
 	{"log", luaopen_log},
+	{"block", luaopen_block},
 	{"world", luaopen_world},
 	{"client", luaopen_client},
 	{"config", luaopen_config},
