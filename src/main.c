@@ -68,6 +68,32 @@ static void evthandshake(void *param) {
 	}
 }
 
+static cs_bool evtconnect(void *param) {
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		LuaScript_Lock(script);
+		if(LuaScript_GlobalLookup(script, "onConnect")) {
+			lua_pushclient(script->L, param);
+			if(LuaScript_Call(script, 1, 1)) {
+				cs_bool succ = (cs_bool)lua_isnil(script->L, -1) ||
+				(cs_bool)lua_toboolean(script->L, -1);
+				lua_pop(script->L, 1);
+				if(!succ) {
+					LuaScript_Unlock(script);
+					return false;
+				}
+			} else {
+				LuaScript_Unlock(script);
+				return false;
+			}
+		}
+		LuaScript_Unlock(script);
+	}
+
+	return true;
+}
+
 static void evtdisconnect(void *param) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
@@ -136,12 +162,16 @@ static cs_bool evtonblockplace(void *param) {
 			vec->type = 1;
 			lua_pushinteger(script->L, a->id);
 			if(LuaScript_Call(script, 3, 1)) {
-				if(!lua_isnil(script->L, -1) && !lua_toboolean(script->L, -1)) {
-					lua_pop(script->L, 1);
+				cs_bool succ = (cs_bool)lua_isnil(script->L, -1) ||
+				(cs_bool)lua_toboolean(script->L, -1);
+				lua_pop(script->L, 1);
+				if(!succ) {
 					LuaScript_Unlock(script);
 					return false;
 				}
-				lua_pop(script->L, 1);
+			} else {
+				LuaScript_Unlock(script);
+				return false;
 			}
 		}
 		LuaScript_Unlock(script);
@@ -247,7 +277,7 @@ static cs_bool evtonmessage(void *param) {
 						a->message = (cs_char *)luaL_checkstring(script->L, -1);
 				}
 				lua_pop(script->L, 2);
-			}
+			} else ret = false;
 		}
 		LuaScript_Unlock(script);
 		if(!ret) return ret;
@@ -405,6 +435,7 @@ static void evtpoststart(void *param) {
 EventRegBunch events[] = {
 	{'v', EVT_POSTSTART, (void *)evtpoststart},
 	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
+	{'b', EVT_ONCONNECT, (void *)evtconnect},
 	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
 	{'v', EVT_ONWORLDADDED, (void *)evtworldadded},
 	{'v', EVT_ONWORLDREMOVED, (void *)evtworldremoved},
