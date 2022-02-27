@@ -109,6 +109,19 @@ static void evtdisconnect(void *param) {
 	}
 }
 
+static void evtusertype(void *param) {
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		LuaScript_Lock(script);
+		if(LuaScript_GlobalLookup(script, "onUserTypeChange")) {
+			lua_pushclient(script->L, param);
+			LuaScript_Call(script, 1, 0);
+		}
+		LuaScript_Unlock(script);
+	}
+}
+
 static void evtonspawn(void *param) {
 	onSpawn *a = (onSpawn *)param;
 	callallclient(a->client, "onSpawn");
@@ -437,6 +450,7 @@ EventRegBunch events[] = {
 	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
 	{'b', EVT_ONCONNECT, (void *)evtconnect},
 	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
+	{'v', EVT_ONUSERTYPECHANGE, (void *)evtusertype},
 	{'v', EVT_ONWORLDADDED, (void *)evtworldadded},
 	{'v', EVT_ONWORLDREMOVED, (void *)evtworldremoved},
 	{'v', EVT_ONWORLDLOADED, (void *)evtworldloaded},
