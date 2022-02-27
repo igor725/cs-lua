@@ -242,8 +242,16 @@ static int meta_isfirstspawn(lua_State *L) {
 
 static int meta_isinstate(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 2);
-	lua_pushboolean(L, Client_CheckState(client, state));
+	int top = lua_gettop(L);
+	for(int i = 2; i <= top; i++) {
+		EPlayerState state = (EPlayerState)luaL_checkinteger(L, i);
+		if(Client_CheckState(client, state)) {
+			lua_pushboolean(L, 1);
+			return 1;
+		}
+	}
+	
+	lua_pushboolean(L, 0);
 	return 1;
 }
 
