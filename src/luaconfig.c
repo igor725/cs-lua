@@ -16,7 +16,7 @@ static int meta_get(lua_State *L) {
 	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
 	switch (ent->type) {
 		case CONFIG_TYPE_BOOL:
-			lua_pushboolean(L, ent->value.vbool);
+			lua_pushboolean(L, (cs_bool)Config_GetBool(ent));
 			break;
 		case CONFIG_TYPE_INT16:
 			lua_pushinteger(L, (lua_Integer)Config_GetInt16(ent));
