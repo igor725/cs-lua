@@ -50,6 +50,7 @@ void *luaL_testudata(lua_State *L, int ud, const char *tname);
 void luaL_setmetatable(lua_State *L, const char *tname);
 #else // Судя по всему, мы компилимся под JITом
 #	define CSLUA_HAS_JIT
+#	define CSLUA_HAS_BIT
 #endif
 
 #define lua_addnumconst(L, n) lua_pushnumber(L, n); lua_setglobal(L, #n);
