@@ -57,6 +57,23 @@ static int meta_getname(lua_State *L) {
 	return 1;
 }
 
+static int meta_getspawn(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	Vec *svec = NULL; Ang *sang = NULL;
+	if(!lua_isnil(L, 2)) svec = lua_checkfloatvector(L, 2);
+	if(!lua_isnil(L, 3)) sang = lua_checkangle(L, 3);
+	World_GetSpawn(world, svec, sang);
+	return 0;
+}
+
+static int meta_getspawna(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	LuaVector *svec = lua_newvector(L);
+	Ang *sang = lua_newangle(L);
+	World_GetSpawn(world, &svec->value.f, sang);
+	return 1;
+}
+
 static int meta_getdimensions(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	LuaVector *vec = lua_checkvector(L, 2);
@@ -124,6 +141,15 @@ static int meta_isinmemory(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	lua_pushboolean(L, World_IsInMemory(world));
 	return 1;
+}
+
+static int meta_setspawn(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	Vec *svec = NULL; Ang *sang = NULL;
+	if(!lua_isnil(L, 2)) svec = lua_checkfloatvector(L, 2);
+	if(!lua_isnil(L, 3)) sang = lua_checkangle(L, 3);
+	World_SetSpawn(world, svec, sang);
+	return 0;
 }
 
 static int meta_setblock(lua_State *L) {
@@ -296,6 +322,8 @@ static int meta_unlock(lua_State *L) {
 
 static const luaL_Reg worldmeta[] = {
 	{"getname", meta_getname},
+	{"getspawn", meta_getspawn},
+	{"getspawna", meta_getspawna},
 	{"getdimensions", meta_getdimensions},
 	{"getdimensionsa", meta_getdimensionsa},
 	{"getblock", meta_getblock},
@@ -305,6 +333,7 @@ static const luaL_Reg worldmeta[] = {
 	{"getweather", meta_getweather},
 	{"gettexpack", meta_gettexpack},
 
+	{"setspawn", meta_setspawn},
 	{"setblock", meta_setblock},
 	{"setblocknat", meta_setblocknat},
 	{"setenvcolor", meta_setenvcolor},

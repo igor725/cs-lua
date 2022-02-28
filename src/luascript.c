@@ -3,6 +3,7 @@
 #include <log.h>
 #include <platform.h>
 #include "luascript.h"
+#include "luabot.h"
 #include "luaclient.h"
 #include "luavector.h"
 #include "luaangle.h"
@@ -34,6 +35,7 @@ static const luaL_Reg lualibs[] = {
 	{"log", luaopen_log},
 	{"block", luaopen_block},
 	{"world", luaopen_world},
+	// {"bot", luaopen_bot},
 	{"client", luaopen_client},
 	{"config", luaopen_config},
 	{"command", luaopen_command},
