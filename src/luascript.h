@@ -27,11 +27,11 @@ typedef struct LuaScript {
 #define LuaScript_Unlock(p) Mutex_Unlock((p)->lock)
 #define LuaScript_PrintError(p) Log_Info("lua_State(%p) got an error: %s", (p)->L, lua_tostring((p)->L, -1))
 
-LuaScript *lua_getplugin(lua_State *L);
+LuaScript *lua_getscript(lua_State *L);
 LuaScript *LuaScript_Open(cs_str name);
+cs_bool LuaScript_DoMainFile(LuaScript *script);
 cs_bool LuaScript_GlobalLookup(LuaScript *plugin, cs_str key);
 cs_bool LuaScript_RegistryLookup(LuaScript *plugin, cs_str regtab, cs_str key);
 cs_bool LuaScript_Call(LuaScript *plugin, int args, int ret);
-cs_bool LuaScript_Reload(LuaScript *plugin);
 cs_bool LuaScript_Close(LuaScript *plugin);
 #endif

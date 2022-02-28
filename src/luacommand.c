@@ -67,7 +67,7 @@ static int cmd_add(lua_State *L) {
 			lua_pushvalue(L, 1);
 			lua_pushvalue(L, 4);
 			lua_settable(L, -3);
-			cmd->data = lua_getplugin(L);
+			cmd->data = lua_getscript(L);
 		}
 		lua_pop(L, 1);
 		lua_pushboolean(L, cmd != NULL);
@@ -87,7 +87,7 @@ static int cmd_remove(lua_State *L) {
 	if(!cmd) {
 		lua_pushboolean(L, 0);
 		lua_pushstring(L, errors[1]);
-	} else if(Command_GetUserData(cmd) != lua_getplugin(L)) {
+	} else if(Command_GetUserData(cmd) != lua_getscript(L)) {
 		lua_pushboolean(L, 0);
 		lua_pushstring(L, errors[2]);
 	} else {
@@ -111,7 +111,7 @@ static int cmd_setalias(lua_State *L) {
 	if(!cmd) {
 		lua_pushboolean(L, 0);
 		lua_pushstring(L, errors[1]);
-	} else if(Command_GetUserData(cmd) != lua_getplugin(L)) {
+	} else if(Command_GetUserData(cmd) != lua_getscript(L)) {
 		lua_pushboolean(L, 0);
 		lua_pushstring(L, errors[2]);
 	} else {

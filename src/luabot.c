@@ -31,19 +31,7 @@ static luaL_Reg botmeta[] = {
 	{NULL, NULL}
 };
 
-static ClientID FindFreeID(void) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++)
-		if(!Clients_List[i]) return i;
-
-	return CLIENT_SELF;
-}
-
 static int bot_new(lua_State *L) {
-	ClientID botid = FindFreeID();
-	if(botid == CLIENT_SELF) {
-		luaL_error(L, "Failed to create bot");
-		return 0;
-	}
 	// TODO: Создание бота
 	void **ud = lua_newuserdata(L, sizeof(Client *));
 	luaL_setmetatable(L, "Bot");

@@ -1,24 +1,24 @@
 #include <core.h>
-#include <list.h>
-#include <log.h>
-#include <str.h>
 #include <event.h>
-#include <command.h>
-#include <platform.h>
-#include <plugin.h>
+#include <list.h>
+#include "luamain.h"
 #include "luascript.h"
-#include "luaclient.h"
-#include "luaworld.h"
-#include "luavector.h"
 #include "luaangle.h"
-#include "cs-survival/src/survitf.h"
+#include "luavector.h"
+#include "luaworld.h"
+#include "luaclient.h"
 
-AListField *headScript = NULL;
+static void evtpoststart(void *param) {
+	(void)param;
 
-Plugin_SetVersion(1);
-
-INL static LuaScript *getscriptptr(AListField *field) {
-	return (LuaScript *)AList_GetValue(field).ptr;
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		LuaScript_Lock(script);
+		if(LuaScript_GlobalLookup(script, "postStart"))
+			LuaScript_Call(script, 0, 0);
+		LuaScript_Unlock(script);
+	}
 }
 
 static void callallclient(Client *client, cs_str func) {
@@ -299,119 +299,6 @@ static cs_bool evtonmessage(void *param) {
 	return true;
 }
 
-static void evtpluginmsg(void *param) {
-	onPluginMessage *a = (onPluginMessage *)param;
-
-	AListField *tmp;
-	List_Iter(tmp, headScript) {
-		LuaScript *script = getscriptptr(tmp);
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onPluginMessage")) {
-			lua_pushclient(script->L, a->client);
-			lua_pushinteger(script->L, (lua_Integer)a->channel);
-			lua_pushlstring(script->L, a->message, 64);
-			LuaScript_Call(script, 3, 0);
-		}
-		LuaScript_Unlock(script);
-	}
-}
-
-static LuaScript *getscript(cs_str name) {
-	AListField *tmp;
-	List_Iter(tmp, headScript) {
-		LuaScript *script = getscriptptr(tmp);
-		if(String_Compare(script->scrname, name)) return script;
-	}
-
-	return NULL;
-}
-
-COMMAND_FUNC(Lua) {
-	COMMAND_SETUSAGE("/lua <list/load/unload/reload/disable/enable> [scriptname]");
-
-	cs_char subcmd[64], plname[64];
-	if(COMMAND_GETARG(subcmd, 64, 0)) {
-		if(String_CaselessCompare(subcmd, "list")) {
-			COMMAND_PRINTLINE("&eList of loaded Lua scripts:");
-			AListField *tmp;
-			cs_uint32 count = 0;
-			List_Iter(tmp, headScript) {
-				LuaScript *script = getscriptptr(tmp);
-				LuaScript_Lock(script);
-				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
-				COMMAND_PRINTFLINE("%d. &9%s&f, &a%dKb&f used", ++count, script->scrname, usage);
-				LuaScript_Unlock(script);
-			}
-			return false;
-		} else {
-			if(!COMMAND_GETARG(plname, 64, 1)) {
-				COMMAND_PRINTUSAGE;
-			} else if(!String_FindSubstr(plname, ".lua")) {
-				String_Append(plname, 64, ".lua");
-			}
-
-			LuaScript *script = getscript(plname);
-
-			if(String_CaselessCompare(subcmd, "load")) {
-				if(script) {
-					COMMAND_PRINT("&cThis script is already loaded");
-				}
-
-				script = LuaScript_Open(plname);
-				if(!script) {
-					COMMAND_PRINT("&cFailed to load specified script");
-				}
-
-				if(AList_AddField(&headScript, script)) {
-					COMMAND_PRINTF("&aScript \"%s\" loaded successfully", plname);
-				} else {
-					LuaScript_Close(script);
-					COMMAND_PRINT("&cUnexpected error");
-				}
-			} else if(String_CaselessCompare(subcmd, "enable")) {
-				COMMAND_PRINT("&7Work in progress");
-			} else if(String_CaselessCompare(subcmd, "disable")) {
-				COMMAND_PRINT("&7Work in progress");
-			} else {
-				if(!script) {
-					COMMAND_PRINTF("&cScript \"%s\" not found", plname);
-				}
-
-				if(String_CaselessCompare(subcmd, "unload")) {
-					LuaScript_Lock(script);
-					if(LuaScript_GlobalLookup(script, "onStop")) {
-						lua_pushboolean(script->L, 0);
-						if(!LuaScript_Call(script, 1, 1)) {
-							unlerr:
-							LuaScript_Unlock(script);
-							COMMAND_PRINT("&cThis script cannot be unloaded right now");
-						}
-						if(!lua_isnil(script->L, -1) && !lua_toboolean(script->L, -1)) {
-							lua_pop(script->L, 1);
-							goto unlerr;
-						}
-					}
-					script->unloaded = true;
-					LuaScript_Unlock(script);
-					COMMAND_PRINTF("&aScript unloaded successfully", plname);
-				} else if(String_CaselessCompare(subcmd, "reload")) {
-					if(!script->hotreload) {
-						COMMAND_PRINT("&cThis script does not support hot reloading");
-					}
-
-					if(LuaScript_Reload(script)) {
-						COMMAND_PRINT("&aScript reloaded successfully");
-					} else {
-						COMMAND_PRINT("&cThis script cannot be reloaded right now");
-					}
-				}
-			}
-		}
-	}
-
-	COMMAND_PRINTUSAGE;
-}
-
 static void evttick(void *param) {
 	(void)param;
 	AListField *tmp;
@@ -432,15 +319,19 @@ static void evttick(void *param) {
 	}
 }
 
-static void evtpoststart(void *param) {
-	(void)param;
+static void evtpluginmsg(void *param) {
+	onPluginMessage *a = (onPluginMessage *)param;
 
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "postStart"))
-			LuaScript_Call(script, 0, 0);
+		if(LuaScript_GlobalLookup(script, "onPluginMessage")) {
+			lua_pushclient(script->L, a->client);
+			lua_pushinteger(script->L, (lua_Integer)a->channel);
+			lua_pushlstring(script->L, a->message, 64);
+			LuaScript_Call(script, 3, 0);
+		}
 		LuaScript_Unlock(script);
 	}
 }
@@ -471,51 +362,10 @@ EventRegBunch events[] = {
 	{0, 0, NULL}
 };
 
-void *SurvInterface = NULL;
-
-void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
-	if(String_Compare(name, SURV_ITF_NAME))
-		SurvInterface = size == sizeof(SurvItf) ? ptr : NULL;
-}
-
-cs_bool Plugin_Load(void) {
-	DirIter sIter;
-	Directory_Ensure("lua"); // Папка для библиотек, подключаемых скриптами
-	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
-	Directory_Ensure("scripts" PATH_DELIM "disabled"); // Сюда будут переноситься выключенные скрипты
-	if(Iter_Init(&sIter, "scripts", "lua")) {
-		do {
-			if(sIter.isDir || !sIter.cfile) continue;
-			LuaScript *script = LuaScript_Open(sIter.cfile);
-			if(!script) {
-				Log_Error("Failed to load script \"%s\"", sIter.cfile);
-				continue;
-			}
-			AList_AddField(&headScript, script);
-		} while(Iter_Next(&sIter));
-	}
-	Iter_Close(&sIter);
-
-	COMMAND_ADD(Lua, CMDF_OP, "Lua scripts management");
+cs_bool LuaEvent_Register(void) {
 	return Event_RegisterBunch(events);
 }
 
-cs_bool Plugin_Unload(cs_bool force) {
-	(void)force;
-	COMMAND_REMOVE(Lua);
-	Event_UnregisterBunch(events);
-
-	while(headScript) {
-		LuaScript *script = (LuaScript *)AList_GetValue(headScript).ptr;
-		LuaScript_Lock(script);
-		AList_Remove(&headScript, headScript);
-		if(LuaScript_GlobalLookup(script, "onStop")) {
-			lua_pushboolean(script->L, 1);
-			LuaScript_Call(script, 1, 0);
-		}
-		LuaScript_Unlock(script);
-		LuaScript_Close(script);
-	}
-
-	return true;
+void LuaEvent_Unregister(void) {
+	(void)Event_UnregisterBunch(events);
 }
