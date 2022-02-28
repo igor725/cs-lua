@@ -11,15 +11,45 @@
 #include <platform.h>
 
 typedef struct LuaScript {
-	cs_bool hotreload, unloaded;
+	cs_bool hotreload;
+	cs_bool unloaded;
 	cs_str scrname;
 	lua_State *L;
 	Mutex *lock;
 } LuaScript;
 
-#if LUA_VERSION_NUM > 501
+// Регистровые таблицы для хранения разных приколов
+#define CSLUA_RWORLDS  "csworlds"
+#define CSLUA_RCLIENTS "csclients"
+#define CSLUA_RCMDS    "cscmds"
+
+// Метатаблицы разных приколов
+#define CSLUA_MVECTOR "Vector"
+#define CSLUA_MANGLE  "Angle"
+#define CSLUA_MCOLOR  "Color"
+#define CSLUA_MBLOCK  "Block"
+#define CSLUA_MCONFIG "Config"
+#define CSLUA_MCLIENT "Client"
+#define CSLUA_MWORLD  "World"
+
+// Обеспечиваем совместимость с большинством версий Lua
+#if LUA_VERSION_NUM < 501
+// Кто-то вообще будет пытаться собрать плагин с этими версиями?
+#	error "This version of Lua is not supported"
+#elif LUA_VERSION_NUM > 501 // Что-то старше 5.1
 #define luaL_register(L, n, lib) luaL_newlib(L, lib)
 #define lua_objlen(L, idx) lua_rawlen(L, idx)
+#	if LUA_VERSION_NUM == 502 || defined(LUA_COMPAT_BITLIB)
+#		define luaopen_bit luaopen_bit32
+#		define CSLUA_HAS_BIT
+#	endif
+#elif !defined(LUA_JITLIBNAME) // Чистый Lua 5.1
+#	define CSLUA_NONJIT_51
+void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup);
+void *luaL_testudata(lua_State *L, int ud, const char *tname);
+void luaL_setmetatable(lua_State *L, const char *tname);
+#else // Судя по всему, мы компилимся под JITом
+#	define CSLUA_HAS_JIT
 #endif
 
 #define lua_addnumconst(L, n) lua_pushnumber(L, n); lua_setglobal(L, #n);

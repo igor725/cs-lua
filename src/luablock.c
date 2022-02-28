@@ -6,9 +6,7 @@
 #include "luablock.h"
 
 BlockDef *lua_checkblockdef(lua_State *L, int idx) {
-	BlockDef **ud = luaL_checkudata(L, idx, "Block");
-	luaL_argcheck(L, *ud != NULL, idx, "BlockDefine is NULL");
-	return *ud;
+	return *(BlockDef **)luaL_checkudata(L, idx, CSLUA_MBLOCK);
 }
 
 static int meta_addtoworld(lua_State *L) {
@@ -131,7 +129,7 @@ static int block_define(lua_State *L) {
 
 	lua_pop(L, 3);
 	void **ud = lua_newuserdata(L, sizeof(BlockDef *));
-	luaL_setmetatable(L, "Block");
+	luaL_setmetatable(L, CSLUA_MBLOCK);
 	bdef->fallback = fallback;
 	*ud = bdef;
 	return 1;
@@ -152,7 +150,7 @@ static const luaL_Reg blocklib[] = {
 };
 
 int luaopen_block(lua_State *L) {
-	luaL_newmetatable(L, "Block");
+	luaL_newmetatable(L, CSLUA_MBLOCK);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, blockmeta, 0);

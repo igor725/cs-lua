@@ -9,7 +9,7 @@
 #include "luacolor.h"
 
 Client *lua_checkclient(lua_State *L, int idx) {
-	void **ud = luaL_checkudata(L, idx, "Client");
+	void **ud = luaL_checkudata(L, idx, CSLUA_MCLIENT);
 	luaL_argcheck(L, *ud != NULL, idx, "Invalid client");
 	return (Client *)*ud;
 }
@@ -21,14 +21,14 @@ void lua_pushclient(lua_State *L, Client *client) {
 	}
 
 	ClientID id = Client_GetID(client);
-	lua_getfield(L, LUA_REGISTRYINDEX, "__clients");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 	lua_pushnumber(L, id);
 	lua_gettable(L, -2);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		lua_pushnumber(L, id);
 		lua_newuserdata(L, sizeof(Client *));
-		luaL_setmetatable(L, "Client");
+		luaL_setmetatable(L, CSLUA_MCLIENT);
 		lua_settable(L, -3);
 		lua_pushnumber(L, id);
 		lua_gettable(L, -2);
@@ -40,7 +40,7 @@ void lua_pushclient(lua_State *L, Client *client) {
 }
 
 void lua_clearclient(lua_State *L, Client *client) {
-	lua_getfield(L, LUA_REGISTRYINDEX, "__clients");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 	lua_pushinteger(L, Client_GetID(client));
 	lua_gettable(L, -2);
 	if(!lua_isuserdata(L, -1)) {
@@ -415,9 +415,9 @@ static const luaL_Reg clientlib[] = {
 
 int luaopen_client(lua_State *L) {
 	lua_newtable(L);
-	lua_setfield(L, LUA_REGISTRYINDEX, "__clients");
+	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 
-	luaL_newmetatable(L, "Client");
+	luaL_newmetatable(L, CSLUA_MCLIENT);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, clientmeta, 0);

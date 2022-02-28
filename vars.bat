@@ -1,4 +1,5 @@
 :detectlua
+SET POSSIBLE_LIBS="lualib." 
 SET PREFER_LVERSION=
 IF NOT "%PLUGIN_ARGS%"=="" (
 	FOR %%a IN (%PLUGIN_ARGS%) DO (
@@ -25,8 +26,10 @@ IF NOT "!PREFER_LVERSION!"=="" (
 
 :lj
 @REM LuaJIT у Майка застоппился на Lua 5.1
-SET POSSIBLE_LIBS="lua51." "lua5.1."
+SET POSSIBLE_LIBS=!POSSIBLE_LIBS!"lua51." "lua5.1."
 SET POSSIBLE_PATHS="!ROOT!\..\..\LuaJIT\" "!ROOT!\..\LuaJIT\" 
+SET POSSIBLE_PATHS=!POSSIBLE_PATHS!"!ROOT!\..\..\Lua\JIT\" "!ROOT!\..\Lua\JIT\" 
+SET POSSIBLE_PATHS=!POSSIBLE_PATHS!"!ROOT!\..\..\Lua\LuaJIT\" "!ROOT!\..\Lua\LuaJIT\" 
 SET POSSIBLE_PATHS=!POSSIBLE_PATHS!"!ProgramFiles!\LuaJIT\" "!ProgramFiles(x86)!\LuaJIT\" 
 IF NOT "!PREFER_LVERSION!"=="" GOTO lpathdone
 
@@ -88,6 +91,8 @@ FOR %%a IN (%POSSIBLE_INCPATHS%) DO (
 EXIT /b 1
 
 :incfound
+SET LUAPATH=%1
+SET LUAPATH=%LUAPATH:~1,-1%
 FOR %%a IN (%POSSIBLE_LIBPATHS%) DO (
 	FOR %%b IN (%POSSIBLE_LIBS%) DO (
 		IF EXIST "%1\%%a\%%blib" (
@@ -95,15 +100,13 @@ FOR %%a IN (%POSSIBLE_LIBPATHS%) DO (
 			SET __SUBLIBPATH=!__SUBLIBPATH:~1,-1!
 			SET __SUBLIB=%%b
 			SET __SUBLIB=!__SUBLIB:~1,-1!
-			GOTO :libfound %1
+			GOTO :libfound
 		)
 	)
 )
-EXIT /b 1
+GOTO :trybuild
 
 :libfound
-SET LUAPATH=%1
-SET LUAPATH=%LUAPATH:~1,-1%
 ECHO Using Lua from %LUAPATH%
 SET LIBS=!__SUBLIB!lib !LIBS!
 SET LIB=%LUAPATH%!__SUBLIBPATH!;!LIB!
@@ -120,10 +123,15 @@ IF NOT EXIST "!SERVER_OUTROOT!\!__SUBLIB!pdb" IF "!DEBUG!"=="1" (
 )
 EXIT /b 0
 
+:trybuild
+IF EXIST "%LUAPATH%\src\lib_jit.c" GOTO buildlj
+IF EXIST "%LUAPATH%\src\lapi.c" GOTO buildlv
+EXIT /b 1
+
 :fail
 ECHO Lua!PREFER_LVERSION! not found
 IF NOT "!PREFER_LVERSION!"=="" IF NOT "!PREFER_LVERSION!"=="jit" (
-	ECHO So far this script can clone and build only LuaJIT
+	ECHO So far this script can clone only LuaJIT
 	EXIT /b 1
 )
 
@@ -143,7 +151,7 @@ IF "%GITOK%"=="0" (
 ) ELSE (
 	RMDIR /S /Q "..\LuaJIT">nul
 	git clone https://luajit.org/git/luajit.git "..\LuaJIT"
-	GOTO buildlj
+	GOTO detectlua
 )
 EXIT /b 1
 
@@ -152,7 +160,46 @@ set LJBUILDFLAGS=
 IF "!DEBUG!"=="1" (
 	set LJBUILDFLAGS=debug
 )
-PUSHD ..\LuaJIT\src\
+PUSHD %LUAPATH%\src\
 CALL msvcbuild !LJBUILDFLAGS!
+IF NOT "!ERRORLEVEL!"=="0" (
+	POPD
+	EXIT /b 1
+)
 POPD
 GOTO detectlua
+
+:buildlv
+SETLOCAL
+SET _LIBNAME=lib
+CALL :detectlibname %1
+PUSHD %LUAPATH%\src\
+CL /c /DLUA_BUILD_AS_DLL *.c
+IF NOT "!ERRORLEVEL!"=="0" GOTO buildlv_fail
+DEL lua.obj luac.obj>nul
+LINK /DLL *.obj /OUT:lua!_LIBNAME!.dll
+IF NOT "!ERRORLEVEL!"=="0" GOTO buildlv_fail
+POPD
+ENDLOCAL
+GOTO detectlua
+
+:detectlibname
+IF NOT "!PREFER_LVERSION!"=="" (
+	SET _LIBNAME=!PREFER_LVERSION!
+	EXIT /b 0
+)
+
+IF NOT "%LUAPATH:5.1=%"=="%LUAPATH%" (
+	SET _LIBNAME=51
+) ELSE IF NOT "%LUAPATH:5.2=%"=="%LUAPATH%" (
+	SET _LIBNAME=52
+) ELSE IF NOT "%LUAPATH:5.3=%"=="%LUAPATH%" (
+	SET _LIBNAME=53
+) ELSE IF NOT "%LUAPATH:5.4=%"=="%LUAPATH%" (
+	SET _LIBNAME=54
+)
+EXIT /b 0
+
+:buildlv_fail
+ENDLOCAL
+EXIT /b 1

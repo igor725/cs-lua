@@ -4,7 +4,7 @@
 #include "luaconfig.h"
 
 CStore *lua_checkcfgstore(lua_State *L, int idx) {
-	void **ud = luaL_checkudata(L, idx, "Config");
+	void **ud = luaL_checkudata(L, idx, CSLUA_MCONFIG);
 	luaL_argcheck(L, *ud != NULL, idx, "Invalid config");
 	return (CStore *)*ud;
 }
@@ -178,7 +178,7 @@ static int config_new(lua_State *L) {
 	}
 	lua_pop(L, 2);
 	CStore **ud = lua_newuserdata(L, sizeof(CStore *));
-	luaL_setmetatable(L, "Config");
+	luaL_setmetatable(L, CSLUA_MCONFIG);
 	*ud = store;
 	return 1;
 }
@@ -189,7 +189,7 @@ const luaL_Reg configlib[] = {
 };
 
 int luaopen_config(lua_State *L) {
-	luaL_newmetatable(L, "Config");
+	luaL_newmetatable(L, CSLUA_MCONFIG);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, configmeta, 0);

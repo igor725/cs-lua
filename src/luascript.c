@@ -15,6 +15,39 @@
 #include "luasurvival.h"
 #include "luaconfig.h"
 
+// Слой совместимости для чистой версии Lua 5.1
+#ifdef CSLUA_NONJIT_51
+void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup) {
+	for(; l->name != NULL; l++) {
+		int i;
+		for(i = 0; i < nup; i++)
+			lua_pushvalue(L, -nup);
+		lua_pushcclosure(L, l->func, nup);
+		lua_setfield(L, -(nup + 2), l->name);
+	}
+	lua_pop(L, nup);
+}
+
+void luaL_setmetatable(lua_State *L, const char *tname) {
+	luaL_getmetatable(L, tname);
+	lua_setmetatable(L, -2);
+}
+
+void *luaL_testudata (lua_State *L, int ud, const char *tname) {
+	void *p = lua_touserdata(L, ud);
+	if(p != NULL) {
+		if(lua_getmetatable(L, ud)) {
+			luaL_getmetatable(L, tname);
+			if(!lua_rawequal(L, -1, -2))
+				p = NULL;
+			lua_pop(L, 2);
+			return p;
+		}
+	}
+	return NULL;
+}
+#endif
+
 static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
 	{LUA_MATHLIBNAME, luaopen_math},
@@ -24,14 +57,13 @@ static const luaL_Reg lualibs[] = {
 	{LUA_OSLIBNAME, luaopen_os},
 	{LUA_LOADLIBNAME, luaopen_package},
 	{LUA_DBLIBNAME, luaopen_debug},
-#ifdef LUA_BITLIBNAME
+#ifdef CSLUA_HAS_BIT
 	{LUA_BITLIBNAME, luaopen_bit},
 #endif
-#ifdef LUA_JITLIBNAME
-	{LUA_FFILIBNAME, luaopen_ffi},
+#ifdef CSLUA_HAS_JIT
 	{LUA_JITLIBNAME, luaopen_jit},
+	{LUA_FFILIBNAME, luaopen_ffi},
 #endif
-
 	{"log", luaopen_log},
 	{"block", luaopen_block},
 	{"world", luaopen_world},

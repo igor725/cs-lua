@@ -109,7 +109,7 @@ static luaL_Reg survivalmeta[] = {
 };
 
 INL static void surv_addfuncs(lua_State *L) {
-	luaL_getmetatable(L, "Client");
+	luaL_getmetatable(L, CSLUA_MCLIENT);
 	luaL_setfuncs(L, survivalmeta, 0);
 	lua_pop(L, 1);
 }

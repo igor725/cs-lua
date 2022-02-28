@@ -6,13 +6,13 @@
 LuaColor *lua_newcolor(lua_State *L) {
 	LuaColor *col = lua_newuserdata(L, sizeof(LuaColor));
 	Memory_Zero(&col->value, sizeof(col->value));
-	luaL_setmetatable(L, "Color");
+	luaL_setmetatable(L, CSLUA_MCOLOR);
 	col->value.c4.a = 0xFF;
 	return col;
 }
 
 LuaColor *lua_checkcolor(lua_State *L, cs_int32 idx) {
-	return (LuaColor *)luaL_checkudata(L, idx, "Color");
+	return (LuaColor *)luaL_checkudata(L, idx, CSLUA_MCOLOR);
 }
 
 Color3 *lua_checkcolor3(lua_State *L, cs_int32 idx) {
@@ -188,7 +188,7 @@ static const luaL_Reg colorlib[] = {
 };
 
 int luaopen_color(lua_State *L) {
-	luaL_newmetatable(L, "Color");
+	luaL_newmetatable(L, CSLUA_MCOLOR);
 	luaL_setfuncs(L, colormeta, 0);
 	lua_pop(L, 1);
 

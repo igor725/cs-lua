@@ -57,7 +57,7 @@ static void evthandshake(void *param) {
 		if(LuaScript_GlobalLookup(script, "onHandshake")) {
 			lua_pushclient(script->L, a->client);
 			if(LuaScript_Call(script, 1, 1)) {
-				if(luaL_testudata(script->L, -1, "World")) {
+				if(luaL_testudata(script->L, -1, CSLUA_MWORLD)) {
 					a->world = lua_checkworld(script->L, -1);
 					LuaScript_Unlock(script);
 					break;

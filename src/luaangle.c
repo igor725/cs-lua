@@ -8,14 +8,12 @@
 Ang *lua_newangle(lua_State *L) {
 	Ang *ang = lua_newuserdata(L, sizeof(Ang));
 	Memory_Zero(ang, sizeof(Ang));
-	luaL_setmetatable(L, "Angle");
+	luaL_setmetatable(L, CSLUA_MANGLE);
 	return ang;
 }
 
 Ang *lua_checkangle(lua_State *L, int idx) {
-	Ang *ud = luaL_checkudata(L, idx, "Angle");
-	luaL_argcheck(L, ud != NULL, idx, "'Angle' expected");
-	return ud;
+	return (Ang *)luaL_checkudata(L, idx, CSLUA_MANGLE);
 }
 
 static int ang_setvalue(lua_State *L) {
@@ -57,7 +55,7 @@ static int meta_index(lua_State *L) {
 		return 1;
 	}
 
-	luaL_argerror(L, 2, "Angle axis expected");
+	luaL_argerror(L, 2, CSLUA_MANGLE " axis expected");
 	return 0;
 }
 
@@ -74,7 +72,7 @@ static int meta_newindex(lua_State *L) {
 		return 0;
 	}
 
-	luaL_argerror(L, 2, "Angle axis expected");
+	luaL_argerror(L, 2, CSLUA_MANGLE " axis expected");
 	return 0;
 }
 
@@ -103,7 +101,7 @@ static int ang_new(lua_State *L) {
 }
 
 int luaopen_angle(lua_State *L) {
-	luaL_newmetatable(L, "Angle");
+	luaL_newmetatable(L, CSLUA_MANGLE);
 	luaL_setfuncs(L, anglemeta, 0);
 	lua_pop(L, 1);
 

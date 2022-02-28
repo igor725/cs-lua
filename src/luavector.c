@@ -7,12 +7,12 @@
 LuaVector *lua_newvector(lua_State *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value, sizeof(vec->value));
-	luaL_setmetatable(L, "Vector");
+	luaL_setmetatable(L, CSLUA_MVECTOR);
 	return vec;
 }
 
 LuaVector *lua_checkvector(lua_State *L, int idx) {
-	return (LuaVector *)luaL_checkudata(L, idx, "Vector");
+	return (LuaVector *)luaL_checkudata(L, idx, CSLUA_MVECTOR);
 }
 
 Vec *lua_checkfloatvector(lua_State *L, int idx) {
@@ -149,14 +149,14 @@ static int meta_newindex(lua_State *L) {
 		return 0;
 	}
 
-	luaL_argerror(L, 2, "Vector axis expected");
+	luaL_argerror(L, 2, CSLUA_MVECTOR " axis expected");
 	return 0;
 }
 
 static int meta_add(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
+	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -172,7 +172,7 @@ static int meta_add(lua_State *L) {
 static int meta_sub(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
+	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -188,7 +188,7 @@ static int meta_sub(lua_State *L) {
 static int meta_mul(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
+	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -204,7 +204,7 @@ static int meta_mul(lua_State *L) {
 static int meta_div(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, "Vector types mismatch");
+	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -293,7 +293,7 @@ static const luaL_Reg vectorlib[] = {
 };
 
 int luaopen_vector(lua_State *L) {
-	luaL_newmetatable(L, "Vector");
+	luaL_newmetatable(L, CSLUA_MVECTOR);
 	luaL_setfuncs(L, vectormeta, 0);
 	lua_pop(L, 1);
 

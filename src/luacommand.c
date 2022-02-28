@@ -23,19 +23,19 @@ static const char *errors[] = {
 COMMAND_FUNC(luacmd) {
 	cs_str output = NULL;
 	Command *cmd = ccdata->command;
-	LuaScript *plugin = Command_GetUserData(cmd);
+	LuaScript *script = Command_GetUserData(cmd);
 
-	LuaScript_Lock(plugin);
-	if(LuaScript_RegistryLookup(plugin, "__commands", Command_GetName(cmd))) {
-		lua_pushclient(plugin->L, ccdata->caller);
-		lua_pushstring(plugin->L, ccdata->args);
-		if(LuaScript_Call(plugin, 2, 1)) {
-			if(lua_isstring(plugin->L, -1))
-				output = luaL_checkstring(plugin->L, -1);
-			lua_pop(plugin->L, 1);
+	LuaScript_Lock(script);
+	if(LuaScript_RegistryLookup(script, CSLUA_RCMDS, Command_GetName(cmd))) {
+		lua_pushclient(script->L, ccdata->caller);
+		lua_pushstring(script->L, ccdata->args);
+		if(LuaScript_Call(script, 2, 1)) {
+			if(lua_isstring(script->L, -1))
+				output = luaL_checkstring(script->L, -1);
+			lua_pop(script->L, 1);
 		} else output = errors[6];
 	} else output = errors[5];
-	LuaScript_Unlock(plugin);
+	LuaScript_Unlock(script);
 
 	if(output) {
 		COMMAND_PRINT(output);
@@ -58,7 +58,7 @@ static int cmd_add(lua_State *L) {
 		return 2;
 	}
 
-	lua_getfield(L, LUA_REGISTRYINDEX, "__commands");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 	lua_getfield(L, -1, name);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
@@ -92,7 +92,7 @@ static int cmd_remove(lua_State *L) {
 		lua_pushstring(L, errors[2]);
 	} else {
 		Command_Unregister(cmd);
-		lua_getfield(L, LUA_REGISTRYINDEX, "__commands");
+		lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 		lua_pushnil(L);
 		lua_setfield(L, -2, name);
 		lua_pop(L, 1);
@@ -133,7 +133,7 @@ static const luaL_Reg cmdlib[] ={
 
 int luaopen_command(lua_State *L) {
 	lua_newtable(L);
-	lua_setfield(L, LUA_REGISTRYINDEX, "__commands");
+	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 
 	lua_addnumconst(L, CMDF_NONE);
 	lua_addnumconst(L, CMDF_OP);

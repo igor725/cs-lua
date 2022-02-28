@@ -12,7 +12,7 @@
 #include "luaclient.h"
 
 World *lua_checkworld(lua_State *L, int idx) {
-	void **ud = luaL_checkudata(L, idx, "World");
+	void **ud = luaL_checkudata(L, idx, CSLUA_MWORLD);
 	luaL_argcheck(L, *ud != NULL, idx, "Invalid world");
 	return (World *)*ud;
 }
@@ -24,12 +24,12 @@ void lua_pushworld(lua_State *L, World *world) {
 	}
 
 	cs_str name = World_GetName(world);
-	lua_getfield(L, LUA_REGISTRYINDEX, "__worlds");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 	lua_getfield(L, -1, name);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
 		lua_newuserdata(L, sizeof(World *));
-		luaL_setmetatable(L, "World");
+		luaL_setmetatable(L, CSLUA_MWORLD);
 		lua_setfield(L, -2, name);
 		lua_getfield(L, -1, name);
 	}
@@ -40,7 +40,7 @@ void lua_pushworld(lua_State *L, World *world) {
 }
 
 void lua_clearworld(lua_State *L, World *world) {
-	lua_getfield(L, LUA_REGISTRYINDEX, "__worlds");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 	lua_pushstring(L, World_GetName(world));
 	lua_gettable(L, -2);
 	if(!lua_isuserdata(L, -1)) {
@@ -414,9 +414,9 @@ static const luaL_Reg worldlib[] = {
 
 int luaopen_world(lua_State *L) {
 	lua_newtable(L);
-	lua_setfield(L, LUA_REGISTRYINDEX, "__worlds");
+	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 
-	luaL_newmetatable(L, "World");
+	luaL_newmetatable(L, CSLUA_MWORLD);
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, worldmeta, 0);

@@ -8,13 +8,13 @@ static void pushfmt(lua_State *L) {
 		lua_getglobal(L, LUA_STRLIBNAME);
 		lua_getfield(L, -1, "format");
 		lua_remove(L, -2);
-#if LUA_VERSION_NUM < 502
-		lua_getglobal(L, "tostring");
-		lua_pushvalue(L, 1);
-		lua_call(L, 1, 1);
-#else
-	luaL_tolstring(L, 1, NULL);
-#endif
+#		if LUA_VERSION_NUM < 502
+			lua_getglobal(L, "tostring");
+			lua_pushvalue(L, 1);
+			lua_call(L, 1, 1);
+#		else
+			luaL_tolstring(L, 1, NULL);
+#		endif
 		for(int i = 2; i <= count; i++)
 			lua_pushvalue(L, i);
 		lua_call(L, count, 1);
