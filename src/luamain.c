@@ -27,14 +27,16 @@ static LuaScript *getscript(cs_str name) {
 
 static LuaScript *LuaLoad(cs_str name) {
 	LuaScript *script = LuaScript_Open(name);
-	if(!script) return NULL;
-	AList_AddField(&headScript, script);
+	if(script) AList_AddField(&headScript, script);
 	return script;
 }
 
 static cs_bool LuaReload(LuaScript *script) {
 	LuaScript_Lock(script);
-	if(script->unloaded) return false;
+	if(script->unloaded) {
+		LuaScript_Unlock(script);
+		return false;
+	}
 
 	if(LuaScript_GlobalLookup(script, "preReload")) {
 		if(!LuaScript_Call(script, 0, 1)) {
@@ -112,7 +114,7 @@ COMMAND_FUNC(Lua) {
 				if(script) {
 					COMMAND_PRINT("&cThis script is already enabled");
 				}
-				if(String_FormatBuf(newname, MAX_PATH, "scripts/%s", plname) &&
+				if(String_FormatBuf(newname, MAX_PATH, "scripts" PATH_DELIM "%s", plname) &&
 				String_FormatBuf(oldname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", plname)) {
 					if(File_Rename(oldname, newname)) {
 						if(LuaLoad(plname)) {
@@ -131,7 +133,7 @@ COMMAND_FUNC(Lua) {
 					COMMAND_PRINT("&cThis script is not loaded");
 				}
 
-				if(String_FormatBuf(oldname, MAX_PATH, "scripts/%s", plname) &&
+				if(String_FormatBuf(oldname, MAX_PATH, "scripts" PATH_DELIM "%s", plname) &&
 				String_FormatBuf(newname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", plname)) {
 					if(File_Rename(oldname, newname)) {
 						if(LuaUnload(script, false)) {
