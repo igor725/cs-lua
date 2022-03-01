@@ -80,7 +80,7 @@ static const luaL_Reg lualibs[] = {
 };
 
 LuaScript *lua_getscript(lua_State *L) {
-	lua_getfield(L, LUA_REGISTRYINDEX, "__plstruct");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RSCPTR);
 	LuaScript *ud = (LuaScript *)lua_touserdata(L, -1);
 	lua_pop(L, 1);
 	return ud;
@@ -180,7 +180,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 		}
 
 		lua_pushlightuserdata(script->L, script);
-		lua_setfield(script->L, LUA_REGISTRYINDEX, "__plstruct");
+		lua_setfield(script->L, LUA_REGISTRYINDEX, CSLUA_RSCPTR);
 
 		lua_pushcfunction(script->L, allowhotreload);
 		lua_setglobal(script->L, "allowHotReload");

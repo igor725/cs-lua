@@ -60,24 +60,25 @@ static int meta_getid(lua_State *L) {
 static int meta_getaddr(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_uint32 addr = Client_GetAddr(client);
-	lua_pushfstring(L, "%d.%d.%d.%d",
-		(addr >> 24) & 0xFF,
-		(addr >> 16) & 0xFF,
-		(addr >> 8) & 0xFF,
-		(addr & 0xFF)
-	);
-	return 1;
-}
 
-static int meta_getaddrn(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushinteger(L, (lua_Integer)Client_GetAddr(client));
+	if(lua_gettop(L) > 1 && lua_toboolean(L, 2))
+		lua_pushinteger(L, (lua_Integer)Client_GetAddr(client));
+	else
+		lua_pushfstring(L, "%d.%d.%d.%d",
+			(addr & 0xFF),
+			(addr >> 8) & 0xFF,
+			(addr >> 16) & 0xFF,
+			(addr >> 24) & 0xFF
+		);
 	return 1;
 }
 
 static int meta_getping(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	lua_pushinteger(L, (lua_Integer)Client_GetPing(client));
+	if(lua_gettop(L) > 1 && lua_toboolean(L, 2))
+		lua_pushnumber(L, (lua_Number)Client_GetAvgPing(client));
+	else
+		lua_pushinteger(L, (lua_Integer)Client_GetPing(client));
 	return 1;
 }
 
@@ -318,7 +319,6 @@ static int meta_chat(lua_State *L) {
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
 	{"getaddr", meta_getaddr},
-	{"getaddrn", meta_getaddrn},
 	{"getping", meta_getping},
 	{"getname", meta_getname},
 	{"getdispname", meta_getdispname},

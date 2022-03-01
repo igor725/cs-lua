@@ -19,6 +19,7 @@ typedef struct LuaScript {
 } LuaScript;
 
 // Регистровые таблицы для хранения разных приколов
+#define CSLUA_RSCPTR   "csscptr"
 #define CSLUA_RWORLDS  "csworlds"
 #define CSLUA_RCLIENTS "csclients"
 #define CSLUA_RCMDS    "cscmds"
