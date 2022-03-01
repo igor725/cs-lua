@@ -62,7 +62,6 @@ static const luaL_Reg lualibs[] = {
 #endif
 #ifdef CSLUA_HAS_JIT
 	{LUA_JITLIBNAME, luaopen_jit},
-	{LUA_FFILIBNAME, luaopen_ffi},
 #endif
 	{"log", luaopen_log},
 	{"block", luaopen_block},
@@ -198,6 +197,13 @@ LuaScript *LuaScript_Open(cs_str name) {
 				lua_pop(script->L, 1);
 #			endif
 		}
+
+#		ifdef CSLUA_HAS_JIT
+			luaL_findtable(script->L, LUA_REGISTRYINDEX, "_PRELOAD", 1);
+			lua_pushcfunction(script->L, luaopen_ffi);
+			lua_setfield(script->L, -2, LUA_FFILIBNAME);
+			lua_pop(script->L, 1);
+#endif
 
 		if(LuaScript_GlobalLookup(script, LUA_IOLIBNAME)) {
 			for(cs_int32 i = 0; iodel[i]; i++) {
