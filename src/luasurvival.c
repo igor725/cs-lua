@@ -130,8 +130,14 @@ int surv_init(lua_State *L) {
 	return 1;
 }
 
+int surv_isready(lua_State *L) {
+	lua_pushboolean(L, SurvInterface != NULL);
+	return 1;
+}
+
 static luaL_Reg survlib[] = {
 	{"init", surv_init},
+	{"isready", surv_isready},
 
 	{NULL, NULL}
 };
