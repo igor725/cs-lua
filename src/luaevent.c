@@ -1,6 +1,7 @@
 #include <core.h>
 #include <event.h>
 #include <list.h>
+#include <server.h>
 #include "luamain.h"
 #include "luascript.h"
 #include "luaangle.h"
@@ -363,6 +364,9 @@ Event_DeclareBunch (events) {
 };
 
 cs_bool LuaEvent_Register(void) {
+	// Вызываем postStart если в момент загрузки
+	// плагина сервер уже работал.
+	if(Server_Ready) evtpoststart(NULL);
 	return Event_RegisterBunch(events);
 }
 
