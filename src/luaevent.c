@@ -336,30 +336,30 @@ static void evtpluginmsg(void *param) {
 	}
 }
 
-EventRegBunch events[] = {
-	{'v', EVT_POSTSTART, (void *)evtpoststart},
-	{'v', EVT_ONHANDSHAKEDONE, (void *)evthandshake},
-	{'b', EVT_ONCONNECT, (void *)evtconnect},
-	{'v', EVT_ONDISCONNECT, (void *)evtdisconnect},
-	{'v', EVT_ONUSERTYPECHANGE, (void *)evtusertype},
-	{'v', EVT_ONWORLDADDED, (void *)evtworldadded},
-	{'v', EVT_ONWORLDREMOVED, (void *)evtworldremoved},
-	{'v', EVT_ONWORLDLOADED, (void *)evtworldloaded},
-	{'v', EVT_ONWORLDUNLOADED, (void *)evtworldunloaded},
-	{'v', EVT_ONWEATHER, (void *)evtonweather},
-	{'v', EVT_ONCOLOR, (void *)evtoncolor},
-	{'v', EVT_ONMOVE, (void *)evtmove},
-	{'v', EVT_ONROTATE, (void *)evtrotate},
-	{'v', EVT_ONCLICK, (void *)evtonclick},
-	{'b', EVT_ONBLOCKPLACE, (void *)evtonblockplace},
-	{'v', EVT_ONHELDBLOCKCHNG, (void *)evtheldchange},
-	{'b', EVT_ONMESSAGE, (void *)evtonmessage},
-	{'v', EVT_ONSPAWN, (void *)evtonspawn},
-	{'v', EVT_ONDESPAWN, (void *)evtondespawn},
-	{'v', EVT_ONTICK, (void *)evttick},
-	{'v', EVT_ONPLUGINMESSAGE, (void *)evtpluginmsg},
+Event_DeclareBunch (events) {
+	EVENT_BUNCH_ADD('v', EVT_POSTSTART, evtpoststart)
+	EVENT_BUNCH_ADD('v', EVT_ONHANDSHAKEDONE, evthandshake)
+	EVENT_BUNCH_ADD('b', EVT_ONCONNECT, evtconnect)
+	EVENT_BUNCH_ADD('v', EVT_ONDISCONNECT, evtdisconnect)
+	EVENT_BUNCH_ADD('v', EVT_ONUSERTYPECHANGE, evtusertype)
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDADDED, evtworldadded)
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDREMOVED, evtworldremoved)
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDLOADED, evtworldloaded)
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDUNLOADED, evtworldunloaded)
+	EVENT_BUNCH_ADD('v', EVT_ONWEATHER, evtonweather)
+	EVENT_BUNCH_ADD('v', EVT_ONCOLOR, evtoncolor)
+	EVENT_BUNCH_ADD('v', EVT_ONMOVE, evtmove)
+	EVENT_BUNCH_ADD('v', EVT_ONROTATE, evtrotate)
+	EVENT_BUNCH_ADD('v', EVT_ONCLICK, evtonclick)
+	EVENT_BUNCH_ADD('b', EVT_ONBLOCKPLACE, evtonblockplace)
+	EVENT_BUNCH_ADD('v', EVT_ONHELDBLOCKCHNG, evtheldchange)
+	EVENT_BUNCH_ADD('b', EVT_ONMESSAGE, evtonmessage)
+	EVENT_BUNCH_ADD('v', EVT_ONSPAWN, evtonspawn)
+	EVENT_BUNCH_ADD('v', EVT_ONDESPAWN, evtondespawn)
+	EVENT_BUNCH_ADD('v', EVT_ONTICK, evttick)
+	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg)
 
-	{0, 0, NULL}
+	EVENT_BUNCH_END
 };
 
 cs_bool LuaEvent_Register(void) {
@@ -367,5 +367,5 @@ cs_bool LuaEvent_Register(void) {
 }
 
 void LuaEvent_Unregister(void) {
-	(void)Event_UnregisterBunch(events);
+	Event_UnregisterBunch(events);
 }
