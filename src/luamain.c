@@ -190,10 +190,16 @@ cs_bool Plugin_Load(void) {
 	DirIter sIter;
 	Directory_Ensure("lua"); // Папка для библиотек, подключаемых скриптами
 	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
+	Directory_Ensure("luadata"); // Папка с данными для каждого скрипта
 	Directory_Ensure(DISABLED_DIR); // Сюда будут переноситься выключенные скрипты
 	if(Iter_Init(&sIter, "scripts", "lua")) {
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
+			cs_str ext = String_LastChar(sIter.cfile, '.');
+			if((ext - sIter.cfile) < 1) {
+				Log_Warn("File \"%s\" ignored", sIter.cfile);
+				continue;
+			}
 			LuaScript *script = LuaScript_Open(sIter.cfile);
 			if(!script) {
 				Log_Error("Failed to load script \"%s\"", sIter.cfile);

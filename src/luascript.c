@@ -166,6 +166,20 @@ static int dir_ensure(lua_State *L) {
 	return 1;
 }
 
+static int scrname(lua_State *L) {
+	LuaScript *script = lua_getscript(L);
+	cs_str ext = String_LastChar(script->scrname, '.');
+	lua_pushlstring(L, script->scrname, ext - script->scrname);
+	return 1;
+}
+
+static int datafolder(lua_State *L) {
+	lua_pushstring(L, "luadata" PATH_DELIM);
+	scrname(L);
+	lua_concat(L, 2);
+	return 1;
+}
+
 LuaScript *LuaScript_Open(cs_str name) {
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
@@ -212,6 +226,10 @@ LuaScript *LuaScript_Open(cs_str name) {
 			}
 			lua_pushcfunction(script->L, dir_ensure);
 			lua_setfield(script->L, -2, "ensure");
+			lua_pushcfunction(script->L, datafolder);
+			lua_setfield(script->L, -2, "datafolder");
+			lua_pushcfunction(script->L, scrname);
+			lua_setfield(script->L, -2, "scrname");
 			lua_pop(script->L, 1);
 		}
 
