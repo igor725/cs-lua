@@ -125,6 +125,15 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
+static int meta_tostring(lua_State *L) {
+	LuaColor *col = lua_checkcolor(L, 1);
+	lua_pushfstring(L, "Color(%d, %d, %d, %d)",
+		col->value.c4.r, col->value.c4.g,
+		col->value.c4.b, col->value.c4.a
+	);
+	return 1;
+}
+
 static int meta_eq(lua_State *L) {
 	LuaColor *col1 = lua_checkcolor(L, 1);
 	LuaColor *col2 = lua_checkcolor(L, 2);
@@ -141,8 +150,9 @@ static const luaL_Reg colormeta[] = {
 	{"set", col_setvalue},
 	{"get", col_getvalue},
 
-	{"__index", meta_index},
 	{"__newindex", meta_newindex},
+	{"__tostring", meta_tostring},
+	{"__index", meta_index},
 	{"__eq", meta_eq},
 
 	{NULL, NULL}

@@ -45,15 +45,41 @@ static int log_debug(lua_State *L) {
 	return 0;
 }
 
+static int log_print(lua_State *L) {
+	int count = lua_gettop(L);
+	if(count < 1) return 0;
+
+	for(int i = 1; i <= count; i++) {
+#		if LUA_VERSION_NUM < 502
+			lua_getglobal(L, "tostring");
+			lua_pushvalue(L, i);
+			lua_call(L, 1, 1);
+#		else
+			luaL_tolstring(L, i, NULL);
+#		endif
+		lua_pushstring(L, " ");
+		lua_concat(L, 2);
+	}
+
+	lua_concat(L, count);
+	Log_Info("%s", lua_tostring(L, -1));
+	return 0;
+}
+
 const luaL_Reg loglib[] = {
 	{"info", log_info},
 	{"warn", log_warn},
 	{"error", log_error},
 	{"debug", log_debug},
+
 	{NULL, NULL}
 };
 
 int luaopen_log(lua_State *L) {
 	luaL_register(L, luaL_checkstring(L, 1), loglib);
+
+	lua_pushcfunction(L, log_print);
+	lua_setglobal(L, "print");
+
 	return 1;
 }

@@ -76,12 +76,19 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
+static int meta_tostring(lua_State *L) {
+	Ang *ang = lua_checkangle(L, 1);
+	lua_pushfstring(L, "Angle(%.2f, %.2f)", ang->yaw, ang->pitch);
+	return 1;
+}
+
 static const luaL_Reg anglemeta[] = {
 	{"set", ang_setvalue},
 	{"get", ang_getvalue},
 
 	{"__index", meta_index},
 	{"__newindex", meta_newindex},
+	{"__tostring", meta_tostring},
 
 	{NULL, NULL}
 };

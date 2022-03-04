@@ -245,15 +245,6 @@ LuaScript *LuaScript_Open(cs_str name) {
 			lua_pop(script->L, 1);
 		}
 
-		if(LuaScript_GlobalLookup(script, "log")) {
-			lua_getfield(script->L, -1, "info");
-			if(lua_isfunction(script->L, -1)) {
-				lua_setglobal(script->L, "print");
-				lua_pop(script->L, 1);
-			} else
-				lua_pop(script->L, 2);
-		}
-
 		if(!LuaScript_DoMainFile(script)) {
 			LuaScript_Close(script);
 			return NULL;

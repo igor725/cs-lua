@@ -320,6 +320,12 @@ static int meta_unlock(lua_State *L) {
 	return 0;
 }
 
+static int meta_tostring(lua_State *L) {
+	World *world = lua_checkworld(L, 1);
+	lua_pushfstring(L, "World(%p)", world);
+	return 1;
+}
+
 static const luaL_Reg worldmeta[] = {
 	{"getname", meta_getname},
 	{"getspawn", meta_getspawn},
@@ -359,6 +365,8 @@ static const luaL_Reg worldmeta[] = {
 	{"unload", meta_unload},
 	{"save", meta_save},
 	{"load", meta_load},
+
+	{"__tostring", meta_tostring},
 
 	{NULL, NULL}
 };

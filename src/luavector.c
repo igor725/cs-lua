@@ -98,6 +98,29 @@ static cs_bool getaxis(cs_str str, cs_char *ax) {
 	return true;
 }
 
+static int meta_tostring(lua_State *L) {
+	LuaVector *vec = lua_checkvector(L, 1);
+
+	switch(vec->type) {
+		case 0:
+			lua_pushfstring(L, "Vector(%.3f, %.3f, %.3f)",
+				vec->value.f.x, vec->value.f.y, vec->value.f.z
+			);
+			break;
+		case 1:
+			lua_pushfstring(L, "Vector(%d, %d, %d)",
+				vec->value.s.x, vec->value.s.y, vec->value.s.z
+			);
+			break;
+		
+		default:
+			lua_pushfstring(L, "Vector(%p)", vec);
+			break;
+	}
+
+	return 1;
+}
+
 static int meta_index(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 	cs_str field = luaL_checkstring(L, 2);
@@ -243,8 +266,9 @@ static const luaL_Reg vectormeta[] = {
 	{"set", vec_setvalue},
 	{"get", vec_getvalue},
 
-	{"__index", meta_index},
+	{"__tostring", meta_tostring},
 	{"__newindex", meta_newindex},
+	{"__index", meta_index},
 	{"__add", meta_add},
 	{"__sub", meta_sub},
 	{"__mul", meta_mul},
