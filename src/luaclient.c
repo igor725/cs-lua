@@ -262,23 +262,6 @@ static int meta_isop(lua_State *L) {
 	return 1;
 }
 
-static int meta_makeselection(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	cs_byte id = (cs_byte)luaL_checkinteger(L, 2);
-	SVec *start = lua_checkshortvector(L, 3);
-	SVec *end = lua_checkshortvector(L, 4);
-	Color4 *col = lua_checkcolor4(L, 5);
-	lua_pushboolean(L, Client_MakeSelection(client, id, start, end, col));
-	return 1;
-}
-
-static int meta_removeselection(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	cs_byte id = (cs_byte)luaL_checkinteger(L, 2);
-	lua_pushboolean(L, Client_RemoveSelection(client, id));
-	return 1;
-}
-
 static int meta_update(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L, Client_Update(client));
@@ -347,8 +330,6 @@ static const luaL_Reg clientmeta[] = {
 	{"isinstate", meta_isinstate},
 	{"isop", meta_isop},
 
-	{"makesel", meta_makeselection},
-	{"remsel", meta_removeselection},
 	{"update", meta_update},
 	{"teleport", meta_teleport},
 	{"kick", meta_kick},
