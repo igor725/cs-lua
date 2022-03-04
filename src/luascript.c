@@ -114,6 +114,7 @@ cs_bool LuaScript_GlobalLookup(LuaScript *script, cs_str key) {
 
 cs_bool LuaScript_RegistryLookup(LuaScript *script, cs_str regtab, cs_str key) {
 	if(script->unloaded) return false;
+
 	lua_getfield(script->L, LUA_REGISTRYINDEX, regtab);
 	lua_getfield(script->L, -1, key);
 	if(lua_isnil(script->L, -1)) {
@@ -149,6 +150,26 @@ static int sleepmillis(lua_State *L) {
 	return 0;
 }
 
+static int ioensure(lua_State *L) {
+	cs_str path = luaL_checkstring(L, 1);
+	lua_pushboolean(L, Directory_Ensure(path));
+	return 1;
+}
+
+static int ioscrname(lua_State *L) {
+	LuaScript *script = lua_getscript(L);
+	cs_str ext = String_LastChar(script->scrname, '.');
+	lua_pushlstring(L, script->scrname, ext - script->scrname);
+	return 1;
+}
+
+static int iodatafolder(lua_State *L) {
+	lua_pushstring(L, "luadata" PATH_DELIM);
+	ioscrname(L);
+	lua_concat(L, 2);
+	return 1;
+}
+
 static cs_str iodel[] = {
 	"input", "output", "stdout",
 	"stderr", "stdin", "read",
@@ -160,25 +181,13 @@ static cs_str osdel[] = {
 	"getenv", NULL
 };
 
-static int dir_ensure(lua_State *L) {
-	cs_str path = luaL_checkstring(L, 1);
-	lua_pushboolean(L, Directory_Ensure(path));
-	return 1;
-}
+static luaL_Reg iofuncs[] = {
+	{"ensure", ioensure},
+	{"datafolder", iodatafolder},
+	{"scrname", ioscrname},
 
-static int scrname(lua_State *L) {
-	LuaScript *script = lua_getscript(L);
-	cs_str ext = String_LastChar(script->scrname, '.');
-	lua_pushlstring(L, script->scrname, ext - script->scrname);
-	return 1;
-}
-
-static int datafolder(lua_State *L) {
-	lua_pushstring(L, "luadata" PATH_DELIM);
-	scrname(L);
-	lua_concat(L, 2);
-	return 1;
-}
+	{NULL, NULL}
+};
 
 LuaScript *LuaScript_Open(cs_str name) {
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
@@ -217,19 +226,14 @@ LuaScript *LuaScript_Open(cs_str name) {
 			lua_pushcfunction(script->L, luaopen_ffi);
 			lua_setfield(script->L, -2, LUA_FFILIBNAME);
 			lua_pop(script->L, 1);
-#endif
+#		endif
 
 		if(LuaScript_GlobalLookup(script, LUA_IOLIBNAME)) {
 			for(cs_int32 i = 0; iodel[i]; i++) {
 				lua_pushnil(script->L);
 				lua_setfield(script->L, -2, iodel[i]);
 			}
-			lua_pushcfunction(script->L, dir_ensure);
-			lua_setfield(script->L, -2, "ensure");
-			lua_pushcfunction(script->L, datafolder);
-			lua_setfield(script->L, -2, "datafolder");
-			lua_pushcfunction(script->L, scrname);
-			lua_setfield(script->L, -2, "scrname");
+			luaL_setfuncs(script->L, iofuncs, 0);
 			lua_pop(script->L, 1);
 		}
 
