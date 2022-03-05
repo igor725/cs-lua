@@ -179,11 +179,12 @@ COMMAND_FUNC(Lua) {
 void *SurvInterface = NULL;
 
 void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
-	if(String_Compare(name, SURV_ITF_NAME))
+	if(String_Compare(name, SURV_ITF_NAME)) {
 		if(size == sizeof(SurvItf) || (SurvInterface != NULL && size == 0))
 			SurvInterface = ptr;
 		else
 			Log_Error("LuaScript failed to bind SurvItf: Structure size mismatch");
+	}
 }
 
 cs_bool Plugin_Load(void) {
