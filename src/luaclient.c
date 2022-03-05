@@ -380,7 +380,7 @@ static int client_iterall(lua_State *L) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) {
+		if(client && !Client_IsBot(client)) {
 			lua_pushvalue(L, 1);
 			lua_pushclient(L, client);
 			if(lua_pcall(L, 1, 0, 0) != 0) {
@@ -393,12 +393,18 @@ static int client_iterall(lua_State *L) {
 	return 0;
 }
 
+static int client_newbot(lua_State *L) {
+	lua_pushclient(L, Client_NewBot());
+	return 1;
+}
+
 static const luaL_Reg clientlib[] = {
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
 	{"getbroadcast", client_getbcast},
 	{"getcount", client_getcount},
 	{"iterall", client_iterall},
+	{"newbot", client_newbot},
 	{NULL, NULL}
 };
 
