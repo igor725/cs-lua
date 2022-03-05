@@ -71,7 +71,7 @@ static int meta_getspawna(lua_State *L) {
 	LuaVector *svec = lua_newvector(L);
 	Ang *sang = lua_newangle(L);
 	World_GetSpawn(world, &svec->value.f, sang);
-	return 1;
+	return 2;
 }
 
 static int meta_getdimensions(lua_State *L) {

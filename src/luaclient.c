@@ -256,6 +256,12 @@ static int meta_isinstate(lua_State *L) {
 	return 1;
 }
 
+static int meta_isbot(lua_State *L) {
+	Client *client = lua_checkclient(L, 1);
+	lua_pushboolean(L, Client_IsBot(client));
+	return 1;
+}
+
 static int meta_isop(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L, Client_IsOP(client));
@@ -334,6 +340,7 @@ static const luaL_Reg clientmeta[] = {
 	{"islocal", meta_islocal},
 	{"isfirstspawn", meta_isfirstspawn},
 	{"isinstate", meta_isinstate},
+	{"isbot", meta_isbot},
 	{"isop", meta_isop},
 
 	{"update", meta_update},
