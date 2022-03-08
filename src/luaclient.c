@@ -245,7 +245,7 @@ static int meta_isinstate(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	int top = lua_gettop(L);
 	for(int i = 2; i <= top; i++) {
-		EPlayerState state = (EPlayerState)luaL_checkinteger(L, i);
+		EClientState state = (EClientState)luaL_checkinteger(L, i);
 		if(Client_CheckState(client, state)) {
 			lua_pushboolean(L, 1);
 			return 1;
@@ -377,7 +377,7 @@ static int client_getname(lua_State *L) {
 }
 
 static int client_getcount(lua_State *L) {
-	EPlayerState state = (EPlayerState)luaL_checkinteger(L, 1);
+	EClientState state = (EClientState)luaL_checkinteger(L, 1);
 	lua_pushinteger(L, Clients_GetCount(state));
 	return 1;
 }
@@ -434,9 +434,9 @@ int luaopen_client(lua_State *L) {
 	lua_addnumconst(L, MESSAGE_TYPE_BRIGHT3);
 	lua_addnumconst(L, MESSAGE_TYPE_ANNOUNCE);
 
-	lua_addnumconst(L, PLAYER_STATE_INITIAL);
-	lua_addnumconst(L, PLAYER_STATE_MOTD);
-	lua_addnumconst(L, PLAYER_STATE_INGAME);
+	lua_addnumconst(L, CLIENT_STATE_INITIAL);
+	lua_addnumconst(L, CLIENT_STATE_MOTD);
+	lua_addnumconst(L, CLIENT_STATE_INGAME);
 
 	luaL_register(L, luaL_checkstring(L, 1), clientlib);
 	return 1;
