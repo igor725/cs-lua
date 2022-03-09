@@ -97,7 +97,7 @@ static int ang_new(lua_State *L) {
 	lua_newangle(L);
 
 	if(lua_gettop(L) > 1) {
-		lua_getfield(L, -1, "set");
+		luaL_getmetafield(L, -1, "set");
 		lua_pushvalue(L, -2);
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);

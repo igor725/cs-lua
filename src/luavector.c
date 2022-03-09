@@ -283,7 +283,7 @@ static int vec_newfloat(lua_State *L) {
 	vec->type = 0;
 
 	if(lua_gettop(L) > 2) {
-		lua_getfield(L, -1, "set");
+		luaL_getmetafield(L, -1, "set");
 		lua_pushvalue(L, -2);
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);
@@ -299,7 +299,7 @@ static int vec_newshort(lua_State *L) {
 	vec->type = 1;
 
 	if(lua_gettop(L) > 2) {
-		lua_getfield(L, -1, "set");
+		luaL_getmetafield(L, -1, "set");
 		lua_pushvalue(L, -2);
 		lua_pushvalue(L, 1);
 		lua_pushvalue(L, 2);

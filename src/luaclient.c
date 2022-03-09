@@ -284,7 +284,7 @@ static int meta_teleport(lua_State *L) {
 
 static int meta_kick(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	cs_str reason = luaL_checkstring(L, 2);
+	cs_str reason = luaL_optstring(L, 2, NULL);
 	Client_Kick(client, reason);
 	return 0;
 }
