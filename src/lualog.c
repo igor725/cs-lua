@@ -55,7 +55,7 @@ static int log_print(lua_State *L) {
 
 	for(int i = 1; i <= count; i++) {
 #		if LUA_VERSION_NUM < 502
-			lua_pushvalue(L, -1);
+			lua_pushvalue(L, -i);
 			lua_pushvalue(L, i);
 			lua_call(L, 1, 1);
 #		else
