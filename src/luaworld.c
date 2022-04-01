@@ -243,13 +243,14 @@ static int meta_update(lua_State *L) {
 static int meta_generate(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	cs_str gname = luaL_checkstring(L, 2);
+	cs_int32 seed = (cs_int32)luaL_optinteger(L, 3, GENERATOR_SEED_FROM_TIME);
 	GeneratorRoutine func = Generators_Get(gname);
 	if(!func) {
 		lua_pushboolean(L, 0);
 		lua_pushstring(L, "Invalid generator");
 	} else {
 		World_Lock(world, 0);
-		if(!func(world, NULL)) {
+		if(!func(world, seed)) {
 			lua_pushboolean(L, 0);
 			lua_pushstring(L, "Generator failed");
 		} else {
