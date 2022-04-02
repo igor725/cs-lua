@@ -4,99 +4,100 @@
 #include "luasurvival.h"
 #include "cs-survival/src/survitf.h"
 
-extern void *SurvInterface;
+extern SurvItf *SurvInterface;
 
-static SurvItf *surv_getitf(lua_State *L) {
-	if(!SurvInterface) luaL_error(L, "SurvItf lost");
-	return SurvInterface;
+static cs_bool surv_getdata(lua_State *L, int idx, SrvData **data) {
+	lua_getfield(L, LUA_REGISTRYINDEX, "_srvsafe");
+	cs_bool safemode = (cs_bool)lua_toboolean(L, -1);
+	lua_pop(L, 1);
+
+	if(!safemode)
+		luaL_argcheck(L, SurvInterface != NULL, 1, "SurvItf lost");
+	else if(!SurvInterface)
+		return false;
+
+	Client *client = lua_checkclient(L, idx);
+	*data = SurvInterface->getSrvData(client);
+	if(!safemode)
+		luaL_argcheck(L, *data != NULL, 1, "No SurvData");
+
+	return *data != NULL;
 }
 
 static int surv_isgod(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	lua_pushboolean(L, itf->isInGodMode(data));
+	SrvData *data = NULL;
+	lua_pushboolean(L,
+		surv_getdata(L, 1, &data) &&
+		SurvInterface->isInGodMode(data)
+	);
 	return 1;
 }
 
 static int surv_ispvp(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	lua_pushboolean(L, itf->isInPvPMode(data));
+	SrvData *data = NULL;
+	lua_pushboolean(L,
+		surv_getdata(L, 1, &data) &&
+		SurvInterface->isInPvPMode(data)
+	);
 	return 1;
 }
 
 static int surv_setgod(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	luaL_checktype(L, 2, LUA_TBOOLEAN);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	itf->setGodMode(data, (cs_bool)lua_toboolean(L, 2));
+	SrvData *data = NULL;
+	cs_bool state = (cs_bool)lua_toboolean(L, 2);
+	if(surv_getdata(L, 1, &data))
+		SurvInterface->setGodMode(data, state);
 	return 0;
 }
 
 static int surv_giveblock(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
 	BlockID id = (BlockID)luaL_checkinteger(L, 2);
 	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	lua_pushinteger(L, (lua_Integer)itf->giveToInventory(data, id, ammount));
+	SrvData *data = NULL;
+	lua_pushinteger(L,
+		(lua_Integer)surv_getdata(L, 1, &data) && SurvInterface->giveToInventory(data, id, ammount)
+	);
 	return 1;
 }
 
 static int surv_takeblock(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
 	BlockID id = (BlockID)luaL_checkinteger(L, 2);
 	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	lua_pushinteger(L, (lua_Integer)itf->takeFromInventory(data, id, ammount));
+	SrvData *data = NULL;
+	lua_pushinteger(L,
+		(lua_Integer)surv_getdata(L, 1, &data) && SurvInterface->takeFromInventory(data, id, ammount)
+	);
 	return 1;
 }
 
 static int surv_setpvp(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	luaL_checktype(L, 2, LUA_TBOOLEAN);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	itf->setPvPMode(data, (cs_bool)lua_toboolean(L, 2));
+	SrvData *data = NULL;
+	cs_bool state = (cs_bool)lua_toboolean(L, 2);
+	if(surv_getdata(L, 1, &data))
+		SurvInterface->setPvPMode(data, state);
 	return 0;
 }
 
 static int surv_hurt(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
+	SrvData *data = NULL;
 	cs_byte dmg = (cs_byte)luaL_checkinteger(L, 2);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	itf->hurt(data, NULL, dmg);
+	if(surv_getdata(L, 1, &data))
+		SurvInterface->hurt(data, NULL, dmg);
 	return 0;
 }
 
 static int surv_heal(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	cs_byte pts = (cs_byte)luaL_checkinteger(L, 2);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	itf->heal(data, pts);
+	SrvData *data = NULL;
+	cs_byte dmg = (cs_byte)luaL_checkinteger(L, 2);
+	if(surv_getdata(L, 1, &data))
+		SurvInterface->heal(data, dmg);
 	return 0;
 }
 
 static int surv_kill(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	SurvItf *itf = surv_getitf(L);
-	SrvData *data = itf->getSrvData(client);
-	luaL_argcheck(L, data != NULL, 1, "No SurvData");
-	itf->kill(data);
+	SrvData *data = NULL;
+	if(surv_getdata(L, 1, &data))
+		SurvInterface->kill(data);
 	return 0;
 }
 
@@ -123,7 +124,7 @@ INL static void surv_addfuncs(lua_State *L) {
 	lua_pop(L, 1);
 }
 
-int surv_init(lua_State *L) {
+static int surv_init(lua_State *L) {
 	if(SurvInterface) {
 		surv_addfuncs(L);
 		lua_pushboolean(L, 1);
@@ -139,14 +140,21 @@ int surv_init(lua_State *L) {
 	return 1;
 }
 
-int surv_isready(lua_State *L) {
+static int surv_isready(lua_State *L) {
 	lua_pushboolean(L, SurvInterface != NULL);
 	return 1;
+}
+
+static int surv_safe(lua_State *L) {
+	lua_pushboolean(L, lua_toboolean(L, 1));
+	lua_setfield(L, LUA_REGISTRYINDEX, "_srvsafe");
+	return 0;
 }
 
 static luaL_Reg survlib[] = {
 	{"init", surv_init},
 	{"isready", surv_isready},
+	{"safe", surv_safe},
 
 	{NULL, NULL}
 };
