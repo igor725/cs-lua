@@ -14,6 +14,11 @@ Client *lua_checkclient(lua_State *L, int idx) {
 	return (Client *)*ud;
 }
 
+Client *lua_optclient(lua_State *L, int idx) {
+	void **ud = luaL_testudata(L, idx, CSLUA_MCLIENT);
+	return ud ? *ud : NULL;
+}
+
 void lua_pushclient(lua_State *L, Client *client) {
 	if(!client) {
 		lua_pushnil(L);
@@ -290,7 +295,7 @@ static int meta_kick(lua_State *L) {
 }
 
 static int meta_chat(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
+	Client *client = lua_optclient(L, 1);
 	EMesgType type = MESSAGE_TYPE_CHAT;
 	cs_str mesg = NULL;
 
@@ -362,11 +367,6 @@ static int client_get(lua_State *L) {
 	return count;
 }
 
-static int client_getbcast(lua_State *L) {
-	lua_pushclient(L, Broadcast);
-	return 1;
-}
-
 static int client_getname(lua_State *L) {
 	int count = lua_gettop(L);
 	for(int i = 1; i <= count; i++) {
@@ -408,7 +408,6 @@ static int client_newbot(lua_State *L) {
 static const luaL_Reg clientlib[] = {
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
-	{"getbroadcast", client_getbcast},
 	{"getcount", client_getcount},
 	{"iterall", client_iterall},
 	{"newbot", client_newbot},
@@ -439,5 +438,8 @@ int luaopen_client(lua_State *L) {
 	lua_addnumconst(L, CLIENT_STATE_INGAME);
 
 	luaL_register(L, luaL_checkstring(L, 1), clientlib);
+	*(void **)lua_newuserdata(L, sizeof(Client *)) = NULL;
+	luaL_setmetatable(L, CSLUA_MCLIENT);
+	lua_setfield(L, -2, "broadcast");
 	return 1;
 }
