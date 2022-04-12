@@ -33,7 +33,11 @@ else
 	fi
 	if [ ! -f "../luajit/src/libluajit.a" ]; then
 		pushd ../luajit
-		make CC="$CC"
+		if [ -n "$HOSTCC" ]; then
+			make HOST_CC="$HOSTCC" CROSS="$MACH-"
+		else
+			make CC="$CC"
+		fi
 		popd
 	fi
 	LIBS="$LIBS -L../luajit/src/ -lluajit"
