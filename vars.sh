@@ -33,7 +33,7 @@ else
 	fi
 	if [ ! -f "../luajit/src/libluajit.a" ]; then
 		pushd ../luajit
-		make
+		make CC="$CC"
 		popd
 	fi
 	LIBS="$LIBS -L../luajit/src/ -lluajit"
