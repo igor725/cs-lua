@@ -1,4 +1,11 @@
 allowHotReload(true)
+LUA_COMMAND = 'LuaRun'
+LUA_COMMAND_DESC = 'Execute Lua script'
+LUA_COMMAND_EXEC_WARN = '%s executed lua script: %s'
+LUA_COMMAND_EXEC_RTERR = '&cRuntime error: %s'
+LUA_COMMAND_EXEC_SUCC = '&aScript executed successfully'
+LUA_COMMAND_EXEC_SYNT = '&cSyntax error: %s'
+LUA_COMMAND_EXEC_OUT = '&aOutput&f: '
 
 local function runScript(cl, script)
 	if not script or #script == 0 then
@@ -10,14 +17,14 @@ local function runScript(cl, script)
 
 	if chunk then
 		if cl then
-			log.warn('%s executed lua script: %s', cl:getname(), script)
+			log.warn(LUA_COMMAND_EXEC_WARN, cl:getname(), script)
 		end
 
 		local out = {pcall(chunk)}
 		_G.self = nil
 
 		if not table.remove(out, 1) then
-			return ('&cRuntime error: %s'):format(out[1])
+			return (LUA_COMMAND_EXEC_RTERR):format(out[1])
 		end
 
 		for i = 1, #out do
@@ -25,12 +32,12 @@ local function runScript(cl, script)
 		end
 
 		if #out > 0 then
-			return '&aOutput&f: ' .. table.concat(out, ' ')
+			return LUA_COMMAND_EXEC_OUT .. table.concat(out, ' ')
 		end
 
-		return '&aScript executed successfully'
+		return LUA_COMMAND_EXEC_SUCC
 	else
-		return ('&cSyntax error: %s'):format(err)
+		return (LUA_COMMAND_EXEC_SYNT):format(err)
 	end
 end
 
@@ -43,7 +50,7 @@ function onStart()
 		end
 	})
 
-	command.add('luarun', 'Execute Lua script', CMDF_OP, runScript)
+	command.add(LUA_COMMAND, LUA_COMMAND_DESC, CMDF_OP, runScript)
 end
 
 function onMessage(cl, type, text)
@@ -66,7 +73,7 @@ function onMessage(cl, type, text)
 end
 
 function onStop()
-	command.remove('luarun')
+	command.remove(LUA_COMMAND)
 end
 
 preReload = onStop

@@ -103,7 +103,7 @@ static int meta_getblock(lua_State *L) {
 
 static int meta_getenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EColors ctype = (EColors)luaL_checkinteger(L, 2);
+	EColor ctype = (EColor)luaL_checkinteger(L, 2);
 	Color3 *col = lua_checkcolor3(L, 3);
 	*col = *World_GetEnvColor(world, ctype);
 	return 1;
@@ -111,7 +111,7 @@ static int meta_getenvcolor(lua_State *L) {
 
 static int meta_getenvcolora(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EColors ctype = (EColors)luaL_checkinteger(L, 2);
+	EColor ctype = (EColor)luaL_checkinteger(L, 2);
 	LuaColor *col = lua_newcolor(L);
 	col->value.c3 = *World_GetEnvColor(world, ctype);
 	col->hasAlpha = false;
@@ -178,7 +178,7 @@ static int meta_setblocknat(lua_State *L) {
 
 static int meta_setenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	EColors ctype = (EColors)luaL_checkinteger(L, 2);
+	EColor ctype = (EColor)luaL_checkinteger(L, 2);
 	Color3 *col = lua_checkcolor3(L, 3);
 	lua_pushboolean(L, World_SetEnvColor(world, ctype, col));
 	return 1;

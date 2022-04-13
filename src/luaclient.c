@@ -57,8 +57,16 @@ void lua_clearclient(lua_State *L, Client *client) {
 }
 
 static int meta_getid(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushinteger(L, (lua_Integer)Client_GetID(client));
+	lua_pushinteger(L, (lua_Integer)Client_GetID(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_getstate(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetState(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
@@ -88,27 +96,46 @@ static int meta_getping(lua_State *L) {
 }
 
 static int meta_getname(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushstring(L, Client_GetName(client));
+	lua_pushstring(L, Client_GetName(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_getskin(lua_State *L) {
+	lua_pushstring(L, Client_GetSkin(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_getheldblock(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetHeldBlock(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_getdispname(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushstring(L, Client_GetDisplayName(client));
+	lua_pushstring(L, Client_GetDisplayName(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_getappname(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushstring(L, Client_GetAppName(client));
+	lua_pushstring(L, Client_GetAppName(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_getposition(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	Vec *vec = lua_checkfloatvector(L, 2);
-	lua_pushboolean(L, Client_GetPosition(client, vec, NULL));
+	lua_pushboolean(L, Client_GetPosition(
+		lua_checkclient(L, 1),
+		lua_checkfloatvector(L, 2),
+		NULL
+	));
 	return 1;
 }
 
@@ -125,9 +152,10 @@ static int meta_getpositiona(lua_State *L) {
 }
 
 static int meta_getrotation(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	Ang *ang = lua_checkangle(L, 2);
-	lua_pushboolean(L, Client_GetPosition(client, NULL, ang));
+	lua_pushboolean(L, Client_GetPosition(
+		lua_checkclient(L, 1),
+		NULL, lua_checkangle(L, 2)
+	));
 	return 1;
 }
 
@@ -142,42 +170,140 @@ static int meta_getrotationa(lua_State *L) {
 	return 1;
 }
 
+static int meta_getfluidlvl(lua_State *L) {
+	BlockID fluid = BLOCK_AIR;
+	lua_pushinteger(L, (lua_Integer)Client_GetFluidLevel(
+		lua_checkclient(L, 1),
+		&fluid
+	));
+	lua_pushinteger(L, fluid);
+	return 2;
+}
+
+static int meta_getstandblock(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetStandBlock(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
 static int meta_getclickdist(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(client));
+	lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_getmodel(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushinteger(L, (lua_Integer)Client_GetModel(client));
+	lua_pushinteger(L, (lua_Integer)Client_GetModel(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_getworld(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushworld(L, Client_GetWorld(client));
+	lua_pushworld(L, Client_GetWorld(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_setop(lua_State *L) {
+	lua_pushboolean(L, Client_SetOP(
+		lua_checkclient(L, 1),
+		(cs_bool)lua_toboolean(L, 2)
+	));
+	return 1;
+}
+
+static int meta_setspawn(lua_State *L) {
+	lua_pushboolean(L, Client_SetSpawn(
+		lua_checkclient(L, 1),
+		lua_checkfloatvector(L, 2),
+		lua_checkangle(L, 3)
+	));
+	return 1;
+}
+
+static int meta_setrotation(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	cs_bool state = (cs_bool)lua_toboolean(L, 2);
-	lua_pushboolean(L, Client_SetOP(client, state));
+	lua_pushboolean(L,
+		Client_SetProp(client, ENTITY_PROP_ROT_X, (cs_int32)luaL_checkinteger(L, 2)) &&
+		Client_SetProp(client, ENTITY_PROP_ROT_Y, (cs_int32)luaL_checkinteger(L, 3)) &&
+		Client_SetProp(client, ENTITY_PROP_ROT_Z, (cs_int32)luaL_checkinteger(L, 4))
+	);
 	return 1;
 }
 
 static int meta_setweather(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	EWeather weather = (EWeather)luaL_checkinteger(L, 2);
-	lua_pushboolean(L, Client_SetWeather(client, weather));
+	lua_pushboolean(L, Client_SetWeather(
+		lua_checkclient(L, 1),
+		(EWeather)luaL_checkinteger(L, 2)
+	));
+	return 1;
+}
+
+static int meta_setenvprop(lua_State *L) {
+	lua_pushboolean(L, Client_SetEnvProperty(
+		lua_checkclient(L, 1),
+		(EProp)luaL_checkinteger(L, 2),
+		(cs_int32)luaL_checkinteger(L, 3)
+	));
+	return 1;
+}
+
+static int meta_setenvcolor(lua_State *L) {
+	lua_pushboolean(L, Client_SetEnvColor(
+		lua_checkclient(L, 1),
+		(EColor)luaL_checkinteger(L, 2),
+		lua_checkcolor3(L, 3)
+	));
 	return 1;
 }
 
 static int meta_setclickdist(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	cs_int16 dist = (cs_int16)luaL_checkinteger(L, 2);
-	lua_pushboolean(L, Client_SetClickDistance(client, dist));
+	lua_pushboolean(L, Client_SetClickDistance(
+		lua_checkclient(L, 1),
+		(cs_int16)luaL_checkinteger(L, 2)
+	));
+	return 1;
+}
+
+static int meta_setblockperm(lua_State *L) {
+	lua_pushboolean(L, Client_SetBlockPerm(
+		lua_checkclient(L, 1),
+		(BlockID)luaL_checkinteger(L, 2),
+		(cs_bool)lua_toboolean(L, 3),
+		(cs_bool)lua_toboolean(L, 4)
+	));
+	return 1;
+}
+
+static int meta_settextcolor(lua_State *L) {
+	lua_pushboolean(L, Client_AddTextColor(
+		lua_checkclient(L, 1),
+		lua_checkcolor4(L, 2),
+		*luaL_checkstring(L, 3)
+	));
+	return 1;
+}
+
+static int meta_setmotd(lua_State *L) {
+	lua_pushboolean(L, Client_SetServerIdent(
+		lua_checkclient(L, 1),
+		luaL_checkstring(L, 2),
+		luaL_checkstring(L, 3)
+	));
+	return 1;
+}
+
+static int meta_sethotkey(lua_State *L) {
+	lua_pushboolean(L, Client_SetHotkey(
+		lua_checkclient(L, 1),
+		luaL_checkstring(L, 2),
+		(cs_int32)luaL_checkinteger(L, 3),
+		(cs_int8)luaL_checkinteger(L, 4)
+	));
 	return 1;
 }
 
@@ -191,17 +317,61 @@ static int meta_setmodel(lua_State *L) {
 }
 
 static int meta_setdispname(lua_State *L) {
+	lua_pushboolean(L, Client_SetDisplayName(
+		lua_checkclient(L, 1),
+		luaL_checkstring(L, 2)
+	));
+	return 1;
+}
+
+static int meta_sethotbar(lua_State *L) {
+	lua_pushboolean(L, Client_SetHotbar(
+		lua_checkclient(L, 1),
+		(cs_byte)luaL_checkinteger(L, 2),
+		(BlockID)luaL_checkinteger(L, 3)
+	));
+	return 1;
+}
+
+static int meta_sethacks(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	cs_str name = luaL_checkstring(L, 2);
-	lua_pushboolean(L, Client_SetDisplayName(client, name));
+	luaL_checktype(L, 2, LUA_TTABLE);
+	CPEHacks hacks;
+
+	lua_getfield(L, 2, "jumpheight");
+	lua_getfield(L, 2, "thirdperson");
+	lua_getfield(L, 2, "spawncontrol");
+	lua_getfield(L, 2, "speeding");
+	lua_getfield(L, 2, "noclip");
+	lua_getfield(L, 2, "flying");
+
+	hacks.flying = (cs_bool)lua_toboolean(L, -1);
+	hacks.noclip = (cs_bool)lua_toboolean(L, -2);
+	hacks.speeding = (cs_bool)lua_toboolean(L, -3);
+	hacks.spawnControl = (cs_bool)lua_toboolean(L, -4);
+	hacks.tpv = (cs_bool)lua_toboolean(L, -5);
+	hacks.jumpHeight = (cs_int16)luaL_optinteger(L, -6, -1);
+	lua_pop(L, 6);
+
+	lua_pushboolean(L, Client_SendHacks(client, &hacks));
 	return 1;
 }
 
 static int meta_setheldblock(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	BlockID block = (BlockID)luaL_checkinteger(L, 2);
-	cs_bool cc = (cs_bool)lua_toboolean(L, 3);
-	lua_pushboolean(L, Client_SetHeldBlock(client, block, cc));
+	lua_pushboolean(L, Client_SetHeldBlock(
+		lua_checkclient(L, 1),
+		(BlockID)luaL_checkinteger(L, 2),
+		(cs_bool)lua_toboolean(L, 3)
+	));
+	return 1;
+}
+
+static int meta_setorderblock(lua_State *L) {
+	lua_pushboolean(L, Client_SetInvOrder(
+		lua_checkclient(L, 1),
+		(cs_byte)luaL_checkinteger(L, 2),
+		(BlockID)luaL_checkinteger(L, 3)
+	));
 	return 1;
 }
 
@@ -213,17 +383,28 @@ static int meta_setskin(lua_State *L) {
 	return 1;
 }
 
-static int meta_setvelocity(lua_State *L) {
+static int meta_settexpack(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	Vec *vec = lua_checkfloatvector(L, 2);
-	lua_pushboolean(L, Client_SetVelocity(client, vec, true));
+	cs_str url = (cs_str)luaL_checkstring(L, 2);
+	luaL_argcheck(L, String_Length(url) < 65, 2, "URL is too long");
+	lua_pushboolean(L, Client_SetTexturePack(client, url));
+	return 1;
+}
+
+static int meta_setvelocity(lua_State *L) {
+	lua_pushboolean(L, Client_SetVelocity(
+		lua_checkclient(L, 1),
+		lua_checkfloatvector(L, 2),
+		true
+	));
 	return 1;
 }
 
 static int meta_gotoworld(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	World *world = lua_checkworld(L, 2);
-	lua_pushboolean(L, Client_ChangeWorld(client, world));
+	lua_pushboolean(L, Client_ChangeWorld(
+		lua_checkclient(L, 1),
+		lua_checkworld(L, 2)
+	));
 	return 1;
 }
 
@@ -235,14 +416,31 @@ static int meta_reload(lua_State *L) {
 }
 
 static int meta_islocal(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushboolean(L, Client_IsLocal(client));
+	lua_pushboolean(L, Client_IsLocal(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_isspawned(lua_State *L) {
+	lua_pushboolean(L, Client_IsSpawned(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_isinsameworld(lua_State *L) {
+	lua_pushboolean(L, Client_IsInSameWorld(
+		lua_checkclient(L, 1),
+		lua_checkclient(L, 2)
+	));
 	return 1;
 }
 
 static int meta_isfirstspawn(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushboolean(L, Client_IsFirstSpawn(client));
+	lua_pushboolean(L, Client_IsFirstSpawn(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
@@ -262,35 +460,61 @@ static int meta_isinstate(lua_State *L) {
 }
 
 static int meta_isbot(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushboolean(L, Client_IsBot(client));
+	lua_pushboolean(L, Client_IsBot(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_isop(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushboolean(L, Client_IsOP(client));
+	lua_pushboolean(L, Client_IsOP(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_spawn(lua_State *L) {
+	lua_pushboolean(L, Client_Spawn(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
+static int meta_despawn(lua_State *L) {
+	lua_pushboolean(L, Client_Despawn(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_update(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushboolean(L, Client_Update(client));
+	lua_pushboolean(L, Client_Update(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_teleport(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	Vec *vec = lua_checkfloatvector(L, 2);
-	Ang *ang = lua_checkangle(L, 3);
-	lua_pushboolean(L, Client_TeleportTo(client, vec, ang));
+	lua_pushboolean(L, Client_TeleportTo(
+		lua_checkclient(L, 1),
+		lua_checkfloatvector(L, 2),
+		lua_checkangle(L, 3)
+	));
+	return 1;
+}
+
+static int meta_tospawn(lua_State *L) {
+	lua_pushboolean(L, Client_TeleportToSpawn(
+		lua_checkclient(L, 1)
+	));
 	return 1;
 }
 
 static int meta_kick(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	cs_str reason = luaL_optstring(L, 2, NULL);
-	Client_Kick(client, reason);
+	Client_Kick(
+		lua_checkclient(L, 1),
+		luaL_optstring(L, 2, NULL)
+	);
 	return 0;
 }
 
@@ -311,16 +535,20 @@ static int meta_chat(lua_State *L) {
 }
 
 static int meta_tostring(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	lua_pushfstring(L, "Client(%p)", client);
+	lua_pushfstring(L, "Client(%p)",
+		lua_checkclient(L, 1)
+	);
 	return 1;
 }
 
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
+	{"getstate", meta_getstate},
 	{"getaddr", meta_getaddr},
 	{"getping", meta_getping},
 	{"getname", meta_getname},
+	{"getskin", meta_getskin},
+	{"getheldblock", meta_getheldblock},
 	{"getdispname", meta_getdispname},
 	{"getappname", meta_getappname},
 	{"getposition", meta_getposition},
@@ -328,28 +556,47 @@ static const luaL_Reg clientmeta[] = {
 	{"getrotation", meta_getrotation},
 	{"getrotationa", meta_getrotationa},
 	{"getclickdist", meta_getclickdist},
+	{"getfluidlvl", meta_getfluidlvl},
+	{"getstandblock", meta_getstandblock},
 	{"getmodel", meta_getmodel},
 	{"getworld", meta_getworld},
 
 	{"setop", meta_setop},
+	{"setspawn", meta_setspawn},
+	{"setrotation", meta_setrotation},
 	{"setweather", meta_setweather},
+	{"setenvprop", meta_setenvprop},
+	{"setenvcolor", meta_setenvcolor},
 	{"setclickdist", meta_setclickdist},
+	{"setblockperm", meta_setblockperm},
+	{"settextcolor", meta_settextcolor},
+	{"setmotd", meta_setmotd},
+	{"sethotkey", meta_sethotkey},
 	{"setmodel", meta_setmodel},
 	{"setdispname", meta_setdispname},
+	{"sethotbar", meta_sethotbar},
+	{"sethacks", meta_sethacks},
 	{"setheldblock", meta_setheldblock},
+	{"setorderblock", meta_setorderblock},
 	{"setskin", meta_setskin},
+	{"settexpack", meta_settexpack},
 	{"setvelocity", meta_setvelocity},
 	{"gotoworld", meta_gotoworld},
 	{"reload", meta_reload},
 
 	{"islocal", meta_islocal},
+	{"isspawned", meta_isspawned},
+	{"isinsameworld", meta_isinsameworld},
 	{"isfirstspawn", meta_isfirstspawn},
 	{"isinstate", meta_isinstate},
 	{"isbot", meta_isbot},
 	{"isop", meta_isop},
 
+	{"spawn", meta_spawn},
+	{"despawn", meta_despawn},
 	{"update", meta_update},
 	{"teleport", meta_teleport},
+	{"tospawn", meta_tospawn},
 	{"kick", meta_kick},
 	{"chat", meta_chat},
 
@@ -436,6 +683,10 @@ int luaopen_client(lua_State *L) {
 	lua_addnumconst(L, CLIENT_STATE_INITIAL);
 	lua_addnumconst(L, CLIENT_STATE_MOTD);
 	lua_addnumconst(L, CLIENT_STATE_INGAME);
+
+	lua_addnumconst(L, ENTITY_PROP_ROT_X);
+	lua_addnumconst(L, ENTITY_PROP_ROT_Y);
+	lua_addnumconst(L, ENTITY_PROP_ROT_Z);
 
 	luaL_register(L, luaL_checkstring(L, 1), clientlib);
 	*(void **)lua_newuserdata(L, sizeof(Client *)) = CLIENT_BROADCAST;
