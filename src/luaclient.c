@@ -110,6 +110,13 @@ static int meta_getskin(lua_State *L) {
 	return 1;
 }
 
+static int meta_getgroup(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetGroupID(
+		lua_checkclient(L, 1)
+	));
+	return 1;
+}
+
 static int meta_getheldblock(lua_State *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetHeldBlock(
 		lua_checkclient(L, 1)
@@ -563,6 +570,7 @@ static const luaL_Reg clientmeta[] = {
 	{"getping", meta_getping},
 	{"getname", meta_getname},
 	{"getskin", meta_getskin},
+	{"getgroup", meta_getgroup},
 	{"getheldblock", meta_getheldblock},
 	{"getdispname", meta_getdispname},
 	{"getappname", meta_getappname},
