@@ -32,6 +32,7 @@ typedef struct LuaScript {
 #define CSLUA_MCONFIG "Config"
 #define CSLUA_MCLIENT "Client"
 #define CSLUA_MWORLD  "World"
+#define CSLUA_MCUBOID "Cuboid"
 
 // Обеспечиваем совместимость с большинством версий Lua
 #if LUA_VERSION_NUM < 501

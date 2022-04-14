@@ -13,6 +13,7 @@
 #include "lualog.h"
 #include "luasurvival.h"
 #include "luaconfig.h"
+#include "luacuboid.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -225,6 +226,8 @@ LuaScript *LuaScript_Open(cs_str name) {
 			lua_setfield(script->L, -2, LUA_FFILIBNAME);
 			lua_pop(script->L, 1);
 #		endif
+
+		luainit_cuboid(script->L);
 
 		if(LuaScript_GlobalLookup(script, LUA_IOLIBNAME)) {
 			for(cs_int32 i = 0; iodel[i]; i++) {

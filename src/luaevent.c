@@ -8,6 +8,7 @@
 #include "luavector.h"
 #include "luaworld.h"
 #include "luaclient.h"
+#include "luacuboid.h"
 
 static void evtpoststart(void *param) {
 	(void)param;
@@ -106,6 +107,7 @@ static void evtdisconnect(void *param) {
 			LuaScript_Call(script, 2, 0);
 		}
 		lua_clearclient(script->L, param);
+		lua_clearcuboids(script->L, param);
 		LuaScript_Unlock(script);
 	}
 }
