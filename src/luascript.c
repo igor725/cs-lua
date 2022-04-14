@@ -14,6 +14,7 @@
 #include "luasurvival.h"
 #include "luaconfig.h"
 #include "luacuboid.h"
+#include "luagroups.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -72,6 +73,7 @@ static const luaL_Reg lualibs[] = {
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
 	{"color", luaopen_color},
+	{"groups", luaopen_groups},
 	{"survival", luaopen_survival},
 
 	{NULL,NULL}

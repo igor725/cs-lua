@@ -135,9 +135,9 @@ int luaopen_command(lua_State *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 
-	lua_addnumconst(L, CMDF_NONE);
-	lua_addnumconst(L, CMDF_OP);
-	lua_addnumconst(L, CMDF_CLIENT);
+	lua_addintconst(L, CMDF_NONE);
+	lua_addintconst(L, CMDF_OP);
+	lua_addintconst(L, CMDF_CLIENT);
 
 	luaL_register(L, luaL_checkstring(L, 1), cmdlib);
 	return 1;

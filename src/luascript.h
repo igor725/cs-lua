@@ -55,7 +55,8 @@ void luaL_setmetatable(lua_State *L, const char *tname);
 #	define CSLUA_HAS_BIT
 #endif
 
-#define lua_addnumconst(L, n) lua_pushnumber(L, n); lua_setglobal(L, #n);
+#define lua_addnumconst(L, n) (lua_pushnumber(L, n), lua_setglobal(L, #n))
+#define lua_addintconst(L, n) (lua_pushinteger(L, n), lua_setglobal(L, #n))
 #define LuaScript_Lock(p) Mutex_Lock((p)->lock)
 #define LuaScript_Unlock(p) Mutex_Unlock((p)->lock)
 #define LuaScript_PrintError(p) Log_Info("lua_State(%p) got an error: %s", (p)->L, lua_tostring((p)->L, -1))

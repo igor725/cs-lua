@@ -164,26 +164,26 @@ int luaopen_block(lua_State *L) {
 	luaL_setfuncs(L, blockmeta, 0);
 	lua_pop(L, 1);
 
-	lua_addnumconst(L, BDSOL_WALK);
-	lua_addnumconst(L, BDSOL_SWIM);
-	lua_addnumconst(L, BDSOL_SOLID);
+	lua_addintconst(L, BDSOL_WALK);
+	lua_addintconst(L, BDSOL_SWIM);
+	lua_addintconst(L, BDSOL_SOLID);
 	
-	lua_addnumconst(L, BDSND_NONE);
-	lua_addnumconst(L, BDSND_WOOD);
-	lua_addnumconst(L, BDSND_GRAVEL);
-	lua_addnumconst(L, BDSND_GRASS);
-	lua_addnumconst(L, BDSND_STONE);
-	lua_addnumconst(L, BDSND_METAL);
-	lua_addnumconst(L, BDSND_GLASS);
-	lua_addnumconst(L, BDSND_WOOL);
-	lua_addnumconst(L, BDSND_SAND);
-	lua_addnumconst(L, BDSND_SNOW);
+	lua_addintconst(L, BDSND_NONE);
+	lua_addintconst(L, BDSND_WOOD);
+	lua_addintconst(L, BDSND_GRAVEL);
+	lua_addintconst(L, BDSND_GRASS);
+	lua_addintconst(L, BDSND_STONE);
+	lua_addintconst(L, BDSND_METAL);
+	lua_addintconst(L, BDSND_GLASS);
+	lua_addintconst(L, BDSND_WOOL);
+	lua_addintconst(L, BDSND_SAND);
+	lua_addintconst(L, BDSND_SNOW);
 
-	lua_addnumconst(L, BDDRW_OPAQUE);
-	lua_addnumconst(L, BDDRW_TRANSPARENT);
-	lua_addnumconst(L, BDDRW_TRANSPARENT2);
-	lua_addnumconst(L, BDDRW_TRANSLUCENT);
-	lua_addnumconst(L, BDDRW_GAS);
+	lua_addintconst(L, BDDRW_OPAQUE);
+	lua_addintconst(L, BDDRW_TRANSPARENT);
+	lua_addintconst(L, BDDRW_TRANSPARENT2);
+	lua_addintconst(L, BDDRW_TRANSLUCENT);
+	lua_addintconst(L, BDDRW_GAS);
 
 	luaL_register(L, luaL_checkstring(L, 1), blocklib);
 	return 1;

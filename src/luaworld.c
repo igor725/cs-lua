@@ -431,22 +431,22 @@ int luaopen_world(lua_State *L) {
 	luaL_setfuncs(L, worldmeta, 0);
 	lua_pop(L, 1);
 
-	lua_addnumconst(L, WORLD_COLOR_SKY);
-	lua_addnumconst(L, WORLD_COLOR_CLOUD);
-	lua_addnumconst(L, WORLD_COLOR_FOG);
-	lua_addnumconst(L, WORLD_COLOR_AMBIENT);
-	lua_addnumconst(L, WORLD_COLOR_DIFFUSE);
+	lua_addintconst(L, WORLD_COLOR_SKY);
+	lua_addintconst(L, WORLD_COLOR_CLOUD);
+	lua_addintconst(L, WORLD_COLOR_FOG);
+	lua_addintconst(L, WORLD_COLOR_AMBIENT);
+	lua_addintconst(L, WORLD_COLOR_DIFFUSE);
 
-	lua_addnumconst(L, WORLD_PROP_SIDEBLOCK);
-	lua_addnumconst(L, WORLD_PROP_EDGEBLOCK);
-	lua_addnumconst(L, WORLD_PROP_EDGELEVEL);
-	lua_addnumconst(L, WORLD_PROP_CLOUDSLEVEL);
-	lua_addnumconst(L, WORLD_PROP_FOGDIST);
-	lua_addnumconst(L, WORLD_PROP_SPDCLOUDS);
-	lua_addnumconst(L, WORLD_PROP_SPDWEATHER);
-	lua_addnumconst(L, WORLD_PROP_FADEWEATHER);
-	lua_addnumconst(L, WORLD_PROP_EXPFOG);
-	lua_addnumconst(L, WORLD_PROP_SIDEOFFSET);
+	lua_addintconst(L, WORLD_PROP_SIDEBLOCK);
+	lua_addintconst(L, WORLD_PROP_EDGEBLOCK);
+	lua_addintconst(L, WORLD_PROP_EDGELEVEL);
+	lua_addintconst(L, WORLD_PROP_CLOUDSLEVEL);
+	lua_addintconst(L, WORLD_PROP_FOGDIST);
+	lua_addintconst(L, WORLD_PROP_SPDCLOUDS);
+	lua_addintconst(L, WORLD_PROP_SPDWEATHER);
+	lua_addintconst(L, WORLD_PROP_FADEWEATHER);
+	lua_addintconst(L, WORLD_PROP_EXPFOG);
+	lua_addintconst(L, WORLD_PROP_SIDEOFFSET);
 
 	luaL_register(L, luaL_checkstring(L, 1), worldlib);
 	return 1;

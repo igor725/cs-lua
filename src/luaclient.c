@@ -226,6 +226,14 @@ static int meta_setspawn(lua_State *L) {
 	return 1;
 }
 
+static int meta_setgroup(lua_State *L) {
+	lua_pushboolean(L, Client_SetGroup(
+		lua_checkclient(L, 1),
+		(cs_uintptr)luaL_checkinteger(L, 2)
+	));
+	return 1;
+}
+
 static int meta_setrotation(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L,
@@ -570,6 +578,7 @@ static const luaL_Reg clientmeta[] = {
 
 	{"setop", meta_setop},
 	{"setspawn", meta_setspawn},
+	{"setgroup", meta_setgroup},
 	{"setrotation", meta_setrotation},
 	{"setweather", meta_setweather},
 	{"setenvprop", meta_setenvprop},
@@ -679,22 +688,22 @@ int luaopen_client(lua_State *L) {
 	luaL_setfuncs(L, clientmeta, 0);
 	lua_pop(L, 1);
 
-	lua_addnumconst(L, MESSAGE_TYPE_CHAT);
-	lua_addnumconst(L, MESSAGE_TYPE_STATUS1);
-	lua_addnumconst(L, MESSAGE_TYPE_STATUS2);
-	lua_addnumconst(L, MESSAGE_TYPE_STATUS3);
-	lua_addnumconst(L, MESSAGE_TYPE_BRIGHT1);
-	lua_addnumconst(L, MESSAGE_TYPE_BRIGHT2);
-	lua_addnumconst(L, MESSAGE_TYPE_BRIGHT3);
-	lua_addnumconst(L, MESSAGE_TYPE_ANNOUNCE);
+	lua_addintconst(L, MESSAGE_TYPE_CHAT);
+	lua_addintconst(L, MESSAGE_TYPE_STATUS1);
+	lua_addintconst(L, MESSAGE_TYPE_STATUS2);
+	lua_addintconst(L, MESSAGE_TYPE_STATUS3);
+	lua_addintconst(L, MESSAGE_TYPE_BRIGHT1);
+	lua_addintconst(L, MESSAGE_TYPE_BRIGHT2);
+	lua_addintconst(L, MESSAGE_TYPE_BRIGHT3);
+	lua_addintconst(L, MESSAGE_TYPE_ANNOUNCE);
 
-	lua_addnumconst(L, CLIENT_STATE_INITIAL);
-	lua_addnumconst(L, CLIENT_STATE_MOTD);
-	lua_addnumconst(L, CLIENT_STATE_INGAME);
+	lua_addintconst(L, CLIENT_STATE_INITIAL);
+	lua_addintconst(L, CLIENT_STATE_MOTD);
+	lua_addintconst(L, CLIENT_STATE_INGAME);
 
-	lua_addnumconst(L, ENTITY_PROP_ROT_X);
-	lua_addnumconst(L, ENTITY_PROP_ROT_Y);
-	lua_addnumconst(L, ENTITY_PROP_ROT_Z);
+	lua_addintconst(L, ENTITY_PROP_ROT_X);
+	lua_addintconst(L, ENTITY_PROP_ROT_Y);
+	lua_addintconst(L, ENTITY_PROP_ROT_Z);
 
 	luaL_register(L, luaL_checkstring(L, 1), clientlib);
 	*(void **)lua_newuserdata(L, sizeof(Client *)) = CLIENT_BROADCAST;

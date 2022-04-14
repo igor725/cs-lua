@@ -203,24 +203,24 @@ int luaopen_config(lua_State *L) {
 	luaL_setfuncs(L, configmeta, 0);
 	lua_pop(L, 1);
 
-	lua_addnumconst(L, CONFIG_ERROR_SUCCESS);
-	lua_addnumconst(L, CONFIG_ERROR_INTERNAL);
-	lua_addnumconst(L, CONFIG_ERROR_IOFAIL);
-	lua_addnumconst(L, CONFIG_ERROR_PARSE);
+	lua_addintconst(L, CONFIG_ERROR_SUCCESS);
+	lua_addintconst(L, CONFIG_ERROR_INTERNAL);
+	lua_addintconst(L, CONFIG_ERROR_IOFAIL);
+	lua_addintconst(L, CONFIG_ERROR_PARSE);
 
-	lua_addnumconst(L, CONFIG_EXTRA_NOINFO);
-	lua_addnumconst(L, CONFIG_EXTRA_IO_LINEASERROR);
-	lua_addnumconst(L, CONFIG_EXTRA_IO_FRENAME);
-	lua_addnumconst(L, CONFIG_EXTRA_PARSE_NOENTRY);
-	lua_addnumconst(L, CONFIG_EXTRA_PARSE_LINEFORMAT);
-	lua_addnumconst(L, CONFIG_EXTRA_PARSE_NUMBER);
-	lua_addnumconst(L, CONFIG_EXTRA_PARSE_END);
+	lua_addintconst(L, CONFIG_EXTRA_NOINFO);
+	lua_addintconst(L, CONFIG_EXTRA_IO_LINEASERROR);
+	lua_addintconst(L, CONFIG_EXTRA_IO_FRENAME);
+	lua_addintconst(L, CONFIG_EXTRA_PARSE_NOENTRY);
+	lua_addintconst(L, CONFIG_EXTRA_PARSE_LINEFORMAT);
+	lua_addintconst(L, CONFIG_EXTRA_PARSE_NUMBER);
+	lua_addintconst(L, CONFIG_EXTRA_PARSE_END);
 
-	lua_addnumconst(L, CONFIG_TYPE_BOOL);
-	lua_addnumconst(L, CONFIG_TYPE_INT32);
-	lua_addnumconst(L, CONFIG_TYPE_INT16);
-	lua_addnumconst(L, CONFIG_TYPE_INT8);
-	lua_addnumconst(L, CONFIG_TYPE_STR);
+	lua_addintconst(L, CONFIG_TYPE_BOOL);
+	lua_addintconst(L, CONFIG_TYPE_INT32);
+	lua_addintconst(L, CONFIG_TYPE_INT16);
+	lua_addintconst(L, CONFIG_TYPE_INT8);
+	lua_addintconst(L, CONFIG_TYPE_STR);
 
 	luaL_register(L, luaL_checkstring(L, 1), configlib);
 	return 1;
