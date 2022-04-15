@@ -54,13 +54,13 @@ static int vec_setvalue(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	if(vec->type == 0) {
-		vec->value.f.x = (cs_float)luaL_checknumber(L, 2);
-		vec->value.f.y = (cs_float)luaL_checknumber(L, 3);
-		vec->value.f.z = (cs_float)luaL_checknumber(L, 4);
+		vec->value.f.x = (cs_float)luaL_optnumber(L, 2, vec->value.f.x);
+		vec->value.f.y = (cs_float)luaL_optnumber(L, 3, vec->value.f.y);
+		vec->value.f.z = (cs_float)luaL_optnumber(L, 4, vec->value.f.z);
 	} else if(vec->type == 1) {
-		vec->value.s.x = (cs_int16)luaL_checkinteger(L, 2);
-		vec->value.s.y = (cs_int16)luaL_checkinteger(L, 3);
-		vec->value.s.z = (cs_int16)luaL_checkinteger(L, 4);
+		vec->value.s.x = (cs_int16)luaL_optinteger(L, 2, vec->value.s.x);
+		vec->value.s.y = (cs_int16)luaL_optinteger(L, 3, vec->value.s.y);
+		vec->value.s.z = (cs_int16)luaL_optinteger(L, 4, vec->value.s.z);
 	}
 
 	return 0;
@@ -176,6 +176,12 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
+static int meta_call(lua_State *L) {
+	vec_setvalue(L);
+	lua_pushvalue(L, 1);
+	return 1;
+}
+
 static int meta_add(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
@@ -269,6 +275,7 @@ static const luaL_Reg vectormeta[] = {
 	{"__tostring", meta_tostring},
 	{"__newindex", meta_newindex},
 	{"__index", meta_index},
+	{"__call", meta_call},
 	{"__add", meta_add},
 	{"__sub", meta_sub},
 	{"__mul", meta_mul},

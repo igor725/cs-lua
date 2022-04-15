@@ -18,8 +18,8 @@ Ang *lua_checkangle(lua_State *L, int idx) {
 
 static int ang_setvalue(lua_State *L) {
 	Ang *ang = lua_checkangle(L, 1);
-	ang->yaw = (cs_float)luaL_checknumber(L, 2);
-	ang->pitch = (cs_float)luaL_checknumber(L, 3);
+	ang->yaw = (cs_float)luaL_optnumber(L, 2, ang->yaw);
+	ang->pitch = (cs_float)luaL_optnumber(L, 3, ang->pitch);
 	return 0;
 }
 
@@ -76,6 +76,12 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
+static int meta_call(lua_State *L) {
+	ang_setvalue(L);
+	lua_pushvalue(L, 1);
+	return 1;
+}
+
 static int meta_tostring(lua_State *L) {
 	Ang *ang = lua_checkangle(L, 1);
 	lua_pushfstring(L, "Angle(%.2f, %.2f)", ang->yaw, ang->pitch);
@@ -86,6 +92,7 @@ static const luaL_Reg anglemeta[] = {
 	{"set", ang_setvalue},
 	{"get", ang_getvalue},
 
+	{"__call", meta_call},
 	{"__index", meta_index},
 	{"__newindex", meta_newindex},
 	{"__tostring", meta_tostring},
