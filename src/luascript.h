@@ -30,6 +30,7 @@ typedef struct LuaScript {
 #define CSLUA_MANGLE  "Angle"
 #define CSLUA_MCOLOR  "Color"
 #define CSLUA_MBLOCK  "Block"
+#define CSLUA_MBULK   "Bulk"
 #define CSLUA_MCONFIG "Config"
 #define CSLUA_MCLIENT "Client"
 #define CSLUA_MWORLD  "World"

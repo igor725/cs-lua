@@ -8,6 +8,7 @@
 #include "luaworld.h"
 #include "luacolor.h"
 #include "luacuboid.h"
+#include "luablock.h"
 
 Client *lua_checkclient(lua_State *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, CSLUA_MCLIENT);
@@ -504,6 +505,14 @@ static int meta_despawn(lua_State *L) {
 	return 1;
 }
 
+static int meta_sendbulk(lua_State *L) {
+	Client_BulkBlockUpdate(
+		lua_checkclient(L, 1),
+		lua_checkbulk(L, 2)
+	);
+	return 0;
+}
+
 static int meta_newcuboid(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_newcubref(L, client, Client_NewSelection(client));
@@ -619,6 +628,7 @@ static const luaL_Reg clientmeta[] = {
 
 	{"spawn", meta_spawn},
 	{"despawn", meta_despawn},
+	{"sendbulk", meta_sendbulk},
 	{"newcuboid", meta_newcuboid},
 	{"update", meta_update},
 	{"teleport", meta_teleport},

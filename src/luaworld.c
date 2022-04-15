@@ -74,6 +74,14 @@ static int meta_getspawna(lua_State *L) {
 	return 2;
 }
 
+static int meta_getoffset(lua_State *L) {
+	lua_pushinteger(L, (cs_uint32)World_GetOffset(
+		lua_checkworld(L, 1),
+		lua_checkshortvector(L, 2)
+	));
+	return 1;
+}
+
 static int meta_getdimensions(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	LuaVector *vec = lua_checkvector(L, 2);
@@ -331,6 +339,7 @@ static const luaL_Reg worldmeta[] = {
 	{"getname", meta_getname},
 	{"getspawn", meta_getspawn},
 	{"getspawna", meta_getspawna},
+	{"getoffset", meta_getoffset},
 	{"getdimensions", meta_getdimensions},
 	{"getdimensionsa", meta_getdimensionsa},
 	{"getblock", meta_getblock},

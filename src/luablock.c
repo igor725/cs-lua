@@ -1,11 +1,16 @@
 #include <core.h>
 #include <block.h>
+#include <platform.h>
 #include "luascript.h"
 #include "luaworld.h"
 #include "luablock.h"
 
 BlockDef *lua_checkblockdef(lua_State *L, int idx) {
 	return *(BlockDef **)luaL_checkudata(L, idx, CSLUA_MBLOCK);
+}
+
+BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {
+	return (BulkBlockUpdate *)luaL_checkudata(L, idx, CSLUA_MBULK);
 }
 
 static int meta_addtoworld(lua_State *L) {
@@ -58,6 +63,75 @@ static const luaL_Reg blockmeta[] = {
 	{"__tostring", meta_tostring},
 	{"__gc", meta_gc},
 
+	{NULL, NULL}
+};
+
+static int meta_setautosend(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
+	bbu->autosend = (cs_bool)lua_toboolean(L, 2);
+	return 0;
+}
+
+static int meta_setworld(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
+	bbu->world = lua_checkworld(L, 2);
+	return 0;
+}
+
+static int meta_push(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
+	lua_pushboolean(L, Block_BulkUpdateSend(bbu));
+	return 1;
+}
+
+static int meta_add(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
+	int top;
+
+	if(lua_istable(L, 2)) {
+		top = (int)lua_objlen(L, 2);
+		if(top == 0 || (top % 2 != 0))
+			luaL_error(L, "Invalid table size");
+		top /= 2;
+		for(int i = 0; i < top; i++) {
+			lua_pushinteger(L, (i * 2) + 2);
+			lua_gettable(L, 2);
+			lua_pushinteger(L, (i * 2) + 1);
+			lua_gettable(L, 2);
+			cs_uint32 offset = (cs_uint32)luaL_checkinteger(L, -1);
+			BlockID block = (BlockID)luaL_checkinteger(L, -2);
+			lua_pop(L, 2);
+			if(!Block_BulkUpdateAdd(bbu, offset, block)) {
+				lua_pushboolean(L, 0);
+				lua_pushinteger(L, i);
+				return 2;
+			}
+		}
+	} else {
+		top = lua_gettop(L) - 1;
+		if(top == 0 || top % 2 != 0)
+			luaL_error(L, "Invalid number of arguments");
+		top /= 2;
+		for(int i = 0; i < top; i++) {
+			cs_uint32 offset = (cs_uint32)luaL_checkinteger(L, (i * 2) + 2);
+			BlockID block = (BlockID)luaL_checkinteger(L, (i * 2) + 3);
+			if(!Block_BulkUpdateAdd(bbu, offset, block)) {
+				lua_pushboolean(L, 0);
+				lua_pushinteger(L, i);
+				return 2;
+			}
+		}
+	}
+
+	lua_pushboolean(L, 1);
+	return 1;
+}
+
+static const luaL_Reg bulkmeta[] = {
+	{"setautosend", meta_setautosend},
+	{"setworld", meta_setworld},
+	{"push", meta_push},
+	{"add", meta_add},
 	{NULL, NULL}
 };
 
@@ -149,9 +223,17 @@ static int block_isvalid(lua_State *L) {
 	return 1;
 }
 
+static int block_bulk(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_newuserdata(L, sizeof(BulkBlockUpdate));
+	Memory_Fill(bbu, sizeof(BulkBlockUpdate), 0);
+	luaL_setmetatable(L, CSLUA_MBULK);
+	return 1;
+}
+
 static const luaL_Reg blocklib[] = {
 	{"define", block_define},
 	{"isvalid", block_isvalid},
+	{"bulk", block_bulk},
 
 	{NULL, NULL}
 };
@@ -161,7 +243,11 @@ int luaopen_block(lua_State *L) {
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	luaL_setfuncs(L, blockmeta, 0);
-	lua_pop(L, 1);
+	luaL_newmetatable(L, CSLUA_MBULK);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	luaL_setfuncs(L, bulkmeta, 0);
+	lua_pop(L, 2);
 
 	lua_addintconst(L, BDSOL_WALK);
 	lua_addintconst(L, BDSOL_SWIM);
