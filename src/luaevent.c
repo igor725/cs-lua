@@ -2,6 +2,8 @@
 #include <event.h>
 #include <list.h>
 #include <server.h>
+#include <client.h>
+#include <platform.h>
 #include "luamain.h"
 #include "luascript.h"
 #include "luaangle.h"

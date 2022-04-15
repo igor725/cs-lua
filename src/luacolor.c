@@ -1,4 +1,5 @@
 #include <core.h>
+#include <platform.h>
 #include <types/cpe.h>
 #include "luascript.h"
 #include "luacolor.h"

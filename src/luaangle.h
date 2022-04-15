@@ -1,6 +1,5 @@
 #ifndef CSLUAANGLE_H
 #define CSLUAANGLE_H
-#include <core.h>
 #include <vector.h>
 #include "luascript.h"
 

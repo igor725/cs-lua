@@ -1,6 +1,7 @@
 #include <core.h>
 #include <client.h>
 #include <command.h>
+#include <platform.h>
 #include "luascript.h"
 #include "luaclient.h"
 #include "luavector.h"

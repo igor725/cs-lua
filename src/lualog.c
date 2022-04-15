@@ -1,4 +1,3 @@
-#include <core.h>
 #include <log.h>
 #include "lualog.h"
 

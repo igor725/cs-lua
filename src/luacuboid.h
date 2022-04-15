@@ -1,6 +1,6 @@
 #ifndef CSLUASELECTION_H
 #define CSLUASELECTION_H
-#include <core.h>
+#include <types/client.h>
 #include <types/cpe.h>
 #include "luascript.h"
 

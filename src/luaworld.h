@@ -1,7 +1,7 @@
 #ifndef CSLUAWORLD_H
 #define CSLUAWORLD_H
 #include <core.h>
-#include <world.h>
+#include <types/world.h>
 #include "luascript.h"
 
 World *lua_checkworld(lua_State *L, int idx);

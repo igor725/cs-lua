@@ -1,7 +1,6 @@
 #include <core.h>
 #include <block.h>
 #include "luascript.h"
-#include "luaclient.h"
 #include "luaworld.h"
 #include "luablock.h"
 
