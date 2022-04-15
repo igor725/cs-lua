@@ -32,7 +32,7 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 	luacub->client = client;
 	luacub->cub = cub;
 
-	lua_getfield(L, LUA_REGISTRYINDEX, "cscuboids");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 	lua_pushclient(L, client);
 	lua_pushvalue(L, -1); // Отправляем клиента дважды в стек, может пригодиться
 	lua_gettable(L, -3);
@@ -57,7 +57,7 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 
 void lua_clearcuboids(lua_State *L, Client *client) {
 	lua_pushclient(L, client); // Не хочу два раза вызвывать эту довольно жирную функцию
-	lua_getfield(L, LUA_REGISTRYINDEX, "cscuboids");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 	lua_pushvalue(L, -2);
 	lua_gettable(L, -2); // Получаем таблицу кубоидов клиента
 
@@ -127,7 +127,7 @@ static int meta_remove(lua_State *L) {
 	if(luacub) {
 		luacub->released = true;
 		Client_RemoveSelection(luacub->client, luacub->cub);
-		lua_getfield(L, LUA_REGISTRYINDEX, "cscuboids");
+		lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 		lua_pushclient(L, luacub->client);
 		lua_gettable(L, -2);
 		lua_pushinteger(L, Cuboid_GetID(luacub->cub));
@@ -153,7 +153,7 @@ static const luaL_Reg cuboidmeta[] = {
 
 void luainit_cuboid(lua_State *L) {
 	lua_newtable(L);
-	lua_setfield(L, LUA_REGISTRYINDEX, "cscuboids");
+	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 
 	luaL_newmetatable(L, CSLUA_MCUBOID);
 	lua_pushvalue(L, -1);

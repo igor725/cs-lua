@@ -352,7 +352,6 @@ static int meta_sethotbar(lua_State *L) {
 static int meta_sethacks(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	luaL_checktype(L, 2, LUA_TTABLE);
-	CPEHacks hacks;
 
 	lua_getfield(L, 2, "jumpheight");
 	lua_getfield(L, 2, "thirdperson");
@@ -361,12 +360,14 @@ static int meta_sethacks(lua_State *L) {
 	lua_getfield(L, 2, "noclip");
 	lua_getfield(L, 2, "flying");
 
-	hacks.flying = (cs_bool)lua_toboolean(L, -1);
-	hacks.noclip = (cs_bool)lua_toboolean(L, -2);
-	hacks.speeding = (cs_bool)lua_toboolean(L, -3);
-	hacks.spawnControl = (cs_bool)lua_toboolean(L, -4);
-	hacks.tpv = (cs_bool)lua_toboolean(L, -5);
-	hacks.jumpHeight = (cs_int16)luaL_optinteger(L, -6, -1);
+	CPEHacks hacks = {
+		.flying = (cs_bool)lua_toboolean(L, -1),
+		.noclip = (cs_bool)lua_toboolean(L, -2),
+		.speeding = (cs_bool)lua_toboolean(L, -3),
+		.spawnControl = (cs_bool)lua_toboolean(L, -4),
+		.tpv = (cs_bool)lua_toboolean(L, -5),
+		.jumpHeight = (cs_int16)luaL_optinteger(L, -6, -1)
+	};
 	lua_pop(L, 6);
 
 	lua_pushboolean(L, Client_SendHacks(client, &hacks));

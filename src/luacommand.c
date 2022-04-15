@@ -16,7 +16,7 @@ static const char *errors[] = {
 	"Command description cannot be empty",
 
 	// Command execution errors
-	"&cLua function not found in registry table",
+	"&cLua function was not found in the registry table",
 	"&cLua execution error"
 };
 
@@ -37,9 +37,8 @@ COMMAND_FUNC(luacmd) {
 	} else output = errors[5];
 	LuaScript_Unlock(script);
 
-	if(output) {
+	if(output)
 		COMMAND_PRINT(output);
-	}
 
 	return false;
 }
