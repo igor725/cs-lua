@@ -16,8 +16,7 @@ static cs_bool surv_getdata(lua_State *L, int idx, SrvData **data) {
 	else if(!SurvInterface)
 		return false;
 
-	Client *client = lua_checkclient(L, idx);
-	*data = SurvInterface->getSrvData(client);
+	*data = SurvInterface->getSrvData(lua_checkclient(L, idx));
 	if(!safemode)
 		luaL_argcheck(L, *data != NULL, 1, "No SurvData");
 
@@ -55,7 +54,8 @@ static int surv_giveblock(lua_State *L) {
 	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
 	SrvData *data = NULL;
 	lua_pushinteger(L,
-		(lua_Integer)surv_getdata(L, 1, &data) && SurvInterface->giveToInventory(data, id, ammount)
+		(lua_Integer)surv_getdata(L, 1, &data) &&
+		SurvInterface->giveToInventory(data, id, ammount)
 	);
 	return 1;
 }
@@ -65,7 +65,8 @@ static int surv_takeblock(lua_State *L) {
 	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
 	SrvData *data = NULL;
 	lua_pushinteger(L,
-		(lua_Integer)surv_getdata(L, 1, &data) && SurvInterface->takeFromInventory(data, id, ammount)
+		(lua_Integer)surv_getdata(L, 1, &data) &&
+		SurvInterface->takeFromInventory(data, id, ammount)
 	);
 	return 1;
 }

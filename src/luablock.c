@@ -49,8 +49,9 @@ static int meta_gc(lua_State *L) {
 }
 
 static int meta_tostring(lua_State *L) {
-	BlockDef *bdef = lua_checkblockdef(L, 1);
-	lua_pushfstring(L, "BlockDef(%p)", bdef);
+	lua_pushfstring(L, "BlockDef(%p)",
+		lua_checkblockdef(L, 1)
+	);
 	return 1;
 }
 

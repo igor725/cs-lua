@@ -10,9 +10,10 @@ CStore *lua_checkcfgstore(lua_State *L, int idx) {
 }
 
 static int meta_get(lua_State *L) {
-	CStore *store = lua_checkcfgstore(L, 1);
-	cs_str key = luaL_checkstring(L, 2);
-	CEntry *ent = Config_GetEntry(store, key);
+	CEntry *ent = Config_GetEntry(
+		lua_checkcfgstore(L, 1),
+		luaL_checkstring(L, 2)
+	);
 	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
 	switch (ent->type) {
 		case CONFIG_TYPE_BOOL:
@@ -42,9 +43,10 @@ static int meta_get(lua_State *L) {
 }
 
 static int meta_set(lua_State *L) {
-	CStore *store = lua_checkcfgstore(L, 1);
-	cs_str key = luaL_checkstring(L, 2);
-	CEntry *ent = Config_GetEntry(store, key);
+	CEntry *ent = Config_GetEntry(
+		lua_checkcfgstore(L, 1),
+		luaL_checkstring(L, 2)
+	);
 	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
 	switch (ent->type) {
 		case CONFIG_TYPE_BOOL:
@@ -74,23 +76,27 @@ static int meta_set(lua_State *L) {
 }
 
 static int meta_load(lua_State *L) {
-	CStore *store = lua_checkcfgstore(L, 1);
-	lua_pushboolean(L, Config_Load(store));
+	lua_pushboolean(L, Config_Load(
+		lua_checkcfgstore(L, 1)
+	));
 	return 1;
 }
 
 static int meta_save(lua_State *L) {
-	CStore *store = lua_checkcfgstore(L, 1);
-	cs_bool force = (cs_bool)lua_toboolean(L, 2);
-	lua_pushboolean(L, Config_Save(store, force));
+	lua_pushboolean(L, Config_Save(
+		lua_checkcfgstore(L, 1),
+		(cs_bool)lua_toboolean(L, 2)
+	));
 	return 1;
 }
 
 static int meta_poperror(lua_State *L) {
-	CStore *store = lua_checkcfgstore(L, 1);
 	ECExtra extra = CONFIG_EXTRA_NOINFO;
 	cs_int32 line = 0;
-	ECError error = Config_PopError(store, &extra, &line);
+	ECError error = Config_PopError(
+		lua_checkcfgstore(L, 1),
+		&extra, &line
+	);
 	lua_pushinteger(L, (lua_Integer)error);
 	lua_pushinteger(L, (lua_Integer)extra);
 	lua_pushinteger(L, (lua_Integer)line);
@@ -98,8 +104,9 @@ static int meta_poperror(lua_State *L) {
 }
 
 static int meta_tostring(lua_State *L) {
-	CStore *store = lua_checkcfgstore(L, 1);
-	lua_pushfstring(L, "Config(%p)", store);
+	lua_pushfstring(L, "Config(%p)",
+		lua_checkcfgstore(L, 1)
+	);
 	return 1;
 }
 

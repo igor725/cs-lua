@@ -193,6 +193,7 @@ cs_bool Plugin_Load(void) {
 	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
 	Directory_Ensure("luadata"); // Папка с данными для каждого скрипта
 	Directory_Ensure(DISABLED_DIR); // Сюда будут переноситься выключенные скрипты
+
 	if(Iter_Init(&sIter, "scripts", "lua")) {
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;

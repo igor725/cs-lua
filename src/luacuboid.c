@@ -109,8 +109,10 @@ static int meta_setpoints(lua_State *L) {
 }
 
 static int meta_setcolor(lua_State *L) {
-	LuaCuboid *luacub = lua_checkcuboid(L, 1);
-	Cuboid_SetColor(luacub->cub, *lua_checkcolor4(L, 2));
+	Cuboid_SetColor(
+		lua_checkcuboid(L, 1)->cub,
+		*lua_checkcolor4(L, 2)
+	);
 	return 0;
 }
 
@@ -122,6 +124,7 @@ static int meta_update(lua_State *L) {
 
 static int meta_remove(lua_State *L) {
 	LuaCuboid *luacub = lua_tocuboid(L, 1);
+
 	if(luacub) {
 		luacub->released = true;
 		Client_RemoveSelection(luacub->client, luacub->cub);
