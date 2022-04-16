@@ -112,8 +112,9 @@ static int meta_getblock(lua_State *L) {
 static int meta_getenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	EColor ctype = (EColor)luaL_checkinteger(L, 2);
-	Color3 *col = lua_checkcolor3(L, 3);
-	*col = *World_GetEnvColor(world, ctype);
+	Color3 *col = World_GetEnvColor(world, ctype);
+	if(col) *lua_checkcolor3(L, 3) = *col;
+	else luaL_error(L, "Invalid env color");
 	return 1;
 }
 
@@ -127,27 +128,45 @@ static int meta_getenvcolora(lua_State *L) {
 }
 
 static int meta_getenvprop(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	EProp ptype = (EProp)luaL_checkinteger(L, 2);
-	lua_pushinteger(L, (lua_Integer)World_GetEnvProp(world, ptype));
+	lua_pushinteger(L, (lua_Integer)World_GetEnvProp(
+		lua_checkworld(L, 1),
+		(EProp)luaL_checkinteger(L, 2)
+	));
 	return 1;
 }
 
 static int meta_getweather(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushinteger(L, (lua_Integer)World_GetWeather(world));
+	lua_pushinteger(L, (lua_Integer)World_GetWeather(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
 static int meta_gettexpack(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushstring(L, World_GetTexturePack(world));
+	lua_pushstring(L, World_GetTexturePack(
+		lua_checkworld(L, 1)
+	));
+	return 1;
+}
+
+static int meta_getplayercount(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)World_CountPlayers(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
 static int meta_isinmemory(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushboolean(L, World_IsInMemory(world));
+	lua_pushboolean(L, World_IsInMemory(
+		lua_checkworld(L, 1)
+	));
+	return 1;
+}
+
+static int meta_ismodified(lua_State *L) {
+	lua_pushboolean(L, World_IsModified(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
@@ -348,6 +367,7 @@ static const luaL_Reg worldmeta[] = {
 	{"getenvprop", meta_getenvprop},
 	{"getweather", meta_getweather},
 	{"gettexpack", meta_gettexpack},
+	{"getplayercount", meta_getplayercount},
 
 	{"setspawn", meta_setspawn},
 	{"setblock", meta_setblock},
@@ -360,6 +380,7 @@ static const luaL_Reg worldmeta[] = {
 
 	{"isready", meta_isready},
 	{"isinmemory", meta_isinmemory},
+	{"ismodified", meta_ismodified},
 
 	{"haserror", meta_haserror},
 	{"poperror", meta_poperror},
