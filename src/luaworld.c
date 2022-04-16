@@ -180,10 +180,11 @@ static int meta_setspawn(lua_State *L) {
 }
 
 static int meta_setblock(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	SVec *pos = lua_checkshortvector(L, 2);
-	BlockID id = (BlockID)luaL_checkinteger(L, 3);
-	lua_pushboolean(L, World_SetBlock(world, pos, id));
+	lua_pushboolean(L, World_SetBlock(
+		lua_checkworld(L, 1),
+		lua_checkshortvector(L, 2),
+		(BlockID)luaL_checkinteger(L, 3)
+	));
 	return 1;
 }
 
@@ -204,25 +205,28 @@ static int meta_setblocknat(lua_State *L) {
 }
 
 static int meta_setenvcolor(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	EColor ctype = (EColor)luaL_checkinteger(L, 2);
-	Color3 *col = lua_checkcolor3(L, 3);
-	lua_pushboolean(L, World_SetEnvColor(world, ctype, col));
+	lua_pushboolean(L, World_SetEnvColor(
+		lua_checkworld(L, 1),
+		(EColor)luaL_checkinteger(L, 2),
+		lua_checkcolor3(L, 3)
+	));
 	return 1;
 }
 
 static int meta_setenvprop(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	EProp ptype = (EProp)luaL_checkinteger(L, 2);
-	cs_int32 pvalue = (cs_int32)luaL_checkinteger(L, 3);
-	lua_pushboolean(L, World_SetEnvProp(world, ptype, pvalue));
+	lua_pushboolean(L, World_SetEnvProp(
+		lua_checkworld(L, 1),
+		(EProp)luaL_checkinteger(L, 2),
+		(cs_int32)luaL_checkinteger(L, 3)
+	));
 	return 1;
 }
 
 static int meta_setweather(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	EWeather wtype = (cs_int32)luaL_checkinteger(L, 2);
-	lua_pushboolean(L, World_SetWeather(world, wtype));
+	lua_pushboolean(L, World_SetWeather(
+		lua_checkworld(L, 1),
+		(cs_int32)luaL_checkinteger(L, 2)
+	));
 	return 1;
 }
 
@@ -235,20 +239,32 @@ static int meta_settexpack(lua_State *L) {
 }
 
 static int meta_setinmemory(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	World_SetInMemory(world, (cs_bool)lua_toboolean(L, 2));
+	World_SetInMemory(
+		lua_checkworld(L, 1),
+		(cs_bool)lua_toboolean(L, 2)
+	);
+	return 0;
+}
+
+static int meta_setignoremod(lua_State *L) {
+	World_SetIgnoreModifications(
+		lua_checkworld(L, 1),
+		(cs_bool)lua_toboolean(L, 2)
+	);
 	return 0;
 }
 
 static int meta_isready(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushboolean(L, World_IsReadyToPlay(world));
+	lua_pushboolean(L, World_IsReadyToPlay(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
 static int meta_haserror(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushboolean(L, World_HasError(world));
+	lua_pushboolean(L, World_HasError(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
@@ -262,8 +278,9 @@ static int meta_poperror(lua_State *L) {
 }
 
 static int meta_update(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	World_FinishEnvUpdate(world);
+	World_FinishEnvUpdate(
+		lua_checkworld(L, 1)
+	);
 	return 0;
 }
 
@@ -314,8 +331,9 @@ static int meta_iterplayers(lua_State *L) {
 }
 
 static int meta_remove(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushboolean(L, World_Remove(world));
+	lua_pushboolean(L, World_Remove(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
@@ -325,21 +343,24 @@ static int meta_unload(lua_State *L) {
 }
 
 static int meta_save(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushboolean(L, World_Save(world));
+	lua_pushboolean(L, World_Save(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
 static int meta_load(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushboolean(L, World_Load(world));
+	lua_pushboolean(L, World_Load(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
 static int meta_lock(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	cs_ulong timeout = (cs_ulong)luaL_optinteger(L, 2, 0);
-	lua_pushboolean(L, World_Lock(world, timeout));
+	lua_pushboolean(L, World_Lock(
+		lua_checkworld(L, 1),
+		(cs_ulong)luaL_optinteger(L, 2, 0)
+	));
 	return 1;
 }
 
@@ -349,8 +370,9 @@ static int meta_unlock(lua_State *L) {
 }
 
 static int meta_tostring(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushfstring(L, "World(%p)", world);
+	lua_pushfstring(L, "World(%p)",
+		lua_checkworld(L, 1)
+	);
 	return 1;
 }
 
@@ -377,6 +399,7 @@ static const luaL_Reg worldmeta[] = {
 	{"setweather", meta_setweather},
 	{"settexpack", meta_settexpack},
 	{"setinmemory", meta_setinmemory},
+	{"setignoremod", meta_setignoremod},
 
 	{"isready", meta_isready},
 	{"isinmemory", meta_isinmemory},
