@@ -15,17 +15,17 @@ BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {
 
 static int meta_addtoworld(lua_State *L) {
 	lua_pushboolean(L, Block_Define(
-		lua_checkblockdef(L, 1),
 		lua_checkworld(L, 2),
-		(BlockID)luaL_checkinteger(L, 3)
+		(BlockID)luaL_checkinteger(L, 3),
+		lua_checkblockdef(L, 1)
 	));
 	return 1;
 }
 
 static int meta_undefine(lua_State *L) {
 	lua_pushboolean(L, Block_Undefine(
-		lua_checkblockdef(L, 1),
-		lua_checkworld(L, 2)
+		lua_checkworld(L, 2),
+		lua_checkblockdef(L, 1)
 	));
 	return 1;
 }
