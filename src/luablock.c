@@ -14,29 +14,33 @@ BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {
 }
 
 static int meta_addtoworld(lua_State *L) {
-	BlockDef *bdef = lua_checkblockdef(L, 1);
-	World *world = lua_checkworld(L, 2);
-	BlockID id = (BlockID)luaL_checkinteger(L, 3);
-	lua_pushboolean(L, Block_Define(world, id, bdef));
+	lua_pushboolean(L, Block_Define(
+		lua_checkblockdef(L, 1),
+		lua_checkworld(L, 2),
+		(BlockID)luaL_checkinteger(L, 3)
+	));
 	return 1;
 }
 
 static int meta_undefine(lua_State *L) {
-	BlockDef *bdef = lua_checkblockdef(L, 1);
-	World *world = lua_checkworld(L, 2);
-	lua_pushboolean(L, Block_Undefine(world, bdef));
+	lua_pushboolean(L, Block_Undefine(
+		lua_checkblockdef(L, 1),
+		lua_checkworld(L, 2)
+	));
 	return 1;
 }
 
 static int meta_globundefine(lua_State *L) {
-	BlockDef *bdef = lua_checkblockdef(L, 1);
-	Block_UndefineGlobal(bdef);
+	Block_UndefineGlobal(
+		lua_checkblockdef(L, 1)
+	);
 	return 0;
 }
 
 static int meta_update(lua_State *L) {
-	BlockDef *bdef = lua_checkblockdef(L, 1);
-	Block_UpdateDefinition(bdef);
+	Block_UpdateDefinition(
+		lua_checkblockdef(L, 1)
+	);
 	return 0;
 }
 
