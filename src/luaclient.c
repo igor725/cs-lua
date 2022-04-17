@@ -643,25 +643,26 @@ static const luaL_Reg clientmeta[] = {
 
 static int client_get(lua_State *L) {
 	int count = lua_gettop(L);
-	for(int i = 1; i <= count; i++) {
-		ClientID id = (ClientID)luaL_checknumber(L, i);
-		lua_pushclient(L, Client_GetByID(id));
-	}
+	for(int i = 1; i <= count; i++)
+		lua_pushclient(L, Client_GetByID(
+			(ClientID)luaL_checknumber(L, i)
+		));
 	return count;
 }
 
 static int client_getname(lua_State *L) {
 	int count = lua_gettop(L);
-	for(int i = 1; i <= count; i++) {
-		cs_str name = (cs_str)luaL_checkstring(L, i);
-		lua_pushclient(L, Client_GetByName(name));
-	}
+	for(int i = 1; i <= count; i++)
+		lua_pushclient(L, Client_GetByName(
+			(cs_str)luaL_checkstring(L, i)
+		));
 	return count;
 }
 
 static int client_getcount(lua_State *L) {
-	EClientState state = (EClientState)luaL_checkinteger(L, 1);
-	lua_pushinteger(L, Clients_GetCount(state));
+	lua_pushinteger(L, Clients_GetCount(
+		(EClientState)luaL_checkinteger(L, 1)
+	));
 	return 1;
 }
 
