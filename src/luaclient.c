@@ -519,6 +519,15 @@ static int meta_newcuboid(lua_State *L) {
 	return 1;
 }
 
+static int meta_plmesg(lua_State *L) {
+	lua_pushboolean(L, Client_SendPluginMessage(
+		lua_checkclient(L, 1),
+		(cs_byte)luaL_checkinteger(L, 2),
+		luaL_checkstring(L, 3)
+	));
+	return 1;
+}
+
 static int meta_update(lua_State *L) {
 	lua_pushboolean(L, Client_Update(
 		lua_checkclient(L, 1)
@@ -630,6 +639,7 @@ static const luaL_Reg clientmeta[] = {
 	{"despawn", meta_despawn},
 	{"sendbulk", meta_sendbulk},
 	{"newcuboid", meta_newcuboid},
+	{"plmesg", meta_plmesg},
 	{"update", meta_update},
 	{"teleport", meta_teleport},
 	{"tospawn", meta_tospawn},

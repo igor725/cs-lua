@@ -137,16 +137,15 @@ static const luaL_Reg bulkmeta[] = {
 	{"setworld", meta_setworld},
 	{"push", meta_push},
 	{"add", meta_add},
+
 	{NULL, NULL}
 };
 
 #define readtabval(I, K, S, T, D) \
-lua_getfield(L, -I, K); \
-bdef->params.S = (T)luaL_optinteger(L, -1, D)
+(lua_getfield(L, -I, K), bdef->params.S = (T)luaL_optinteger(L, -1, D))
 
 #define readtabbool(I, K, S) \
-lua_getfield(L, -I, K); \
-bdef->params.S = (cs_bool)lua_toboolean(L, -1);
+(lua_getfield(L, -I, K), bdef->params.S = (cs_bool)lua_toboolean(L, -1))
 
 // TODO: Использовать SVec для установки минимальных и максимальных значений
 // TODO2: Использовать Color3 для установки цвета тумана
