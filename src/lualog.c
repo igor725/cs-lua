@@ -69,7 +69,7 @@ static int log_print(lua_State *L) {
 	return 0;
 }
 
-const luaL_Reg loglib[] = {
+static const luaL_Reg loglib[] = {
 	{"info", log_info},
 	{"warn", log_warn},
 	{"error", log_error},
