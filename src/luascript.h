@@ -24,6 +24,7 @@ typedef struct LuaScript {
 #define CSLUA_RCLIENTS "csclients"
 #define CSLUA_RCMDS    "cscmds"
 #define CSLUA_RCUBOIDS "cscuboids"
+#define CSLUA_RPARTS "csmdlparts"
 
 // Метатаблицы разных приколов
 #define CSLUA_MVECTOR "Vector"

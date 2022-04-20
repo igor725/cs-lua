@@ -62,7 +62,7 @@ int lua_checktabfield(lua_State *L, int idx, cs_str fname, int ftype) {
 
 int lua_checktabfieldud(lua_State *L, int idx, cs_str fname, const char *meta) {
 	lua_getfield(L, idx, fname);
-	if(luaL_testudata(L, -1, meta)) {
+	if(!luaL_testudata(L, -1, meta)) {
 		luaL_error(L, "Field " LUA_QS " must be a %s", fname, meta);
 		return false;
 	}
