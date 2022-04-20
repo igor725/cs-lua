@@ -194,26 +194,16 @@ static void ReadBlockTable(lua_State *L, BlockDef *bdef) {
 	lua_pop(L, 14);
 }
 
-static cs_bool checkfield(lua_State *L, cs_str fname, int ftype) {
-	lua_getfield(L, 1, fname);
-	if(lua_type(L, -1) != ftype) {
-		luaL_error(L, "Field " LUA_QS " must be a %s", fname, lua_typename(L, ftype));
-		return false;
-	}
-
-	return true;
-}
-
 static int block_define(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	cs_str name = NULL;
-	if(checkfield(L, "name", LUA_TSTRING))
+	if(lua_checktabfield(L, 1, "name", LUA_TSTRING))
 		name = lua_tostring(L, -1);
 	lua_getfield(L, 1, "extended");
 	BlockID fallback = 0;
-	if(checkfield(L, "fallback", LUA_TNUMBER))
+	if(lua_checktabfield(L, 1, "fallback", LUA_TNUMBER))
 		fallback = (BlockID)lua_tointeger(L, -1);
-	checkfield(L, "params", LUA_TTABLE);
+	lua_checktabfield(L, 1, "params", LUA_TTABLE);
 
 	BlockDef *bdef = NULL;
 

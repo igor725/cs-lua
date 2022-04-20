@@ -15,6 +15,7 @@
 #include "luaconfig.h"
 #include "luacuboid.h"
 #include "luagroups.h"
+#include "luamodel.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -49,6 +50,26 @@ void *luaL_testudata (lua_State *L, int ud, const char *tname) {
 }
 #endif
 
+int lua_checktabfield(lua_State *L, int idx, cs_str fname, int ftype) {
+	lua_getfield(L, idx, fname);
+	if(lua_type(L, -1) != ftype) {
+		luaL_error(L, "Field " LUA_QS " must be a %s", fname, lua_typename(L, ftype));
+		return false;
+	}
+
+	return true;
+}
+
+int lua_checktabfieldud(lua_State *L, int idx, cs_str fname, const char *meta) {
+	lua_getfield(L, idx, fname);
+	if(luaL_testudata(L, -1, meta)) {
+		luaL_error(L, "Field " LUA_QS " must be a %s", fname, meta);
+		return false;
+	}
+
+	return true;
+}
+
 static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
 	{LUA_MATHLIBNAME, luaopen_math},
@@ -74,6 +95,7 @@ static const luaL_Reg lualibs[] = {
 	{"angle", luaopen_angle},
 	{"color", luaopen_color},
 	{"groups", luaopen_groups},
+	{"model", luaopen_model},
 	{"survival", luaopen_survival},
 
 	{NULL,NULL}
