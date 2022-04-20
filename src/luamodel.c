@@ -44,13 +44,11 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 
 	if(lua_checktabfield(L, -3, "uvs", LUA_TTABLE)) {
 		for(int i = 0; i < 6; i++) {
-			lua_pushinteger(L, i + 1);
-			lua_gettable(L, -2 - i * 5);
+			lua_rawgeti(L, -1 - i * 5, i + 1);
 			if(!lua_istable(L, -1))
 				luaL_error(L, "Model UV #%d is not a table", i + 1);
 			for(int j = 0; j < 4; j++) {
-				lua_pushinteger(L, j + 1);
-				lua_gettable(L, -2 - j);
+				lua_rawgeti(L, -1 - j, j + 1);
 				if(!lua_isnumber(L, -1))
 					luaL_error(L, "Model UV #%d has invalid format", i + 1);
 				((cs_uint16 *)&part->UVs[i])[j] = (cs_uint16)lua_tointeger(L, -1);
@@ -64,8 +62,7 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 		part->rotOrigin = *lua_checkfloatvector(L, -1);
 	if(lua_checktabfield(L, -6, "anims", LUA_TTABLE)) {
 		for(int i = 0; i < 4; i++) {
-			lua_pushinteger(L, i + 1);
-			lua_gettable(L, -2 - i * 7);
+			lua_rawgeti(L, -1 - i * 7, i + 1);
 			if(!lua_istable(L, -1))
 				luaL_error(L, "Model anim #%d is not a table", i + 1);
 			
@@ -74,8 +71,7 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 			if(lua_checktabfield(L, -2, "args", LUA_TTABLE)) {
 				cs_float *args = &part->anims[i].a;
 				for(int j = 0; j < 4; j++) {
-					lua_pushinteger(L, j + 1);
-					lua_gettable(L, -2 - j);
+					lua_rawgeti(L, -1 - j, j + 1);
 					if(!lua_isnumber(L, -1))
 						luaL_error(L, "Model anim #%d has invalid format", i);
 					args[j] = (cs_float)luaL_checknumber(L, -1);
@@ -96,8 +92,7 @@ static void parseModelParts(lua_State *L, CPEModel *mdl) {
 	CPEModelPart *parts = lua_newuserdata(L, partsCount * sizeof(CPEModelPart));
 
 	for(int i = 0; i < partsCount; i++) {
-		lua_pushinteger(L, i + 1);
-		lua_gettable(L, -3 - i);
+		lua_rawgeti(L, -2 - i, i + 1);
 		if(!lua_istable(L, -1)) {
 			luaL_error(L, "Model part #%d is not a table", i);
 			return;

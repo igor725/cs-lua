@@ -51,9 +51,9 @@ typedef struct LuaScript {
 #	endif
 #elif !defined(LUA_JITLIBNAME) // Чистый Lua 5.1
 #	define CSLUA_NONJIT_51
-void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup);
-void *luaL_testudata(lua_State *L, int ud, const char *tname);
-void luaL_setmetatable(lua_State *L, const char *tname);
+	void  luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup);
+	void *luaL_testudata(lua_State *L, int ud, const char *tname);
+	void  luaL_setmetatable(lua_State *L, const char *tname);
 #else // Судя по всему, мы компилимся под JITом
 #	define CSLUA_HAS_JIT
 #	define CSLUA_HAS_BIT
