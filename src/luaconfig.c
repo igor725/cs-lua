@@ -90,6 +90,13 @@ static int meta_save(lua_State *L) {
 	return 1;
 }
 
+static int meta_reset(lua_State *L) {
+	Config_ResetToDefault(
+		lua_checkcfgstore(L, 1)
+	);
+	return 0;
+}
+
 static int meta_poperror(lua_State *L) {
 	ECExtra extra = CONFIG_EXTRA_NOINFO;
 	cs_int32 line = 0;
@@ -123,6 +130,7 @@ const luaL_Reg configmeta[] = {
 
 	{"load", meta_load},
 	{"save", meta_save},
+	{"reset", meta_reset},
 	{"poperror", meta_poperror},
 
 	{"__tostring", meta_tostring},
@@ -198,8 +206,20 @@ static int config_new(lua_State *L) {
 	return 1;
 }
 
+static int config_error(lua_State *L) {
+	lua_pushstring(L, Config_ErrorToString(
+		(ECError)luaL_checkinteger(L, 1)
+	));
+	lua_pushstring(L, Config_ExtraToString(
+		(ECExtra)luaL_checkinteger(L, 2)
+	));
+	return 2;
+}
+
 const luaL_Reg configlib[] = {
 	{"new", config_new},
+	{"error", config_error},
+
 	{NULL, NULL}
 };
 

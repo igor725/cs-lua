@@ -67,7 +67,7 @@ static int cmd_add(lua_State *L) {
 			lua_pushvalue(L, 1);
 			lua_pushvalue(L, 4);
 			lua_settable(L, -3);
-			cmd->data = lua_getscript(L);
+			Command_SetUserData(cmd, lua_getscript(L));
 		}
 		lua_pop(L, 1);
 		lua_pushboolean(L, cmd != NULL);

@@ -224,9 +224,18 @@ static int block_define(lua_State *L) {
 }
 
 static int block_isvalid(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	BlockID id = (BlockID)luaL_checkinteger(L, 2);
-	lua_pushboolean(L, Block_IsValid(world, id));
+	lua_pushboolean(L, Block_IsValid(
+		lua_checkworld(L, 1),
+		(BlockID)luaL_checkinteger(L, 2)
+	));
+	return 1;
+}
+
+static int block_fallbackfor(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Block_GetFallbackFor(
+		lua_checkworld(L, 1),
+		(BlockID)luaL_checkinteger(L, 2)
+	));
 	return 1;
 }
 
@@ -240,6 +249,7 @@ static int block_bulk(lua_State *L) {
 static const luaL_Reg blocklib[] = {
 	{"define", block_define},
 	{"isvalid", block_isvalid},
+	{"fallbackfor", block_fallbackfor},
 	{"bulk", block_bulk},
 
 	{NULL, NULL}

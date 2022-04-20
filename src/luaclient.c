@@ -197,9 +197,14 @@ static int meta_getstandblock(lua_State *L) {
 }
 
 static int meta_getclickdist(lua_State *L) {
-	lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(
-		lua_checkclient(L, 1)
-	));
+	if(!lua_toboolean(L, 2))
+		lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(
+			lua_checkclient(L, 1)
+		));
+	else
+		lua_pushnumber(L, (lua_Number)Client_GetClickDistanceInBlocks(
+			lua_checkclient(L, 1)
+		));
 	return 1;
 }
 

@@ -117,6 +117,34 @@ static int meta_setcolor(lua_State *L) {
 	return 0;
 }
 
+static int meta_getsize(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Cuboid_GetSize(
+		lua_checkcuboid(L, 1)->cub
+	));
+	return 1;
+}
+
+static int meta_getpoints(lua_State *L) {
+	Cuboid_GetPositions(
+		lua_checkcuboid(L, 1)->cub,
+		lua_checkshortvector(L, 2),
+		lua_checkshortvector(L, 3)
+	);
+	return 0;
+}
+
+static int meta_getpointsa(lua_State *L) {
+	LuaVector *lvs = lua_newvector(L);
+	LuaVector *lve = lua_newvector(L);
+	lvs->type = 1, lve->type = 1;
+
+	Cuboid_GetPositions(
+		lua_checkcuboid(L, 1)->cub,
+		&lvs->value.s, &lve->value.s
+	);
+	return 2;
+}
+
 static int meta_update(lua_State *L) {
 	LuaCuboid *luacub = lua_checkcuboid(L, 1);
 	Client_UpdateSelection(luacub->client, luacub->cub);
@@ -144,6 +172,10 @@ static int meta_remove(lua_State *L) {
 static const luaL_Reg cuboidmeta[] = {
 	{"setpoints", meta_setpoints},
 	{"setcolor", meta_setcolor},
+
+	{"getsize", meta_getsize},
+	{"getpoints", meta_getpoints},
+	{"getpointsa", meta_getpointsa},
 
 	{"update", meta_update},
 	{"remove", meta_remove},
