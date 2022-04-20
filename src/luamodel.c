@@ -1,16 +1,22 @@
 #include "luascript.h"
 #include "luavector.h"
-#include <protocol.h>
+#include <cpe.h>
 #include <str.h>
 
 /**
  * TODO:
  * Вообще было бы неплохо сделать так, чтобы
  * части модели и сама модель находились в
- * одном участке памяти. Т.е. не выделять
- * ещё один кусок памяти под части модели.
- * Этот прикол нам даст более скоростное
- * высвобождение памяти, занятой моделью.
+ * одном участке памяти. Т.е. не выделять ещё
+ * один кусок памяти под части модели. Этот
+ * прикол нам даст более скоростное 
+ * высвобождение памяти, занятой моделью, так
+ * как не нужно будет двух циклов сборщика
+ * мусора, дабы высвободить обе юзердаты. Ну и
+ * ко всему прочему, отпадёт надобность в
+ * регистровой таблице, так как не надо будет
+ * заставлять сборщик мусора не высвобождать
+ * память частей модели, пока та ещё существует.
  */
 
 CPEModel *lua_checkmodel(lua_State *L, int idx) {
@@ -103,7 +109,7 @@ static void parseModelParts(lua_State *L, CPEModel *mdl) {
 			parts[i].next = NULL;
 	}
 	lua_pop(L, partsCount);
-	mdl->partsCount = partsCount;
+	mdl->partsCount = (cs_byte)partsCount;
 	mdl->part = parts;
 }
 
@@ -142,8 +148,25 @@ static int model_create(lua_State *L) {
 	return 1;
 }
 
+static int model_define(lua_State *L) {
+	lua_pushboolean(L, CPE_DefineModel(
+		(cs_byte)luaL_checkinteger(L, 1),
+		lua_checkmodel(L, 2)
+	));
+	return 1;
+}
+
+static int model_undefine(lua_State *L) {
+	lua_pushboolean(L, CPE_UndefineModelPtr(
+		lua_checkmodel(L, 1)
+	));
+	return 1;
+}
+
 static const luaL_Reg modellib[] = {
 	{"create", model_create},
+	{"define", model_define},
+	{"undefine", model_undefine},
 
 	{NULL, NULL}
 };

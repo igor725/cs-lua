@@ -1,5 +1,6 @@
 #include <core.h>
 #include <client.h>
+#include <cpe.h>
 #include "luascript.h"
 #include "luaclient.h"
 #include "luacuboid.h"
