@@ -214,8 +214,8 @@ cs_bool Plugin_Load(void) {
 	}
 	Iter_Close(&sIter);
 
-	COMMAND_ADD(Lua, CMDF_OP, "Lua scripts management");
-	return LuaEvent_Register();
+	return COMMAND_ADD(Lua, CMDF_OP, "Lua scripts management")
+	&& LuaEvent_Register();
 }
 
 cs_bool Plugin_Unload(cs_bool force) {
