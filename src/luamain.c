@@ -92,7 +92,7 @@ COMMAND_FUNC(Lua) {
 			}
 			return false;
 		} else if(String_CaselessCompare(subcmd, "version")) {
-			COMMAND_PRINTF("Lua plugin v%03d (%s) on %s", Plugin_Version, GIT_COMMIT_TAG, LUA_VERSION);
+			COMMAND_PRINTF("Lua plugin v%03d (%s) on %s", Plugin_Version, GIT_COMMIT_TAG, CSLUA_LIBVERSION);
 		} else {
 			if(!COMMAND_GETARG(plname, 64, 1)) {
 				COMMAND_PRINTUSAGE;
