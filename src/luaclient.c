@@ -731,6 +731,8 @@ int luaopen_client(lua_State *L) {
 	lua_addintconst(L, MESSAGE_TYPE_BRIGHT2);
 	lua_addintconst(L, MESSAGE_TYPE_BRIGHT3);
 	lua_addintconst(L, MESSAGE_TYPE_ANNOUNCE);
+	lua_addintconst(L, MESSAGE_TYPE_BIGANNOUNCE);
+	lua_addintconst(L, MESSAGE_TYPE_SMALLANNOUNCE);
 
 	lua_addintconst(L, CLIENT_STATE_INITIAL);
 	lua_addintconst(L, CLIENT_STATE_MOTD);
