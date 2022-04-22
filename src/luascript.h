@@ -4,10 +4,10 @@
 #	define LUA_BUILD_AS_DLL
 #	define LUA_LIB
 #endif
+#include <core.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <core.h>
 #include <types/platform.h>
 
 typedef struct LuaScript {
