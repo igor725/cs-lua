@@ -38,6 +38,7 @@ static luaL_Reg groupslib[] = {
 	{"create", group_create},
 	{"remove", group_remove},
 	{"getinfo", group_getinfo},
+
 	{NULL, NULL}
 };
 

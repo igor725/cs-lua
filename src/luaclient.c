@@ -710,6 +710,7 @@ static const luaL_Reg clientlib[] = {
 	{"getcount", client_getcount},
 	{"iterall", client_iterall},
 	{"newbot", client_newbot},
+
 	{NULL, NULL}
 };
 
