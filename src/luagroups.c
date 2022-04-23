@@ -4,14 +4,10 @@
 #include "luagroups.h"
 
 static int group_create(lua_State *L) {
-	cs_uintptr grpid = Groups_Create(
+	lua_pushinteger(L, (lua_Integer)Groups_Create(
 		luaL_checkstring(L, 1),
 		(cs_byte)luaL_checkinteger(L, 2)
-	);
-	if(grpid != GROUPS_INVALID_ID)
-		lua_pushinteger(L, (lua_Integer)grpid);
-	else
-		lua_pushnil(L);
+	));
 	return 1;
 }
 
