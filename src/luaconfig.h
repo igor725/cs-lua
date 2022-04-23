@@ -1,6 +1,5 @@
 #ifndef CSLUACONFIG_H
 #define CSLUACONFIG_H
-#include <core.h>
 #include <types/config.h>
 #include "luascript.h"
 

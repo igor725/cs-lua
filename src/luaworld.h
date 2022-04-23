@@ -1,6 +1,5 @@
 #ifndef CSLUAWORLD_H
 #define CSLUAWORLD_H
-#include <core.h>
 #include <types/world.h>
 #include "luascript.h"
 
