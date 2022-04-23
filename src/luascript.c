@@ -16,6 +16,7 @@
 #include "luacuboid.h"
 #include "luagroups.h"
 #include "luamodel.h"
+#include "luakeys.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -86,6 +87,7 @@ static const luaL_Reg lualibs[] = {
 	{LUA_JITLIBNAME, luaopen_jit},
 #endif
 	{"log", luaopen_log},
+	{"keys", luaopen_keys},
 	{"block", luaopen_block},
 	{"world", luaopen_world},
 	{"client", luaopen_client},

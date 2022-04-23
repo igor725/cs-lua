@@ -1,6 +1,7 @@
 #include <core.h>
 #include <str.h>
 #include <client.h>
+#include <types/keys.h>
 #include "luascript.h"
 #include "luaclient.h"
 #include "luavector.h"
@@ -323,8 +324,8 @@ static int meta_sethotkey(lua_State *L) {
 	lua_pushboolean(L, Client_SetHotkey(
 		lua_checkclient(L, 1),
 		luaL_checkstring(L, 2),
-		(cs_int32)luaL_checkinteger(L, 3),
-		(cs_int8)luaL_checkinteger(L, 4)
+		(ELWJGLKey)luaL_checkinteger(L, 3),
+		(ELWJGLMod)luaL_checkinteger(L, 4)
 	));
 	return 1;
 }
