@@ -430,23 +430,22 @@ static int world_create(lua_State *L) {
 	SVec *dims = lua_checkshortvector(L, 2);
 	luaL_argcheck(L,
 		!Vec_IsNegative(*dims) && !Vec_HaveZero(*dims),
-		2, "Invalid vector received"
+		2, "Invalid Vector passed"
 	);
 	World *world = World_Create(wname);
 	World_SetDimensions(world, dims);
 	World_AllocBlockArray(world);
-	if(!World_IsReadyToPlay(world)) {
+	if(!World_IsReadyToPlay(world))
 		luaL_error(L, "Failed to create world");
-		return 0;
-	}
 	World_Add(world);
 	lua_pushworld(L, world);
 	return 1;
 }
 
 static int world_getname(lua_State *L) {
-	cs_str name = (cs_str)luaL_checkstring(L, 1);
-	lua_pushworld(L, World_GetByName(name));
+	lua_pushworld(L, World_GetByName(
+		luaL_checkstring(L, 1)
+	));
 	return 1;
 }
 
@@ -471,6 +470,7 @@ static const luaL_Reg worldlib[] = {
 	{"create", world_create},
 	{"getbyname", world_getname},
 	{"iterall", world_iterall},
+
 	{NULL, NULL}
 };
 
