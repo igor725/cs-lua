@@ -75,10 +75,13 @@ static int meta_getspawna(lua_State *L) {
 }
 
 static int meta_getoffset(lua_State *L) {
-	lua_pushinteger(L, (cs_uint32)World_GetOffset(
+	cs_uint32 offset = World_GetOffset(
 		lua_checkworld(L, 1),
 		lua_checkshortvector(L, 2)
-	));
+	);
+	lua_pushinteger(L,
+		offset != WORLD_INVALID_OFFSET ? (lua_Integer)offset : -1
+	);
 	return 1;
 }
 
