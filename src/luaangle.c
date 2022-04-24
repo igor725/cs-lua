@@ -78,13 +78,13 @@ static int meta_newindex(lua_State *L) {
 
 static int meta_call(lua_State *L) {
 	ang_setvalue(L);
-	lua_pushvalue(L, 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
 static int meta_tostring(lua_State *L) {
 	Ang *ang = lua_checkangle(L, 1);
-	lua_pushfstring(L, "Angle(%.2f, %.2f)", ang->yaw, ang->pitch);
+	lua_pushfstring(L, "Angle(%f, %f)", ang->yaw, ang->pitch);
 	return 1;
 }
 

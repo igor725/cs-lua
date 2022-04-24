@@ -103,7 +103,7 @@ static int meta_tostring(lua_State *L) {
 
 	switch(vec->type) {
 		case 0:
-			lua_pushfstring(L, "Vector(%.3f, %.3f, %.3f)",
+			lua_pushfstring(L, "Vector(%f, %f, %f)",
 				vec->value.f.x, vec->value.f.y, vec->value.f.z
 			);
 			break;
@@ -178,7 +178,7 @@ static int meta_newindex(lua_State *L) {
 
 static int meta_call(lua_State *L) {
 	vec_setvalue(L);
-	lua_pushvalue(L, 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
@@ -320,6 +320,7 @@ static int vec_newshort(lua_State *L) {
 static const luaL_Reg vectorlib[] = {
 	{"float", vec_newfloat},
 	{"short", vec_newshort},
+
 	{NULL, NULL}
 };
 

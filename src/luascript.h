@@ -49,11 +49,6 @@ typedef struct LuaScript {
 #		define luaopen_bit luaopen_bit32
 #		define CSLUA_HAS_BIT
 #	endif
-#	if LUA_VERSION_NUM > 503 // Начиная с версии 5.4 эти дефайны убрали
-// 		Бтв, может и мне стоит от них отказаться? Я подумаю.
-#		define LUA_QL(x)	"'" x "'"
-#		define LUA_QS		LUA_QL("%s")
-#	endif
 #elif !defined(LUA_JITLIBNAME) // Чистый Lua 5.1
 #	define CSLUA_NONJIT_51
 	void  luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup);
