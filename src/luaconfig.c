@@ -238,7 +238,6 @@ int luaopen_config(lua_State *L) {
 	lua_addintconst(L, CONFIG_EXTRA_NOINFO);
 	lua_addintconst(L, CONFIG_EXTRA_IO_LINEASERROR);
 	lua_addintconst(L, CONFIG_EXTRA_IO_FRENAME);
-	lua_addintconst(L, CONFIG_EXTRA_PARSE_NOENTRY);
 	lua_addintconst(L, CONFIG_EXTRA_PARSE_LINEFORMAT);
 	lua_addintconst(L, CONFIG_EXTRA_PARSE_NUMBER);
 	lua_addintconst(L, CONFIG_EXTRA_PARSE_END);
