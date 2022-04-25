@@ -8,6 +8,7 @@ LuaVector *lua_newvector(lua_State *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value, sizeof(vec->value));
 	luaL_setmetatable(L, CSLUA_MVECTOR);
+	vec->type = LUAVECTOR_TFLOAT;
 	return vec;
 }
 
@@ -17,22 +18,22 @@ LuaVector *lua_checkvector(lua_State *L, int idx) {
 
 Vec *lua_checkfloatvector(lua_State *L, int idx) {
 	LuaVector *vec = lua_checkvector(L, idx);
-	luaL_argcheck(L, vec->type == 0, idx, "'FloatVector' expected");
+	luaL_argcheck(L, vec->type == LUAVECTOR_TFLOAT, idx, "'FloatVector' expected");
 	return &vec->value.f;
 }
 
 SVec *lua_checkshortvector(lua_State *L, int idx) {
 	LuaVector *vec = lua_checkvector(L, idx);
-	luaL_argcheck(L, vec->type == 1, idx, "'ShortVector' expected");
+	luaL_argcheck(L, vec->type == LUAVECTOR_TSHORT, idx, "'ShortVector' expected");
 	return &vec->value.s;
 }
 
 static int vec_iszero(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
-	if(vec->type == 0)
+	if(vec->type == LUAVECTOR_TFLOAT)
 		lua_pushboolean(L, Vec_IsZero(vec->value.f));
-	else if(vec->type == 1)
+	else if(vec->type == LUAVECTOR_TSHORT)
 		lua_pushboolean(L, Vec_IsZero(vec->value.s));
 
 	return 1;
@@ -41,9 +42,9 @@ static int vec_iszero(lua_State *L) {
 static int vec_scale(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
-	if(vec->type == 0) {
+	if(vec->type == LUAVECTOR_TFLOAT) {
 		Vec_Scale(vec->value.f, (cs_float)luaL_checknumber(L, 2));
-	} else if(vec->type == 1) {
+	} else if(vec->type == LUAVECTOR_TSHORT) {
 		Vec_Scale(vec->value.s, (cs_int16)luaL_checkinteger(L, 2));
 	}
 
@@ -53,11 +54,11 @@ static int vec_scale(lua_State *L) {
 static int vec_setvalue(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
-	if(vec->type == 0) {
+	if(vec->type == LUAVECTOR_TFLOAT) {
 		vec->value.f.x = (cs_float)luaL_optnumber(L, 2, vec->value.f.x);
 		vec->value.f.y = (cs_float)luaL_optnumber(L, 3, vec->value.f.y);
 		vec->value.f.z = (cs_float)luaL_optnumber(L, 4, vec->value.f.z);
-	} else if(vec->type == 1) {
+	} else if(vec->type == LUAVECTOR_TSHORT) {
 		vec->value.s.x = (cs_int16)luaL_optinteger(L, 2, vec->value.s.x);
 		vec->value.s.y = (cs_int16)luaL_optinteger(L, 3, vec->value.s.y);
 		vec->value.s.z = (cs_int16)luaL_optinteger(L, 4, vec->value.s.z);
@@ -69,11 +70,11 @@ static int vec_setvalue(lua_State *L) {
 static int vec_getvalue(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
-	if(vec->type == 0) {
+	if(vec->type == LUAVECTOR_TFLOAT) {
 		lua_pushnumber(L, (lua_Number)vec->value.f.x);
 		lua_pushnumber(L, (lua_Number)vec->value.f.y);
 		lua_pushnumber(L, (lua_Number)vec->value.f.z);
-	} else if(vec->type == 1) {
+	} else if(vec->type == LUAVECTOR_TSHORT) {
 		lua_pushinteger(L, (lua_Integer)vec->value.s.x);
 		lua_pushinteger(L, (lua_Integer)vec->value.s.y);
 		lua_pushinteger(L, (lua_Integer)vec->value.s.z);
@@ -102,12 +103,12 @@ static int meta_tostring(lua_State *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	switch(vec->type) {
-		case 0:
+		case LUAVECTOR_TFLOAT:
 			lua_pushfstring(L, "Vector(%f, %f, %f)",
 				vec->value.f.x, vec->value.f.y, vec->value.f.z
 			);
 			break;
-		case 1:
+		case LUAVECTOR_TSHORT:
 			lua_pushfstring(L, "Vector(%d, %d, %d)",
 				vec->value.s.x, vec->value.s.y, vec->value.s.z
 			);
@@ -156,15 +157,15 @@ static int meta_newindex(lua_State *L) {
 	if(getaxis(luaL_checkstring(L, 2), &ax)) {
 		switch(ax) {
 			case 'x':
-				if(vec->type == 0) vec->value.f.x = (cs_float)luaL_checknumber(L, 3);
+				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.x = (cs_float)luaL_checknumber(L, 3);
 				else vec->value.s.x = (cs_int16)luaL_checkinteger(L, 3);
 				break;
 			case 'y':
-				if(vec->type == 0) vec->value.f.y = (cs_float)luaL_checknumber(L, 3);
+				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.y = (cs_float)luaL_checknumber(L, 3);
 				else vec->value.s.y = (cs_int16)luaL_checkinteger(L, 3);
 				break;
 			case 'z':
-				if(vec->type == 0) vec->value.f.z = (cs_float)luaL_checknumber(L, 3);
+				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.z = (cs_float)luaL_checknumber(L, 3);
 				else vec->value.s.z = (cs_int16)luaL_checkinteger(L, 3);
 				break;
 		}
@@ -206,9 +207,9 @@ static int meta_sub(lua_State *L) {
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
-	if(dst->type == 0)
+	if(dst->type == LUAVECTOR_TFLOAT)
 		Vec_Sub(dst->value.f, src1->value.f, src2->value.f);
-	else if(dst->type == 1)
+	else if(dst->type == LUAVECTOR_TSHORT)
 		Vec_Sub(dst->value.s, src1->value.s, src2->value.s);
 
 	return 1;
@@ -222,9 +223,9 @@ static int meta_mul(lua_State *L) {
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
-	if(dst->type == 0)
+	if(dst->type == LUAVECTOR_TFLOAT)
 		Vec_Mul(dst->value.f, src1->value.f, src2->value.f);
-	else if(dst->type == 1)
+	else if(dst->type == LUAVECTOR_TSHORT)
 		Vec_Mul(dst->value.s, src1->value.s, src2->value.s);
 
 	return 1;
@@ -238,9 +239,9 @@ static int meta_div(lua_State *L) {
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
 
-	if(dst->type == 0)
+	if(dst->type == LUAVECTOR_TFLOAT)
 		Vec_Div(dst->value.f, src1->value.f, src2->value.f);
-	else if(dst->type == 1)
+	else if(dst->type == LUAVECTOR_TSHORT)
 		Vec_Div(dst->value.s, src1->value.s, src2->value.s);
 
 	return 1;
@@ -251,9 +252,9 @@ static int meta_eq(lua_State *L) {
 	LuaVector *vec2 = lua_checkvector(L, 2);
 
 	if(vec1->type == vec2->type) {
-		if(vec1->type == 1)
+		if(vec1->type == LUAVECTOR_TSHORT)
 			lua_pushboolean(L, SVec_Compare(&vec1->value.s, &vec2->value.s));
-		else if(vec1->type == 0)
+		else if(vec1->type == LUAVECTOR_TFLOAT)
 			lua_pushboolean(L, Vec_Compare(&vec1->value.f, &vec2->value.f));
 		else
 			lua_pushboolean(L, 0);
@@ -287,7 +288,7 @@ static const luaL_Reg vectormeta[] = {
 
 static int vec_newfloat(lua_State *L) {
 	LuaVector *vec = lua_newvector(L);
-	vec->type = 0;
+	vec->type = LUAVECTOR_TFLOAT;
 
 	if(lua_gettop(L) > 2) {
 		luaL_getmetafield(L, -1, "set");
@@ -303,7 +304,7 @@ static int vec_newfloat(lua_State *L) {
 
 static int vec_newshort(lua_State *L) {
 	LuaVector *vec = lua_newvector(L);
-	vec->type = 1;
+	vec->type = LUAVECTOR_TSHORT;
 
 	if(lua_gettop(L) > 2) {
 		luaL_getmetafield(L, -1, "set");

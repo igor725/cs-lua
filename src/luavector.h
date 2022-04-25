@@ -4,8 +4,13 @@
 #include <vector.h>
 #include "luascript.h"
 
-typedef struct LuaVector {
-	cs_int8 type;
+typedef enum _ELuaVectorType {
+	LUAVECTOR_TFLOAT = 0,
+	LUAVECTOR_TSHORT
+} ELuaVectorType;
+
+typedef struct _LuaVector {
+	ELuaVectorType type;
 	union {
 		Vec f;
 		SVec s;
