@@ -186,7 +186,7 @@ static int meta_call(lua_State *L) {
 static int meta_add(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -202,7 +202,7 @@ static int meta_add(lua_State *L) {
 static int meta_sub(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -218,7 +218,7 @@ static int meta_sub(lua_State *L) {
 static int meta_mul(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
@@ -234,7 +234,7 @@ static int meta_mul(lua_State *L) {
 static int meta_div(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type != src2->type, 2, CSLUA_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
 	LuaVector *dst = lua_newvector(L);
 	dst->type = src1->type;
