@@ -195,18 +195,18 @@ static int iodatafolder(lua_State *L) {
 	return 1;
 }
 
-static cs_str iodel[] = {
+static cs_str const iodel[] = {
 	"input", "output", "stdout",
 	"stderr", "stdin", "read",
 	"write", NULL
 };
 
-static cs_str osdel[] = {
+static cs_str const osdel[] = {
 	"setlocale", "execute", "exit",
 	"getenv", NULL
 };
 
-static luaL_Reg iofuncs[] = {
+static const luaL_Reg iofuncs[] = {
 	{"ensure", ioensure},
 	{"datafolder", iodatafolder},
 	{"scrname", ioscrname},

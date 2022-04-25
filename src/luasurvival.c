@@ -102,7 +102,7 @@ static int surv_kill(lua_State *L) {
 	return 0;
 }
 
-static luaL_Reg survivalmeta[] = {
+static const luaL_Reg survivalmeta[] = {
 	{"isingod", surv_isgod},
 	{"isinpvp", surv_ispvp},
 
@@ -152,7 +152,7 @@ static int surv_safe(lua_State *L) {
 	return 0;
 }
 
-static luaL_Reg survlib[] = {
+static const luaL_Reg survlib[] = {
 	{"init", surv_init},
 	{"isready", surv_isready},
 	{"safe", surv_safe},

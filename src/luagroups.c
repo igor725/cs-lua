@@ -30,7 +30,7 @@ static int group_getinfo(lua_State *L) {
 	return 1;
 }
 
-static luaL_Reg groupslib[] = {
+static const luaL_Reg groupslib[] = {
 	{"create", group_create},
 	{"remove", group_remove},
 	{"getinfo", group_getinfo},

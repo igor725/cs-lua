@@ -1,14 +1,17 @@
 :detectlua
 SET POSSIBLE_LIBS="lualib." 
 SET PREFER_LVERSION=
+
 IF NOT "%PLUGIN_ARGS%"=="" (
 	FOR %%a IN (%PLUGIN_ARGS%) DO (
-		set PREFER_LVERSION=%%a
+		SET PREFER_LVERSION=%%a
 	)
 )
 
 IF NOT "!PREFER_LVERSION!"=="" (
-	IF "!PREFER_LVERSION!"=="jit" (
+	IF "!PREFER_LVERSION!"=="jit2" (
+		GOTO :lj2
+	) ELSE IF "!PREFER_LVERSION!"=="jit" (
 		GOTO :lj
 	) ELSE IF "!PREFER_LVERSION!"=="51" (
 		GOTO :l51
@@ -23,6 +26,14 @@ IF NOT "!PREFER_LVERSION!"=="" (
 		EXIT /b 1
 	)
 )
+
+:lj2
+@REM LuaJIT форк от OpenResty
+SET POSSIBLE_LIBS=!POSSIBLE_LIBS!"lua51." "lua5.1."
+SET POSSIBLE_PATHS="!ROOT!\..\..\luajit2\" "!ROOT!\..\luajit2\" 
+SET POSSIBLE_PATHS=!POSSIBLE_PATHS!"!ROOT!\..\..\Lua\luajit2\" "!ROOT!\..\Lua\luajit2\" 
+SET POSSIBLE_PATHS=!POSSIBLE_PATHS!"!ProgramFiles!\luajit2\" "!ProgramFiles(x86)!\luajit2\" 
+IF NOT "!PREFER_LVERSION!"=="" GOTO lpathdone
 
 :lj
 @REM LuaJIT у Майка застоппился на Lua 5.1
