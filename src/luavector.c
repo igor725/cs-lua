@@ -1,8 +1,13 @@
 #include <core.h>
+#include <csmath.h>
 #include <vector.h>
 #include <platform.h>
 #include "luascript.h"
 #include "luavector.h"
+
+cs_bool lua_isvector(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSLUA_MVECTOR) != NULL;
+}
 
 LuaVector *lua_newvector(lua_State *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
@@ -49,6 +54,31 @@ static int vec_scale(lua_State *L) {
 	}
 
 	return 0;
+}
+
+static int vec_normalized(lua_State *L) {
+	LuaVector *src = lua_checkvector(L, 1);
+	
+	if(src->type == LUAVECTOR_TFLOAT) {
+		Vec *dst;
+
+		if(lua_isvector(L, 2))
+			dst = lua_checkfloatvector(L, 2);
+		else
+			dst = &lua_newvector(L)->value.f;
+
+		cs_float m = Math_Sqrt(
+			src->value.f.x * src->value.f.x +
+			src->value.f.y * src->value.f.y +
+			src->value.f.z * src->value.f.z
+		);
+
+		*dst = src->value.f;
+		dst->x /= m, dst->y /= m, dst->z /= m;
+	} else
+		luaL_error(L, "Unsupported operation");
+
+	return 1;
 }
 
 static int vec_setvalue(lua_State *L) {
@@ -301,6 +331,7 @@ static int meta_eq(lua_State *L) {
 static const luaL_Reg vectormeta[] = {
 	{"iszero", vec_iszero},
 	{"scale", vec_scale},
+	{"normalized", vec_normalized},
 
 	{"set", vec_setvalue},
 	{"get", vec_getvalue},
