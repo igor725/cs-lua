@@ -86,6 +86,9 @@ FOR %%a IN (%POSSIBLE_PATHS%) DO (
 GOTO :fail
 
 :done
+IF EXIST "..\cs-survival\src\survitf.h" (
+	SET CFLAGS=!CFLAGS! /DCSLUA_USE_SURVIVAL
+)
 EXIT /b 0
 
 :testpath

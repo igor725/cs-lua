@@ -7,7 +7,6 @@
 #include "luamain.h"
 #include "luascript.h"
 #include "luaevent.h"
-#include "cs-survival/src/survitf.h"
 
 #define DISABLED_DIR "scripts" PATH_DELIM "disabled"
 
@@ -178,6 +177,9 @@ COMMAND_FUNC(Lua) {
 	COMMAND_PRINTUSAGE;
 }
 
+#ifdef CSLUA_USE_SURVIVAL
+#include "cs-survival/src/survitf.h"
+
 void *SurvInterface = NULL;
 
 void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
@@ -188,6 +190,7 @@ void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
 			Log_Error("LuaScript failed to bind SurvItf: Structure size mismatch");
 	}
 }
+#endif
 
 cs_bool Plugin_Load(void) {
 	DirIter sIter;

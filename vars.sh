@@ -45,3 +45,7 @@ else
 fi
 
 CFLAGS="$CFLAGS -I../"
+
+if [ -f "../cs-survival/src/survitf.h" ]; then
+	CFLAGS="$CFLAGS -DCSLUA_USE_SURVIVAL"
+fi
