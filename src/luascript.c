@@ -168,11 +168,16 @@ static int allowhotreload(lua_State *L) {
 	return 0;
 }
 
-static int sleepmillis(lua_State *L) {
-	lua_Integer ms = luaL_checkinteger(L, 1);
-	luaL_argcheck(L, ms > 0, 1, "Sleep timeout must be greater than zero");
-	Thread_Sleep((cs_uint32)ms);
-	return 0;
+// static int sleepmillis(lua_State *L) {
+// 	lua_Integer ms = luaL_checkinteger(L, 1);
+// 	luaL_argcheck(L, ms > 0, 1, "Sleep timeout must be greater than zero");
+// 	Thread_Sleep((cs_uint32)ms);
+// 	return 0;
+// }
+
+static int mstime(lua_State *L) {
+	lua_pushnumber(L, Time_GetMSecD());
+	return 1;
 }
 
 static int ioensure(lua_State *L) {
@@ -232,8 +237,11 @@ LuaScript *LuaScript_Open(cs_str name) {
 		lua_pushcfunction(script->L, allowhotreload);
 		lua_setglobal(script->L, "allowHotReload");
 
-		lua_pushcfunction(script->L, sleepmillis);
-		lua_setglobal(script->L, "sleepMillis");
+		// lua_pushcfunction(script->L, sleepmillis);
+		// lua_setglobal(script->L, "sleepMs");
+
+		lua_pushcfunction(script->L, mstime);
+		lua_setglobal(script->L, "msTime");
 
 		for(const luaL_Reg *lib = lualibs; lib->func; lib++) {
 #			if LUA_VERSION_NUM < 502
