@@ -217,6 +217,22 @@ static int meta_sub(lua_State *L) {
 
 static int meta_mul(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
+
+	if(lua_isnumber(L, 2)) {
+		LuaVector *dst = lua_newvector(L);
+		dst->type = src1->type;
+
+		if(dst->type == LUAVECTOR_TFLOAT) {
+			dst->value.f = src1->value.f;
+			Vec_Scale(dst->value.f, (cs_float)luaL_checknumber(L, 2));
+		} else if(dst->type == LUAVECTOR_TSHORT) {
+			dst->value.s = src1->value.s;
+			Vec_Scale(dst->value.s, (cs_int16)luaL_checkinteger(L, 2));
+		}
+
+		return 1;
+	}
+
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
@@ -233,6 +249,22 @@ static int meta_mul(lua_State *L) {
 
 static int meta_div(lua_State *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
+
+	if(lua_isnumber(L, 2)) {
+		LuaVector *dst = lua_newvector(L);
+		dst->type = src1->type;
+
+		if(dst->type == LUAVECTOR_TFLOAT) {
+			dst->value.f = src1->value.f;
+			Vec_DivN(dst->value.f, (cs_float)luaL_checknumber(L, 2));
+		} else if(dst->type == LUAVECTOR_TSHORT) {
+			dst->value.s = src1->value.s;
+			Vec_DivN(dst->value.s, (cs_int16)luaL_checkinteger(L, 2));
+		}
+
+		return 1;
+	}
+
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
 
