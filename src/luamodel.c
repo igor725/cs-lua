@@ -180,6 +180,6 @@ int luaopen_model(lua_State *L) {
 	luaL_setfuncs(L, modelmeta, 0);
 	lua_pop(L, 1);
 
-	luaL_register(L, luaL_checkstring(L, 1), modellib);
+	luaL_newlib(L, modellib);
 	return 1;
 }

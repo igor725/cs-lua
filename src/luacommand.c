@@ -139,6 +139,6 @@ int luaopen_command(lua_State *L) {
 	lua_addintconst(L, CMDF_OP);
 	lua_addintconst(L, CMDF_CLIENT);
 
-	luaL_register(L, luaL_checkstring(L, 1), cmdlib);
+	luaL_newlib(L, cmdlib);
 	return 1;
 }

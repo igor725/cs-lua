@@ -79,7 +79,7 @@ static const luaL_Reg loglib[] = {
 };
 
 int luaopen_log(lua_State *L) {
-	luaL_register(L, luaL_checkstring(L, 1), loglib);
+	luaL_newlib(L, loglib);
 
 	lua_pushcfunction(L, log_print);
 	lua_setglobal(L, "print");

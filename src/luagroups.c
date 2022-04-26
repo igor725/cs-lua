@@ -39,7 +39,8 @@ static const luaL_Reg groupslib[] = {
 };
 
 int luaopen_groups(lua_State *L) {
-	luaL_register(L, luaL_checkstring(L, 1), groupslib);
 	lua_addintconst(L, GROUPS_INVALID_ID);
+
+	luaL_newlib(L, groupslib);
 	return 1;
 }

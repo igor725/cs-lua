@@ -7,13 +7,18 @@ LUA_COMMAND_EXEC_SUCC = '&aScript executed successfully'
 LUA_COMMAND_EXEC_SYNT = '&cSyntax error: %s'
 LUA_COMMAND_EXEC_OUT = '&aOutput&f: '
 
+local executor = load
+if _VERSION == 'Lua 5.1' and not jit then
+	executor = loadstring
+end
+
 local function runScript(cl, script)
 	if not script or #script == 0 then
 		return '&cTrying to execute empty string'
 	end
 
 	_G.self = cl
-	local chunk, err = load(script, 'chatexec')
+	local chunk, err = executor(script, 'chatexec')
 
 	if chunk then
 		if cl then

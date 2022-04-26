@@ -38,6 +38,5 @@ int luaopen_keys(lua_State *L) {
 			lua_setfield(L, -2, mods[i]);
 		}
 	}
-	lua_setglobal(L, luaL_checkstring(L, 1));
-	return 0;
+	return 1;
 }

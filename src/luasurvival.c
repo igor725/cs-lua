@@ -173,6 +173,6 @@ static const luaL_Reg survlib[] = {
 };
 
 int luaopen_survival(lua_State *L) {
-	luaL_register(L, luaL_checkstring(L, 1), survlib);
+	luaL_newlib(L, survlib);
 	return 1;
 }

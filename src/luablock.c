@@ -287,6 +287,6 @@ int luaopen_block(lua_State *L) {
 	lua_addintconst(L, BDDRW_TRANSLUCENT);
 	lua_addintconst(L, BDDRW_GAS);
 
-	luaL_register(L, luaL_checkstring(L, 1), blocklib);
+	luaL_newlib(L, blocklib);
 	return 1;
 }

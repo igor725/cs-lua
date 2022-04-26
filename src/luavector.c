@@ -432,6 +432,6 @@ int luaopen_vector(lua_State *L) {
 	luaL_setfuncs(L, vectormeta, 0);
 	lua_pop(L, 1);
 
-	luaL_register(L, luaL_checkstring(L, 1), vectorlib);
+	luaL_newlib(L, vectorlib);
 	return 1;
 }

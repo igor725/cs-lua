@@ -503,6 +503,6 @@ int luaopen_world(lua_State *L) {
 	lua_addintconst(L, WORLD_PROP_EXPFOG);
 	lua_addintconst(L, WORLD_PROP_SIDEOFFSET);
 
-	luaL_register(L, luaL_checkstring(L, 1), worldlib);
+	luaL_newlib(L, worldlib);
 	return 1;
 }

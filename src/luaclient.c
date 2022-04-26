@@ -740,7 +740,7 @@ int luaopen_client(lua_State *L) {
 	lua_addintconst(L, PVC_SETZ);
 	lua_addintconst(L, PVC_SETALL);
 
-	luaL_register(L, luaL_checkstring(L, 1), clientlib);
+	luaL_newlib(L, clientlib);
 	*(void **)lua_newuserdata(L, sizeof(Client *)) = CLIENT_BROADCAST;
 	luaL_setmetatable(L, CSLUA_MCLIENT);
 	lua_setfield(L, -2, "broadcast");

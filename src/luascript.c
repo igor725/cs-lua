@@ -247,7 +247,8 @@ LuaScript *LuaScript_Open(cs_str name) {
 #			if LUA_VERSION_NUM < 502
 				lua_pushcfunction(script->L, lib->func);
 				lua_pushstring(script->L, lib->name);
-				lua_call(script->L, 1, 0);
+				lua_call(script->L, 1, 1);
+				lua_setglobal(script->L, lib->name);
 #			else
 				luaL_requiref(script->L, lib->name, lib->func, 1);
 				lua_pop(script->L, 1);

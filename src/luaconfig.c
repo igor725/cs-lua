@@ -248,6 +248,6 @@ int luaopen_config(lua_State *L) {
 	lua_addintconst(L, CONFIG_TYPE_INT8);
 	lua_addintconst(L, CONFIG_TYPE_STR);
 
-	luaL_register(L, luaL_checkstring(L, 1), configlib);
+	luaL_newlib(L, configlib);
 	return 1;
 }

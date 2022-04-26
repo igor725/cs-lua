@@ -124,6 +124,5 @@ int luaopen_angle(lua_State *L) {
 	lua_pop(L, 1);
 
 	lua_pushcfunction(L, ang_new);
-	lua_setglobal(L, luaL_checkstring(L, 1));
-	return 0;
+	return 1;
 }
