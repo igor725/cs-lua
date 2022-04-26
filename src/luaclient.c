@@ -411,7 +411,7 @@ static int meta_setvelocity(lua_State *L) {
 	lua_pushboolean(L, Client_SetVelocity(
 		lua_checkclient(L, 1),
 		lua_checkfloatvector(L, 2),
-		true
+		(cs_byte)luaL_optinteger(L, 3, 0)
 	));
 	return 1;
 }
@@ -733,6 +733,12 @@ int luaopen_client(lua_State *L) {
 	lua_addintconst(L, ENTITY_PROP_ROT_X);
 	lua_addintconst(L, ENTITY_PROP_ROT_Y);
 	lua_addintconst(L, ENTITY_PROP_ROT_Z);
+
+	lua_addintconst(L, PVC_ADDALL);
+	lua_addintconst(L, PVC_SETX);
+	lua_addintconst(L, PVC_SETY);
+	lua_addintconst(L, PVC_SETZ);
+	lua_addintconst(L, PVC_SETALL);
 
 	luaL_register(L, luaL_checkstring(L, 1), clientlib);
 	*(void **)lua_newuserdata(L, sizeof(Client *)) = CLIENT_BROADCAST;
