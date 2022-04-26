@@ -141,42 +141,34 @@ static int meta_getappname(lua_State *L) {
 }
 
 static int meta_getposition(lua_State *L) {
-	lua_pushboolean(L, Client_GetPosition(
-		lua_checkclient(L, 1),
-		lua_checkfloatvector(L, 2),
-		NULL
-	));
-	return 1;
-}
-
-static int meta_getpositiona(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	LuaVector *vec = lua_newvector(L);
-	if(Client_GetPosition(client, &vec->value.f, NULL))
-		vec->type = 0;
+	Vec *vector;
+
+	if(lua_isvector(L, 2))
+		vector = lua_checkfloatvector(L, 2);
 	else {
-		lua_pop(L, 1);
-		lua_pushnil(L);
+		LuaVector *lvec = lua_newvector(L);
+		lvec->type = LUAVECTOR_TFLOAT;
+		vector = &lvec->value.f;
 	}
+
+	(void)Client_GetPosition(client, vector, NULL);
 	return 1;
 }
 
 static int meta_getrotation(lua_State *L) {
-	lua_pushboolean(L, Client_GetPosition(
+	Ang *angle;
+
+	if(lua_isangle(L, 2))
+		angle = lua_checkangle(L, 2);
+	else
+		angle = lua_newangle(L);
+
+	(void)Client_GetPosition(
 		lua_checkclient(L, 1),
-		NULL, lua_checkangle(L, 2)
-	));
-	return 1;
-}
+		NULL, angle
+	);
 
-static int meta_getrotationa(lua_State *L) {
-	Client *client = lua_checkclient(L, 1);
-	Ang *ang = lua_newangle(L);
-	if(Client_GetPosition(client, NULL, ang))
-		return 1;
-
-	lua_pop(L, 1);
-	lua_pushnil(L);
 	return 1;
 }
 
@@ -248,7 +240,7 @@ static int meta_setgroup(lua_State *L) {
 	return 1;
 }
 
-static int meta_setrotation(lua_State *L) {
+static int meta_setmdlrotation(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L,
 		Client_SetProp(client, ENTITY_PROP_ROT_X, (cs_int32)luaL_checkinteger(L, 2)) &&
@@ -600,9 +592,7 @@ static const luaL_Reg clientmeta[] = {
 	{"getdispname", meta_getdispname},
 	{"getappname", meta_getappname},
 	{"getposition", meta_getposition},
-	{"getpositiona", meta_getpositiona},
 	{"getrotation", meta_getrotation},
-	{"getrotationa", meta_getrotationa},
 	{"getclickdist", meta_getclickdist},
 	{"getfluidlvl", meta_getfluidlvl},
 	{"getstandblock", meta_getstandblock},
@@ -612,7 +602,7 @@ static const luaL_Reg clientmeta[] = {
 	{"setop", meta_setop},
 	{"setspawn", meta_setspawn},
 	{"setgroup", meta_setgroup},
-	{"setrotation", meta_setrotation},
+	{"setmdlrotation", meta_setmdlrotation},
 	{"setweather", meta_setweather},
 	{"setenvprop", meta_setenvprop},
 	{"setenvcolor", meta_setenvcolor},

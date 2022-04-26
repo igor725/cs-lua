@@ -60,17 +60,21 @@ static int meta_getname(lua_State *L) {
 static int meta_getspawn(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	Vec *svec = NULL; Ang *sang = NULL;
-	if(!lua_isnil(L, 2)) svec = lua_checkfloatvector(L, 2);
-	if(!lua_isnil(L, 3)) sang = lua_checkangle(L, 3);
-	World_GetSpawn(world, svec, sang);
-	return 0;
-}
 
-static int meta_getspawna(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	LuaVector *svec = lua_newvector(L);
-	Ang *sang = lua_newangle(L);
-	World_GetSpawn(world, &svec->value.f, sang);
+	if(lua_isvector(L, 2))
+		svec = lua_checkfloatvector(L, 2);
+	else if(lua_isnone(L, 2)) {
+		LuaVector *lvec = lua_newvector(L);
+		lvec->type = LUAVECTOR_TFLOAT;
+		svec = &lvec->value.f;
+	}
+
+	if(lua_isangle(L, 3))
+		sang = lua_checkangle(L, 3);
+	else if(lua_isnone(L, 3))
+		sang = lua_newangle(L);
+
+	World_GetSpawn(world, svec, sang);
 	return 2;
 }
 
@@ -87,46 +91,44 @@ static int meta_getoffset(lua_State *L) {
 
 static int meta_getdimensions(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	LuaVector *vec = lua_checkvector(L, 2);
-	if(vec->type == 1) {
-		World_GetDimensions(world, &vec->value.s);
-		lua_pushboolean(L, true);
-	} else lua_pushboolean(L, false);
-	return 1;
-}
+	SVec *dvec;
 
-static int meta_getdimensionsa(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	LuaVector *vec = lua_newvector(L);
-	World_GetDimensions(world, &vec->value.s);
-	vec->type = 1;
+	if(lua_isvector(L, 2))
+		dvec = lua_checkshortvector(L, 2);
+	else {
+		LuaVector *lvec = lua_newvector(L);
+		lvec->type = LUAVECTOR_TSHORT;
+		dvec = &lvec->value.s;
+	}
+
+	World_GetDimensions(world, dvec);
 	return 1;
 }
 
 static int meta_getblock(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	LuaVector *vec = lua_checkvector(L, 2);
-	if(vec->type == 1)
-		lua_pushinteger(L, World_GetBlock(world, &vec->value.s));
-	else lua_pushinteger(L, 0);
+	lua_pushinteger(L, World_GetBlock(world,
+		lua_checkshortvector(L, 2)
+	));
 	return 1;
 }
 
 static int meta_getenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	EColor ctype = (EColor)luaL_checkinteger(L, 2);
-	Color3 *col = World_GetEnvColor(world, ctype);
-	if(col) *lua_checkcolor3(L, 3) = *col;
-	else luaL_error(L, "Invalid env color");
-	return 1;
-}
+	Color3 *col;
 
-static int meta_getenvcolora(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	EColor ctype = (EColor)luaL_checkinteger(L, 2);
-	LuaColor *col = lua_newcolor(L);
-	col->value.c3 = *World_GetEnvColor(world, ctype);
-	col->hasAlpha = false;
+	if(lua_iscolor(L, 3))
+		col = lua_checkcolor3(L, 3);
+	else {
+		LuaColor *lcol = lua_newcolor(L);
+		lcol->hasAlpha = false;
+		col = &lcol->value.c3;
+	}
+
+	if(!World_GetEnvColor(world, ctype, col))
+		luaL_error(L, "Invalid color type specified");
+
 	return 1;
 }
 
@@ -382,13 +384,10 @@ static int meta_tostring(lua_State *L) {
 static const luaL_Reg worldmeta[] = {
 	{"getname", meta_getname},
 	{"getspawn", meta_getspawn},
-	{"getspawna", meta_getspawna},
 	{"getoffset", meta_getoffset},
 	{"getdimensions", meta_getdimensions},
-	{"getdimensionsa", meta_getdimensionsa},
 	{"getblock", meta_getblock},
 	{"getenvcolor", meta_getenvcolor},
-	{"getenvcolora", meta_getenvcolora},
 	{"getenvprop", meta_getenvprop},
 	{"getweather", meta_getweather},
 	{"gettexpack", meta_gettexpack},

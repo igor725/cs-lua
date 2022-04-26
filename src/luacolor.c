@@ -4,6 +4,10 @@
 #include "luascript.h"
 #include "luacolor.h"
 
+cs_bool lua_iscolor(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSLUA_MCOLOR) != NULL;
+}
+
 LuaColor *lua_newcolor(lua_State *L) {
 	LuaColor *col = lua_newuserdata(L, sizeof(LuaColor));
 	Memory_Zero(&col->value, sizeof(col->value));
@@ -12,17 +16,17 @@ LuaColor *lua_newcolor(lua_State *L) {
 	return col;
 }
 
-LuaColor *lua_checkcolor(lua_State *L, cs_int32 idx) {
+LuaColor *lua_checkcolor(lua_State *L, int idx) {
 	return (LuaColor *)luaL_checkudata(L, idx, CSLUA_MCOLOR);
 }
 
-Color3 *lua_checkcolor3(lua_State *L, cs_int32 idx) {
+Color3 *lua_checkcolor3(lua_State *L, int idx) {
 	LuaColor *col = lua_checkcolor(L, idx);
 	luaL_argcheck(L, !col->hasAlpha, idx, "'Color3' expected");
 	return &col->value.c3;
 }
 
-Color4 *lua_checkcolor4(lua_State *L, cs_int32 idx) {
+Color4 *lua_checkcolor4(lua_State *L, int idx) {
 	LuaColor *col = lua_checkcolor(L, idx);
 	luaL_argcheck(L, col->hasAlpha, idx, "'Color4' expected");
 	return &col->value.c4;

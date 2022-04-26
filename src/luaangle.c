@@ -5,6 +5,10 @@
 #include "luascript.h"
 #include "luaangle.h"
 
+cs_bool lua_isangle(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSLUA_MANGLE) != NULL;
+}
+
 Ang *lua_newangle(lua_State *L) {
 	Ang *ang = lua_newuserdata(L, sizeof(Ang));
 	Memory_Zero(ang, sizeof(Ang));

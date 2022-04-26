@@ -12,10 +12,11 @@ typedef struct _LuaColor {
 	} value;
 } LuaColor;
 
+cs_bool lua_iscolor(lua_State *L, int idx);
 LuaColor *lua_newcolor(lua_State *L);
-LuaColor *lua_checkcolor(lua_State *L, cs_int32 idx);
-Color3 *lua_checkcolor3(lua_State *L, cs_int32 idx);
-Color4 *lua_checkcolor4(lua_State *L, cs_int32 idx);
+LuaColor *lua_checkcolor(lua_State *L, int idx);
+Color3 *lua_checkcolor3(lua_State *L, int idx);
+Color4 *lua_checkcolor4(lua_State *L, int idx);
 
 int luaopen_color(lua_State *L);
 #endif
