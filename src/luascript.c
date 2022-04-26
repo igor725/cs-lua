@@ -280,6 +280,14 @@ LuaScript *LuaScript_Open(cs_str name) {
 			lua_pop(script->L, 1);
 		}
 
+#		ifdef CORE_USE_UNIX
+			lua_getglobal(script->L, "package");
+			lua_getfield(script->L, -1, "path");
+			lua_pushstring(script->L, ";./lua/?.lua;./lua/?/init.lua");
+			lua_concat(script->L, 2);
+			lua_setfield(script->L, -2, "path");
+#		endif
+
 		if(!LuaScript_DoMainFile(script)) {
 			LuaScript_Close(script);
 			return NULL;
