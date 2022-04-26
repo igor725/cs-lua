@@ -56,28 +56,34 @@ static int vec_scale(lua_State *L) {
 	return 0;
 }
 
+static cs_float magnitude(Vec *src) {
+	return Math_Sqrt(
+		src->x * src->x +
+		src->y * src->y +
+		src->z * src->z
+	);
+}
+
 static int vec_normalized(lua_State *L) {
-	LuaVector *src = lua_checkvector(L, 1);
-	
-	if(src->type == LUAVECTOR_TFLOAT) {
-		Vec *dst;
+	Vec *dst, *src = lua_checkfloatvector(L, 1);
 
-		if(lua_isvector(L, 2))
-			dst = lua_checkfloatvector(L, 2);
-		else
-			dst = &lua_newvector(L)->value.f;
+	if(lua_isvector(L, 2))
+		dst = lua_checkfloatvector(L, 2);
+	else
+		dst = &lua_newvector(L)->value.f;
 
-		cs_float m = Math_Sqrt(
-			src->value.f.x * src->value.f.x +
-			src->value.f.y * src->value.f.y +
-			src->value.f.z * src->value.f.z
-		);
+	cs_float m = magnitude(src);
 
-		*dst = src->value.f;
-		dst->x /= m, dst->y /= m, dst->z /= m;
-	} else
-		luaL_error(L, "Unsupported operation");
+	*dst = *src;
+	dst->x /= m, dst->y /= m, dst->z /= m;
 
+	return 1;
+}
+
+static int vec_magnitude(lua_State *L) {
+	lua_pushnumber(L, (lua_Number)magnitude(
+		lua_checkfloatvector(L, 1)
+	));
 	return 1;
 }
 
@@ -332,6 +338,7 @@ static const luaL_Reg vectormeta[] = {
 	{"iszero", vec_iszero},
 	{"scale", vec_scale},
 	{"normalized", vec_normalized},
+	{"magnitude", vec_magnitude},
 
 	{"set", vec_setvalue},
 	{"get", vec_getvalue},
