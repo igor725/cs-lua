@@ -319,10 +319,12 @@ static int meta_div(lua_State *L) {
 
 		if(dst->type == LUAVECTOR_TFLOAT) {
 			dst->value.f = src1->value.f;
-			Vec_DivN(dst->value.f, (cs_float)luaL_checknumber(L, 2));
+			Vec_DivN(dst->value.f, (cs_float)lua_tonumber(L, 2));
 		} else if(dst->type == LUAVECTOR_TSHORT) {
+			cs_int16 id = (cs_int16)lua_tointeger(L, 2);
+			luaL_argcheck(L, id != 0, 2, "Integer division by zero");
 			dst->value.s = src1->value.s;
-			Vec_DivN(dst->value.s, (cs_int16)luaL_checkinteger(L, 2));
+			Vec_DivN(dst->value.s, id);
 		}
 
 		return 1;
@@ -336,8 +338,10 @@ static int meta_div(lua_State *L) {
 
 	if(dst->type == LUAVECTOR_TFLOAT)
 		Vec_Div(dst->value.f, src1->value.f, src2->value.f);
-	else if(dst->type == LUAVECTOR_TSHORT)
+	else if(dst->type == LUAVECTOR_TSHORT) {
+		luaL_argcheck(L, !Vec_HaveZero(src2->value.s), 2, "Integer division by zero");
 		Vec_Div(dst->value.s, src1->value.s, src2->value.s);
+	}
 
 	return 1;
 }
