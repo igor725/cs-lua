@@ -64,6 +64,33 @@ static cs_float magnitude(Vec *src) {
 	);
 }
 
+static int vec_cross(lua_State *L) {
+	LuaVector *src1 = lua_checkvector(L, 1);
+	LuaVector *src2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
+	LuaVector *dst;
+
+	if(lua_isvector(L, 3)) {
+		dst = lua_checkvector(L, 3);
+		luaL_argcheck(L, dst->type == src1->type, 3, "v3 must be the same type as v1 and v2");
+	} else {
+		dst = lua_newvector(L);
+		dst->type = src1->type;
+	}
+
+	if(dst->type == LUAVECTOR_TFLOAT) {
+		dst->value.f.x = src1->value.f.y * src2->value.f.z - src1->value.f.z * src2->value.f.y;
+		dst->value.f.y = src1->value.f.z * src2->value.f.x - src1->value.f.x * src2->value.f.z;
+		dst->value.f.z = src1->value.f.x * src2->value.f.y - src1->value.f.y * src2->value.f.x;
+	} else if(dst->type == LUAVECTOR_TSHORT) {
+		dst->value.s.x = src1->value.s.y * src2->value.s.z - src1->value.s.z * src2->value.s.y;
+		dst->value.s.y = src1->value.s.z * src2->value.s.x - src1->value.s.x * src2->value.s.z;
+		dst->value.s.z = src1->value.s.x * src2->value.s.y - src1->value.s.y * src2->value.s.x;
+	}
+
+	return 1;
+}
+
 static int vec_normalized(lua_State *L) {
 	Vec *dst, *src = lua_checkfloatvector(L, 1);
 
@@ -339,6 +366,7 @@ static const luaL_Reg vectormeta[] = {
 	{"scale", vec_scale},
 	{"normalized", vec_normalized},
 	{"magnitude", vec_magnitude},
+	{"cross", vec_cross},
 
 	{"set", vec_setvalue},
 	{"get", vec_getvalue},
