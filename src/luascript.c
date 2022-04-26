@@ -286,6 +286,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 			lua_pushstring(script->L, ";./lua/?.lua;./lua/?/init.lua");
 			lua_concat(script->L, 2);
 			lua_setfield(script->L, -2, "path");
+			lua_pop(script->L, 1);
 #		endif
 
 		if(!LuaScript_DoMainFile(script)) {
