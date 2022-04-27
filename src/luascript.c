@@ -138,6 +138,7 @@ cs_bool LuaScript_DoMainFile(LuaScript *script) {
 
 cs_bool LuaScript_GlobalLookup(LuaScript *script, cs_str key) {
 	if(script->unloaded) return false;
+
 	lua_getglobal(script->L, key);
 	if(lua_isnil(script->L, -1)) {
 		lua_pop(script->L, 1);

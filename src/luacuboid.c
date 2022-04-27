@@ -125,23 +125,23 @@ static int meta_getsize(lua_State *L) {
 }
 
 static int meta_getpoints(lua_State *L) {
-	Cuboid_GetPositions(
-		lua_checkcuboid(L, 1)->cub,
-		lua_checkshortvector(L, 2),
-		lua_checkshortvector(L, 3)
-	);
-	return 0;
-}
+	CPECuboid *cub = lua_checkcuboid(L, 1)->cub;
+	SVec *vs = lua_toshortvector(L, 2);
+	SVec *ve = lua_toshortvector(L, 3);
 
-static int meta_getpointsa(lua_State *L) {
-	LuaVector *lvs = lua_newvector(L);
-	LuaVector *lve = lua_newvector(L);
-	lvs->type = 1, lve->type = 1;
+	if(!vs) {
+		LuaVector *lvs = lua_newvector(L);
+		lvs->type = LUAVECTOR_TSHORT;
+		vs = &lvs->value.s;
+	}
 
-	Cuboid_GetPositions(
-		lua_checkcuboid(L, 1)->cub,
-		&lvs->value.s, &lve->value.s
-	);
+	if(!ve) {
+		LuaVector *lve = lua_newvector(L);
+		lve->type = LUAVECTOR_TSHORT;
+		ve = &lve->value.s;
+	}
+
+	Cuboid_GetPositions(cub, vs, ve);
 	return 2;
 }
 
@@ -175,7 +175,6 @@ static const luaL_Reg cuboidmeta[] = {
 
 	{"getsize", meta_getsize},
 	{"getpoints", meta_getpoints},
-	{"getpointsa", meta_getpointsa},
 
 	{"update", meta_update},
 	{"remove", meta_remove},

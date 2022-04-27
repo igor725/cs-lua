@@ -213,6 +213,7 @@ static int col_c4(lua_State *L) {
 static const luaL_Reg colorlib[] = {
 	{"c3", col_c3},
 	{"c4", col_c4},
+
 	{NULL, NULL}
 };
 
