@@ -63,7 +63,7 @@ static int cont_get(lua_State *L) {
 	luaL_argcheck(L, namelen < CSLUA_CONTACT_NAMELEN, 1, "Too long contact name");
 	LuaScript *LS = lua_getscript(L);
 
-	lua_getfield(L, LUA_REGISTRYINDEX, "cscontact");
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, name); // cscontact[name]
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
@@ -83,8 +83,6 @@ static int cont_get(lua_State *L) {
 
 		cfinish:
 		lua_newtable(L);
-		lua_pushvalue(L, -2); // Contact userdata
-		lua_setfield(L, -2, "userdata");
 		lua_newtable(L);
 		lua_setfield(L, -2, "queue");
 		lua_setfield(L, -3, name);
