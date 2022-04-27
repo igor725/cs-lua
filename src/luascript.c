@@ -61,7 +61,7 @@ int lua_checktabfield(lua_State *L, int idx, cs_str fname, int ftype) {
 	return true;
 }
 
-int lua_checktabfieldud(lua_State *L, int idx, cs_str fname, const char *meta) {
+int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta) {
 	lua_getfield(L, idx, fname);
 	if(!luaL_testudata(L, -1, meta)) {
 		luaL_error(L, "Field '%s' must be a %s", fname, meta);
@@ -70,6 +70,14 @@ int lua_checktabfieldud(lua_State *L, int idx, cs_str fname, const char *meta) {
 
 	return true;
 }
+
+int lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
+	if(!luaL_newmetatable(L, meta)) return 0;
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	luaL_setfuncs(L, meths, 0);
+	return 1;
+} 
 
 static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},

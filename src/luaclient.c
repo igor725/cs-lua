@@ -703,10 +703,7 @@ int luaopen_client(lua_State *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 
-	luaL_newmetatable(L, CSLUA_MCLIENT);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, clientmeta, 0);
+	lua_indexedmeta(L, CSLUA_MCLIENT, clientmeta);
 	lua_pop(L, 1);
 
 	lua_addintconst(L, MESSAGE_TYPE_CHAT);

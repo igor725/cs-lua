@@ -123,8 +123,7 @@ static int ang_new(lua_State *L) {
 }
 
 int luaopen_angle(lua_State *L) {
-	luaL_newmetatable(L, CSLUA_MANGLE);
-	luaL_setfuncs(L, anglemeta, 0);
+	lua_indexedmeta(L, CSLUA_MANGLE, anglemeta);
 	lua_pop(L, 1);
 
 	lua_pushcfunction(L, ang_new);

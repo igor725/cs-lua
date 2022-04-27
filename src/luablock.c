@@ -287,14 +287,8 @@ static void luablock_initconts(lua_State *L) {
 }
 
 int luaopen_block(lua_State *L) {
-	luaL_newmetatable(L, CSLUA_MBLOCK);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, blockmeta, 0);
-	luaL_newmetatable(L, CSLUA_MBULK);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, bulkmeta, 0);
+	lua_indexedmeta(L, CSLUA_MBLOCK, blockmeta);
+	lua_indexedmeta(L, CSLUA_MBULK, bulkmeta);
 	lua_pop(L, 2);
 
 	lua_addintconst(L, BDSOL_WALK);

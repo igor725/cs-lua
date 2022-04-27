@@ -189,9 +189,6 @@ void luainit_cuboid(lua_State *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 
-	luaL_newmetatable(L, CSLUA_MCUBOID);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, cuboidmeta, 0);
+	lua_indexedmeta(L, CSLUA_MCUBOID, cuboidmeta);
 	lua_pop(L, 1);
 }

@@ -224,10 +224,7 @@ const luaL_Reg configlib[] = {
 };
 
 int luaopen_config(lua_State *L) {
-	luaL_newmetatable(L, CSLUA_MCONFIG);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, configmeta, 0);
+	lua_indexedmeta(L, CSLUA_MCONFIG, configmeta);
 	lua_pop(L, 1);
 
 	lua_addintconst(L, CONFIG_ERROR_SUCCESS);

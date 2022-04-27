@@ -174,10 +174,7 @@ int luaopen_model(lua_State *L) {
 	lua_setmetatable(L, -2);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RPARTS);
 
-	luaL_newmetatable(L, CSLUA_MMODEL);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, modelmeta, 0);
+	lua_indexedmeta(L, CSLUA_MMODEL, modelmeta);
 	lua_pop(L, 1);
 
 	luaL_newlib(L, modellib);

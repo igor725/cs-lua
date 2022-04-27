@@ -75,8 +75,10 @@ typedef struct LuaScript {
 #define LuaScript_Unlock(p) Mutex_Unlock((p)->lock)
 #define LuaScript_PrintError(p) Log_Info("lua_State(%p) got an error: %s", (p)->L, lua_tostring((p)->L, -1))
 
-int lua_checktabfield(lua_State *L, int idx, cs_str fname, int ftype);
-int lua_checktabfieldud(lua_State *L, int idx, cs_str fname, const char *meta);
+int lua_checktabfield(lua_State *L, int idx, const char *fname, int ftype);
+int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta);
+int lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths);
+
 LuaScript *lua_getscript(lua_State *L);
 LuaScript *LuaScript_Open(cs_str name);
 cs_bool LuaScript_DoMainFile(LuaScript *script);

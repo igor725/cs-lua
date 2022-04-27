@@ -473,10 +473,7 @@ int luaopen_world(lua_State *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 
-	luaL_newmetatable(L, CSLUA_MWORLD);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
-	luaL_setfuncs(L, worldmeta, 0);
+	lua_indexedmeta(L, CSLUA_MWORLD, worldmeta);
 	lua_pop(L, 1);
 
 	lua_addintconst(L, WORLD_COLOR_SKY);
