@@ -24,19 +24,21 @@ typedef struct LuaScript {
 #define CSLUA_RCLIENTS "csclients"
 #define CSLUA_RCMDS    "cscmds"
 #define CSLUA_RCUBOIDS "cscuboids"
-#define CSLUA_RPARTS "csmdlparts"
+#define CSLUA_RPARTS   "csmdlparts"
+#define CSLUA_RCONTACT "cscontact"
 
 // Метатаблицы разных приколов
-#define CSLUA_MVECTOR "Vector"
-#define CSLUA_MANGLE  "Angle"
-#define CSLUA_MCOLOR  "Color"
-#define CSLUA_MBLOCK  "Block"
-#define CSLUA_MBULK   "Bulk"
-#define CSLUA_MCONFIG "Config"
-#define CSLUA_MCLIENT "Client"
-#define CSLUA_MWORLD  "World"
-#define CSLUA_MCUBOID "Cuboid"
-#define CSLUA_MMODEL  "Model"
+#define CSLUA_MVECTOR  "Vector"
+#define CSLUA_MANGLE   "Angle"
+#define CSLUA_MCOLOR   "Color"
+#define CSLUA_MBLOCK   "Block"
+#define CSLUA_MBULK    "Bulk"
+#define CSLUA_MCONFIG  "Config"
+#define CSLUA_MCLIENT  "Client"
+#define CSLUA_MWORLD   "World"
+#define CSLUA_MCUBOID  "Cuboid"
+#define CSLUA_MMODEL   "Model"
+#define CSLUA_MCONTACT "Contact"
 
 // Обеспечиваем совместимость с большинством версий Lua
 #if LUA_VERSION_NUM < 501

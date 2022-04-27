@@ -17,6 +17,7 @@
 #include "luagroups.h"
 #include "luamodel.h"
 #include "luakeys.h"
+#include "luacontact.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -106,6 +107,7 @@ static const luaL_Reg lualibs[] = {
 	{"color", luaopen_color},
 	{"groups", luaopen_groups},
 	{"model", luaopen_model},
+	{"contact", luaopen_contact},
 	{"survival", luaopen_survival},
 
 	{NULL,NULL}
