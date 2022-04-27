@@ -109,8 +109,8 @@ static int meta_pop(lua_State *L) {
 	if(tablen > 0) {
 		lua_rawgeti(L, -1, 1);
 		for(int pos = 1; pos <= tablen; pos++) {
-			lua_geti(L, -2, pos + 1);
-			lua_seti(L, -3, pos);
+			lua_rawgeti(L, -2, pos + 1);
+			lua_rawseti(L, -3, pos);
 		}
 		return 1;
 	}
