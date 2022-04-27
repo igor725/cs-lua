@@ -21,15 +21,33 @@ LuaVector *lua_checkvector(lua_State *L, int idx) {
 	return (LuaVector *)luaL_checkudata(L, idx, CSLUA_MVECTOR);
 }
 
+LuaVector *lua_tovector(lua_State *L, int idx) {
+	return (LuaVector *)luaL_testudata(L, idx, CSLUA_MVECTOR);
+}
+
 Vec *lua_checkfloatvector(lua_State *L, int idx) {
 	LuaVector *vec = lua_checkvector(L, idx);
 	luaL_argcheck(L, vec->type == LUAVECTOR_TFLOAT, idx, "'FloatVector' expected");
 	return &vec->value.f;
 }
 
+Vec *lua_tofloatvector(lua_State *L, int idx) {
+	LuaVector *vec = lua_tovector(L, idx);
+	if(!vec || vec->type != LUAVECTOR_TFLOAT)
+		return NULL;
+	return &vec->value.f;
+}
+
 SVec *lua_checkshortvector(lua_State *L, int idx) {
 	LuaVector *vec = lua_checkvector(L, idx);
 	luaL_argcheck(L, vec->type == LUAVECTOR_TSHORT, idx, "'ShortVector' expected");
+	return &vec->value.s;
+}
+
+SVec *lua_toshortvector(lua_State *L, int idx) {
+	LuaVector *vec = lua_tovector(L, idx);
+	if(!vec || vec->type != LUAVECTOR_TSHORT)
+		return NULL;
 	return &vec->value.s;
 }
 
@@ -87,6 +105,34 @@ static int vec_cross(lua_State *L) {
 		dst->value.s.y = src1->value.s.z * src2->value.s.x - src1->value.s.x * src2->value.s.z;
 		dst->value.s.z = src1->value.s.x * src2->value.s.y - src1->value.s.y * src2->value.s.x;
 	}
+
+	return 1;
+}
+
+static int vec_toshort(lua_State *L) {
+	LuaVector *src = lua_checkvector(L, 1);
+	LuaVector *dst = lua_newvector(L);
+	dst->type = LUAVECTOR_TSHORT;
+
+	if(src->type == LUAVECTOR_TFLOAT) {
+		dst->value.s.x = (cs_int16)src->value.f.x;
+		dst->value.s.y = (cs_int16)src->value.f.y;
+		dst->value.s.z = (cs_int16)src->value.f.z;
+	} else dst->value = src->value;
+
+	return 1;
+}
+
+static int vec_tofloat(lua_State *L) {
+	LuaVector *src = lua_checkvector(L, 1);
+	LuaVector *dst = lua_newvector(L);
+	dst->type = LUAVECTOR_TFLOAT;
+
+	if(src->type == LUAVECTOR_TSHORT) {
+		dst->value.f.x = (cs_float)src->value.s.x;
+		dst->value.f.y = (cs_float)src->value.s.y;
+		dst->value.f.z = (cs_float)src->value.s.z;
+	} else dst->value = src->value;
 
 	return 1;
 }
@@ -167,18 +213,18 @@ static int meta_tostring(lua_State *L) {
 
 	switch(vec->type) {
 		case LUAVECTOR_TFLOAT:
-			lua_pushfstring(L, "Vector(%f, %f, %f)",
+			lua_pushfstring(L, "FloatVector(%f, %f, %f)",
 				vec->value.f.x, vec->value.f.y, vec->value.f.z
 			);
 			break;
 		case LUAVECTOR_TSHORT:
-			lua_pushfstring(L, "Vector(%d, %d, %d)",
+			lua_pushfstring(L, "ShortVector(%d, %d, %d)",
 				vec->value.s.x, vec->value.s.y, vec->value.s.z
 			);
 			break;
 		
 		default:
-			lua_pushfstring(L, "Vector(%p)", vec);
+			lua_pushfstring(L, "UnknownVector(%p)", vec);
 			break;
 	}
 
@@ -371,6 +417,9 @@ static const luaL_Reg vectormeta[] = {
 	{"normalized", vec_normalized},
 	{"magnitude", vec_magnitude},
 	{"cross", vec_cross},
+
+	{"toshort", vec_toshort},
+	{"tofloat", vec_tofloat},
 
 	{"set", vec_setvalue},
 	{"get", vec_getvalue},

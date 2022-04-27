@@ -59,19 +59,16 @@ static int meta_getname(lua_State *L) {
 
 static int meta_getspawn(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	Vec *svec = NULL; Ang *sang = NULL;
+	Vec *svec = lua_tofloatvector(L, 2);
+	Ang *sang = lua_toangle(L, 3);
 
-	if(lua_isvector(L, 2))
-		svec = lua_checkfloatvector(L, 2);
-	else if(lua_isnone(L, 2)) {
+	if(!svec && lua_isnone(L, 2)) {
 		LuaVector *lvec = lua_newvector(L);
 		lvec->type = LUAVECTOR_TFLOAT;
 		svec = &lvec->value.f;
 	}
 
-	if(lua_isangle(L, 3))
-		sang = lua_checkangle(L, 3);
-	else if(lua_isnone(L, 3))
+	if(!sang && lua_isnone(L, 3))
 		sang = lua_newangle(L);
 
 	World_GetSpawn(world, svec, sang);
@@ -91,11 +88,9 @@ static int meta_getoffset(lua_State *L) {
 
 static int meta_getdimensions(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
-	SVec *dvec;
+	SVec *dvec = lua_toshortvector(L, 2);
 
-	if(lua_isvector(L, 2))
-		dvec = lua_checkshortvector(L, 2);
-	else {
+	if(!dvec) {
 		LuaVector *lvec = lua_newvector(L);
 		lvec->type = LUAVECTOR_TSHORT;
 		dvec = &lvec->value.s;
@@ -116,11 +111,9 @@ static int meta_getblock(lua_State *L) {
 static int meta_getenvcolor(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	EColor ctype = (EColor)luaL_checkinteger(L, 2);
-	Color3 *col;
+	Color3 *col = lua_tocolor3(L, 3);
 
-	if(lua_iscolor(L, 3))
-		col = lua_checkcolor3(L, 3);
-	else {
+	if(!col) {
 		LuaColor *lcol = lua_newcolor(L);
 		lcol->hasAlpha = false;
 		col = &lcol->value.c3;

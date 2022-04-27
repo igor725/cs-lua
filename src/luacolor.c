@@ -16,14 +16,28 @@ LuaColor *lua_newcolor(lua_State *L) {
 	return col;
 }
 
+LuaColor *lua_tocolor(lua_State *L, int idx) {
+	return (LuaColor *)luaL_testudata(L, idx, CSLUA_MCOLOR);
+}
+
 LuaColor *lua_checkcolor(lua_State *L, int idx) {
 	return (LuaColor *)luaL_checkudata(L, idx, CSLUA_MCOLOR);
+}
+
+Color3 *lua_tocolor3(lua_State *L, int idx) {
+	LuaColor *col = lua_tocolor(L, idx);
+	return col ? &col->value.c3 : NULL;
 }
 
 Color3 *lua_checkcolor3(lua_State *L, int idx) {
 	LuaColor *col = lua_checkcolor(L, idx);
 	luaL_argcheck(L, !col->hasAlpha, idx, "'Color3' expected");
 	return &col->value.c3;
+}
+
+Color4 *lua_tocolor4(lua_State *L, int idx) {
+	LuaColor *col = lua_tocolor(L, idx);
+	return col ? &col->value.c4 : NULL;
 }
 
 Color4 *lua_checkcolor4(lua_State *L, int idx) {

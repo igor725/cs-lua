@@ -20,6 +20,10 @@ Ang *lua_checkangle(lua_State *L, int idx) {
 	return (Ang *)luaL_checkudata(L, idx, CSLUA_MANGLE);
 }
 
+Ang *lua_toangle(lua_State *L, int idx) {
+	return (Ang *)luaL_testudata(L, idx, CSLUA_MANGLE);
+}
+
 static int ang_setvalue(lua_State *L) {
 	Ang *ang = lua_checkangle(L, 1);
 	ang->yaw = (cs_float)luaL_optnumber(L, 2, ang->yaw);

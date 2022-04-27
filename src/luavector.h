@@ -20,7 +20,10 @@ typedef struct _LuaVector {
 cs_bool lua_isvector(lua_State *L, int idx);
 LuaVector *lua_newvector(lua_State *L);
 LuaVector *lua_checkvector(lua_State *L, int idx);
+LuaVector *lua_tovector(lua_State *L, int idx);
 Vec *lua_checkfloatvector(lua_State *L, int idx);
+Vec *lua_tofloatvector(lua_State *L, int idx);
 SVec *lua_checkshortvector(lua_State *L, int idx);
+SVec *lua_toshortvector(lua_State *L, int idx);
 int luaopen_vector(lua_State *L);
 #endif

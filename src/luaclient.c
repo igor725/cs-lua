@@ -17,7 +17,7 @@ Client *lua_checkclient(lua_State *L, int idx) {
 	return (Client *)*ud;
 }
 
-Client *lua_optclient(lua_State *L, int idx) {
+Client *lua_toclient(lua_State *L, int idx) {
 	void **ud = luaL_testudata(L, idx, CSLUA_MCLIENT);
 	return ud ? *ud : NULL;
 }
@@ -142,11 +142,9 @@ static int meta_getappname(lua_State *L) {
 
 static int meta_getposition(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
-	Vec *vector;
+	Vec *vector = lua_tofloatvector(L, 2);
 
-	if(lua_isvector(L, 2))
-		vector = lua_checkfloatvector(L, 2);
-	else {
+	if(!vector) {
 		LuaVector *lvec = lua_newvector(L);
 		lvec->type = LUAVECTOR_TFLOAT;
 		vector = &lvec->value.f;
@@ -157,12 +155,8 @@ static int meta_getposition(lua_State *L) {
 }
 
 static int meta_getrotation(lua_State *L) {
-	Ang *angle;
-
-	if(lua_isangle(L, 2))
-		angle = lua_checkangle(L, 2);
-	else
-		angle = lua_newangle(L);
+	Ang *angle = lua_toangle(L, 2);
+	if(!angle) angle = lua_newangle(L);
 
 	(void)Client_GetPosition(
 		lua_checkclient(L, 1),
@@ -558,7 +552,7 @@ static int meta_kick(lua_State *L) {
 }
 
 static int meta_chat(lua_State *L) {
-	Client *client = lua_optclient(L, 1);
+	Client *client = lua_toclient(L, 1);
 	EMesgType type = MESSAGE_TYPE_CHAT;
 	cs_str mesg = NULL;
 
