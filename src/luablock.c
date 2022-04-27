@@ -255,6 +255,37 @@ static const luaL_Reg blocklib[] = {
 	{NULL, NULL}
 };
 
+static cs_str const blocknames[] = {
+	"AIR", "STONE", "GRASS", "DIRT", "COBBLE",
+	"WOOD", "SAPLING", "BEDROCK", "WATER",
+	"WATER_STILL", "LAVA", "LAVA_STILL",
+	"SAND", "GRAVEL", "GOLD_ORE", "IRON_ORE",
+	"COAL_ORE", "LOG", "LEAVES", "SPONGE",
+	"GLASS", "RED", "ORANGE", "YELLOW",
+	"LIME", "GREEN", "TEAL", "AQUA", "CYAN",
+	"BLUE", "INDIGO", "VIOLET", "MAGENTA",
+	"PINK", "BLACK", "GRAY", "WHITE",
+	"DANDELION", "ROSE", "BROWN_SHROOM",
+	"RED_SHROOM", "GOLD", "IRON",
+	"DOUBLE_SLAB", "SLAB", "BRICK", "TNT",
+	"BOOKSHELF", "MOSSY_ROCKS", "OBSIDIAN",
+
+	"COBBLESLAB", "ROPE", "SANDSTONE", "SNOW",
+	"FIRE", "LIGHTPINK", "FORESTGREEN", 
+	"BROWN", "DEEPBLUE", "TURQUOISE", "ICE",
+	"CERAMICTILE", "MAGMA", "PILLAR", "CRATE",
+	"STONEBRICK",
+
+	NULL
+};
+
+static void luablock_initconts(lua_State *L) {
+	for(int i = 0; blocknames[i]; i++) {
+		lua_pushinteger(L, i);
+		lua_setfield(L, -2, blocknames[i]);
+	}
+}
+
 int luaopen_block(lua_State *L) {
 	luaL_newmetatable(L, CSLUA_MBLOCK);
 	lua_pushvalue(L, -1);
@@ -288,5 +319,6 @@ int luaopen_block(lua_State *L) {
 	lua_addintconst(L, BDDRW_GAS);
 
 	luaL_newlib(L, blocklib);
+	luablock_initconts(L);
 	return 1;
 }

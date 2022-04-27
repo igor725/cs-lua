@@ -2,7 +2,7 @@
 #include <types/keys.h>
 #include "luascript.h"
 
-static cs_str keys[256] = {
+static cs_str const keys[256] = {
 	0, "ESCAPE", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "MINUS", "EQUALS",
 	"BACKSPACE", "TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "LBRACKET",
 	"RBRACKET", "ENTER", "LCTRL", "A", "S", "D", "F", "G", "H", "J", "K", "L",
@@ -21,7 +21,7 @@ static cs_str keys[256] = {
 	0, 0, 0, 0, 0, 0, 0
 };
 
-static cs_str mods[5] = {
+static cs_str const mods[5] = {
 	"MNONE", "MCTRL",
 	"MSHIFT", 0, "MALT"
 };
