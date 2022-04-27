@@ -26,7 +26,7 @@ static cs_str const mods[5] = {
 	"MSHIFT", 0, "MALT"
 };
 
-int luaopen_keys(lua_State *L) {
+int luaopen_key(lua_State *L) {
 	lua_newtable(L);
 	for(int i = 0; i < 256; i++) {
 		if(keys[i]) {

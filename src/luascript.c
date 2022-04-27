@@ -14,9 +14,9 @@
 #include "luasurvival.h"
 #include "luaconfig.h"
 #include "luacuboid.h"
-#include "luagroups.h"
+#include "luagroup.h"
 #include "luamodel.h"
-#include "luakeys.h"
+#include "luakey.h"
 #include "luacontact.h"
 
 // Слой совместимости для чистой версии Lua 5.1
@@ -96,7 +96,7 @@ static const luaL_Reg lualibs[] = {
 	{LUA_JITLIBNAME, luaopen_jit},
 #endif
 	{"log", luaopen_log},
-	{"keys", luaopen_keys},
+	{"key", luaopen_key},
 	{"block", luaopen_block},
 	{"world", luaopen_world},
 	{"client", luaopen_client},
@@ -105,7 +105,7 @@ static const luaL_Reg lualibs[] = {
 	{"vector", luaopen_vector},
 	{"angle", luaopen_angle},
 	{"color", luaopen_color},
-	{"groups", luaopen_groups},
+	{"group", luaopen_group},
 	{"model", luaopen_model},
 	{"contact", luaopen_contact},
 	{"survival", luaopen_survival},
