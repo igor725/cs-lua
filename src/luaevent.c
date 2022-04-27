@@ -180,8 +180,11 @@ static cs_bool evtonblockplace(void *param) {
 			vec->type = 1;
 			lua_pushinteger(script->L, a->id);
 			if(LuaScript_Call(script, 3, 1)) {
-				cs_bool succ = (cs_bool)lua_isnil(script->L, -1) ||
-				(cs_bool)lua_toboolean(script->L, -1);
+				cs_bool succ = true;
+				if(lua_isnumber(script->L, -1))
+					a->id = (BlockID)lua_tointeger(script->L, -1);
+				else if(lua_isboolean(script->L, -1))
+					succ = (cs_bool)lua_toboolean(script->L, -1);
 				lua_pop(script->L, 1);
 				if(!succ) {
 					LuaScript_Unlock(script);
