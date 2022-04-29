@@ -5,6 +5,8 @@
 #include <platform.h>
 #include "luascript.h"
 #include "luacontact.h"
+#include "luaclient.h"
+#include "luaworld.h"
 
 static struct _Contact {
 	cs_char name[CSLUA_CONTACT_NAMELEN];
@@ -121,12 +123,48 @@ static int meta_pop(lua_State *L) {
 
 static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx);
 
-/**
- * TODO:
- * Добавить поддержку отправки миров,
- * игроков и может ещё каких приколов,
- * Lua функций, например. Чому нет?
- */
+static cs_bool copyudata(lua_State *L_to, lua_State *L_from, int idx) {
+	void *tmp = lua_toclient(L_from, idx);
+	if(tmp) return (lua_pushclient(L_to, tmp), true);
+	tmp = lua_toworld(L_from, idx);
+	if(tmp) return (lua_pushworld(L_to, tmp), true);
+
+	return false;
+}
+
+static int writer(lua_State *L, const void *b, size_t size, void *B) {
+	(void)L;
+	luaL_addlstring((luaL_Buffer *)B, (const char *)b, size);
+	return 0;
+}
+
+static const char *reader(lua_State *L, void *b, size_t *size) {
+	(void)b;
+	return lua_tolstring(L, -1, size);
+}
+
+static cs_bool copyfunction(lua_State *L_to, lua_State *L_from, int idx) {
+	luaL_Buffer b;
+	luaL_buffinit(L_to, &b);
+	lua_pushvalue(L_from, idx);
+#	if LUA_VERSION_NUM > 502
+		if(lua_dump(L_from, writer, &b, 1) != 0)
+			return false;
+		luaL_pushresult(&b);
+		if(lua_load(L_to, reader, NULL, "transfered chunk", "binary"))
+			return false;
+#	else
+		if(lua_dump(L_from, writer, &b) != 0)
+			return false;
+		luaL_pushresult(&b);
+		if(lua_load(L_to, reader, NULL, "transfered chunk"))
+			return false;
+#	endif
+
+	lua_remove(L_to, -2);
+	return true;
+}
+
 static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
 	switch(lua_type(L_from, idx)) {
 		case LUA_TNIL:
@@ -151,6 +189,16 @@ static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
 
 		case LUA_TTABLE:
 			if(!copytable(L_to, L_from, idx))
+				return false;
+			break;
+
+		case LUA_TUSERDATA:
+			if(!copyudata(L_to, L_from, idx))
+				return false;
+			break;
+
+		case LUA_TFUNCTION:
+			if(!copyfunction(L_to, L_from, idx))
 				return false;
 			break;
 

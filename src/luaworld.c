@@ -17,6 +17,11 @@ World *lua_checkworld(lua_State *L, int idx) {
 	return (World *)*ud;
 }
 
+World *lua_toworld(lua_State *L, int idx) {
+	void **ud = luaL_checkudata(L, idx, CSLUA_MWORLD);
+	return ud ? *ud : NULL;
+}
+
 void lua_pushworld(lua_State *L, World *world) {
 	if(!world) {
 		lua_pushnil(L);
