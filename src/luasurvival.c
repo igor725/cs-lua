@@ -154,15 +154,6 @@ static int surv_safe(lua_State *L) {
 	lua_setfield(L, LUA_REGISTRYINDEX, "_srvsafe");
 	return 0;
 }
-#else
-#define surv_safe surv_init
-#define surv_isready surv_init
-
-static int surv_init(lua_State *L) {
-	lua_pushboolean(L, false);
-	return 1;
-}
-#endif
 
 static const luaL_Reg survlib[] = {
 	{"init", surv_init},
@@ -176,3 +167,10 @@ int luaopen_survival(lua_State *L) {
 	luaL_newlib(L, survlib);
 	return 1;
 }
+#else
+int luaopen_survival(lua_State *L) {
+	lua_pushnil(L);
+	return 1;
+}
+#endif
+
