@@ -84,7 +84,9 @@ static int cont_get(lua_State *L) {
 		cfinish:
 		lua_newtable(L);
 		lua_newtable(L);
-		lua_setfield(L, -2, "queue");
+		lua_rawseti(L, -2, 0);
+		lua_pushvalue(L, -2); // Contact
+		lua_rawseti(L, -2, 1);
 		lua_setfield(L, -3, name);
 		return 1;
 	}
@@ -102,7 +104,7 @@ static int meta_pop(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, cont->name);
-	lua_getfield(L, -1, "queue");
+	lua_rawgeti(L, -1, 0);
 	int tablen = (int)lua_objlen(L, -1);
 	if(tablen > 0) {
 		lua_rawgeti(L, -1, 1);
@@ -117,6 +119,69 @@ static int meta_pop(lua_State *L) {
 	return 1;
 }
 
+static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx);
+
+/**
+ * TODO:
+ * Добавить поддержку отправки миров,
+ * игроков и может ещё каких приколов,
+ * Lua функций, например. Чому нет?
+ */
+static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
+	switch(lua_type(L_from, idx)) {
+		case LUA_TNIL:
+			lua_pushnil(L_to);
+			break;
+
+		case LUA_TBOOLEAN:
+			lua_pushboolean(L_to, lua_toboolean(L_from, idx));
+			break;
+
+		case LUA_TLIGHTUSERDATA:
+			lua_pushlightuserdata(L_to, lua_touserdata(L_from, idx));
+			break;
+
+		case LUA_TNUMBER:
+			lua_pushstring(L_to, lua_tostring(L_from, idx));
+			break;
+
+		case LUA_TSTRING:
+			lua_pushstring(L_to, lua_tostring(L_from, idx));
+			break;
+
+		case LUA_TTABLE:
+			if(!copytable(L_to, L_from, idx))
+				return false;
+			break;
+
+		default:
+			return false;
+	}
+
+	return true;
+}
+
+static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx) {
+	/**
+	 * Если используется относительный указатель на позицию стека,
+	 * то нам надо из него вычесть 1, т.к. в стек бросается ещё
+	 * одно значение - ключ таблицы для итерации.
+	 */
+	if(idx < 0) idx--;
+
+	lua_pushnil(L_from);
+	lua_newtable(L_to);
+	while(lua_next(L_from, idx) != 0) {
+		if(!copyvalue(L_to, L_from, -2) || !copyvalue(L_to, L_from, -1))
+			return false;
+
+		lua_rawset(L_to, -3);
+		lua_pop(L_from, 1);
+	}
+
+	return true;
+}
+
 static int meta_push(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 
@@ -126,38 +191,23 @@ static int meta_push(lua_State *L) {
 
 		if(_LS->L != L) {
 			LuaScript_Lock(_LS);
+			int tstart = lua_gettop(_LS->L);
 			lua_getfield(_LS->L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 			lua_getfield(_LS->L, -1, cont->name);
-			lua_getfield(_LS->L, -1, "queue");
-
-			switch(lua_type(L, 2)) {
-				case LUA_TNIL:
-					lua_pushnil(_LS->L);
-					break;
-
-				case LUA_TBOOLEAN:
-					lua_pushboolean(_LS->L, lua_toboolean(L, 2));
-					break;
-
-				case LUA_TLIGHTUSERDATA:
-					lua_pushlightuserdata(_LS->L, lua_touserdata(L, 2));
-					break;
-
-				case LUA_TNUMBER:
-					lua_pushstring(_LS->L, lua_tostring(L, 2));
-					break;
-
-				case LUA_TSTRING:
-					lua_pushstring(_LS->L, lua_tostring(L, 2));
-					break;
-
-				default:
-					LuaScript_Unlock(_LS);
-					luaL_error(L, "Unsupported value");
-					return 0;
+			lua_rawgeti(_LS->L, -1, 0);
+			if(!copyvalue(_LS->L, L, 2)) {
+				lua_settop(_LS->L, tstart);
+				LuaScript_Unlock(_LS);
+				luaL_error(L, "Attempt to push unsupported value");
+				return 0;
 			}
-			
 			lua_rawseti(_LS->L, -2, (int)lua_objlen(_LS->L, -2) + 1);
+			lua_rawgeti(_LS->L, -2, 2);
+			if(lua_isfunction(_LS->L, -1)) {
+				lua_rawgeti(_LS->L, -3, 1);
+				(void)LuaScript_Call(_LS, 1, 0);
+			}
+			lua_settop(_LS->L, tstart);
 			LuaScript_Unlock(_LS);
 		}
 	}
@@ -165,11 +215,21 @@ static int meta_push(lua_State *L) {
 	return 0;
 }
 
+static int meta_bind(lua_State *L) {
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+	struct _Contact *cont = checkcontact(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
+	lua_getfield(L, -1, cont->name);
+	lua_pushvalue(L, 2);
+	lua_rawseti(L, -2, 2); // cscontact[name][2] = <2>
+	return 0;
+}
+
 static int meta_avail(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, cont->name);
-	lua_getfield(L, -1, "queue");
+	lua_rawgeti(L, -1, 0);
 	lua_pushinteger(L, lua_objlen(L, -1));
 	return 1;
 }
@@ -178,7 +238,7 @@ static int meta_clear(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, cont->name);
-	lua_getfield(L, -1, "queue");
+	lua_rawgeti(L, -1, 0);
 	for(int i = (int)lua_objlen(L, -1); i > 0; i--) {
 		lua_pushnil(L);
 		lua_rawseti(L, -2, i);
@@ -215,6 +275,7 @@ static int meta_close(lua_State *L) {
 const luaL_Reg contactmeta[] = {
 	{"pop", meta_pop},
 	{"push", meta_push},
+	{"bind", meta_bind},
 
 	{"avail", meta_avail},
 	{"clear", meta_clear},
