@@ -142,7 +142,7 @@ static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
 			break;
 
 		case LUA_TNUMBER:
-			lua_pushstring(L_to, lua_tostring(L_from, idx));
+			lua_pushnumber(L_to, lua_tonumber(L_from, idx));
 			break;
 
 		case LUA_TSTRING:
