@@ -89,6 +89,16 @@ GOTO :fail
 IF EXIST "..\cs-survival\src\survitf.h" (
 	SET CFLAGS=!CFLAGS! /DCSLUA_USE_SURVIVAL
 )
+IF "%PLUGIN_INSTALL%"=="1" (
+	IF NOT EXIST "%SERVER_OUTROOT%\scripts" (
+		MD %SERVER_OUTROOT%\scripts
+	)
+	IF NOT EXIST "%SERVER_OUTROOT%\scripts\chatexec.lua" (
+		IF NOT EXIST "%SERVER_OUTROOT%\scripts\disabled\chatexec.lua" (
+			COPY %ROOT%\scripts\chatexec.lua %SERVER_OUTROOT%\scripts\chatexec.lua 2>nul
+		)
+	)
+)
 EXIT /b 0
 
 :testpath
