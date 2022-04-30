@@ -148,7 +148,7 @@ static cs_bool copyfunction(lua_State *L_to, lua_State *L_from, int idx) {
 	luaL_buffinit(L_to, &b);
 	lua_pushvalue(L_from, idx);
 #	if LUA_VERSION_NUM > 502
-		if(lua_dump(L_from, writer, &b, 1) != 0)
+		if(lua_dump(L_from, writer, &b, 0) != 0)
 			return false;
 		luaL_pushresult(&b);
 		if(lua_load(L_to, reader, NULL, "transfered chunk", "binary"))

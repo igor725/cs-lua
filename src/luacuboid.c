@@ -66,7 +66,7 @@ void lua_clearcuboids(lua_State *L, Client *client) {
 	}
 
 	// Проходимся по таблице и удаляем найденные кубоиды
-	for(lua_Integer i = 0; i < 16; i++) { // TODO: Сделать число 16 макросом???
+	for(lua_Integer i = 0; i < CLIENT_CUBOIDS_COUNT; i++) {
 		lua_pushinteger(L, i);
 		lua_gettable(L, -2);
 		if(lua_isnil(L, -1)) { // Кубоид с указанным id не существует в таблице кубоидов

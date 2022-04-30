@@ -51,7 +51,6 @@ static void callallworld(World *world, cs_str func) {
 	}
 }
 
-// TODO: Дать скриптам возможность менять параметр world
 static void evthandshake(void *param) {
 	onHandshakeDone *a = (onHandshakeDone *)param;
 	AListField *tmp;
