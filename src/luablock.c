@@ -83,6 +83,12 @@ static int meta_setworld(lua_State *L) {
 	return 0;
 }
 
+static int meta_getworld(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
+	lua_pushworld(L, bbu->world);
+	return 1;
+}
+
 static int meta_push(lua_State *L) {
 	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
 	lua_pushboolean(L, Block_BulkUpdateSend(bbu));
@@ -135,6 +141,9 @@ static int meta_add(lua_State *L) {
 static const luaL_Reg bulkmeta[] = {
 	{"setautosend", meta_setautosend},
 	{"setworld", meta_setworld},
+
+	{"getworld", meta_getworld},
+
 	{"push", meta_push},
 	{"add", meta_add},
 
@@ -243,6 +252,8 @@ static int block_bulk(lua_State *L) {
 	BulkBlockUpdate *bbu = lua_newuserdata(L, sizeof(BulkBlockUpdate));
 	Memory_Fill(bbu, sizeof(BulkBlockUpdate), 0);
 	luaL_setmetatable(L, CSLUA_MBULK);
+	bbu->world = lua_toworld(L, 1);
+	bbu->autosend = lua_toboolean(L, 2);
 	return 1;
 }
 
