@@ -253,7 +253,7 @@ static int block_bulk(lua_State *L) {
 	Memory_Fill(bbu, sizeof(BulkBlockUpdate), 0);
 	luaL_setmetatable(L, CSLUA_MBULK);
 	bbu->world = lua_toworld(L, 1);
-	bbu->autosend = lua_toboolean(L, 2);
+	bbu->autosend = (cs_bool)lua_toboolean(L, 2);
 	return 1;
 }
 
