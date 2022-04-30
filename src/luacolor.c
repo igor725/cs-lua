@@ -100,10 +100,10 @@ static int meta_index(lua_State *L) {
 				lua_pushinteger(L, (lua_Integer)col->value.c3.r);
 				return 1;
 			case 'g':
-				lua_pushinteger(L, (lua_Integer)col->value.c3.r);
+				lua_pushinteger(L, (lua_Integer)col->value.c3.g);
 				return 1;
 			case 'b':
-				lua_pushinteger(L, (lua_Integer)col->value.c3.r);
+				lua_pushinteger(L, (lua_Integer)col->value.c3.b);
 				return 1;
 			case 'a':
 				lua_pushinteger(L, (lua_Integer)col->value.c4.a);
