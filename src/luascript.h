@@ -16,6 +16,14 @@ typedef struct LuaScript {
 	cs_str scrname;
 	lua_State *L;
 	Mutex *lock;
+
+#	ifdef CSLUA_PROFILE_MEMORY
+		lua_Alloc af;
+		void *ad;
+		cs_int32 nfrees;
+		cs_int32 nallocs;
+		cs_int32 nreallocs;
+#	endif
 } LuaScript;
 
 // Регистровые таблицы для хранения разных приколов

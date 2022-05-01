@@ -181,13 +181,6 @@ static int allowhotreload(lua_State *L) {
 	return 0;
 }
 
-// static int sleepmillis(lua_State *L) {
-// 	lua_Integer ms = luaL_checkinteger(L, 1);
-// 	luaL_argcheck(L, ms > 0, 1, "Sleep timeout must be greater than zero");
-// 	Thread_Sleep((cs_uint32)ms);
-// 	return 0;
-// }
-
 static int mstime(lua_State *L) {
 	lua_pushnumber(L, Time_GetMSecD());
 	return 1;
@@ -232,6 +225,23 @@ static const luaL_Reg iofuncs[] = {
 	{NULL, NULL}
 };
 
+#ifdef CSLUA_PROFILE_MEMORY
+static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
+	LuaScript *script = (LuaScript *)ud;
+
+	if(nsize == 0 && ptr)
+		script->nfrees++;
+	else if(nsize > 0) {
+		if(ptr)
+			script->nreallocs++;
+		else
+			script->nallocs++;
+	}
+
+	return script->af(script->ad, ptr, osize, nsize);
+}
+#endif
+
 LuaScript *LuaScript_Open(cs_str name) {
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
@@ -244,14 +254,16 @@ LuaScript *LuaScript_Open(cs_str name) {
 			return NULL;
 		}
 
+#		ifdef CSLUA_PROFILE_MEMORY
+			script->af = lua_getallocf(script->L, &script->ad);
+			lua_setallocf(script->L, l_alloc, script);
+#		endif
+
 		lua_pushlightuserdata(script->L, script);
 		lua_setfield(script->L, LUA_REGISTRYINDEX, CSLUA_RSCPTR);
 
 		lua_pushcfunction(script->L, allowhotreload);
 		lua_setglobal(script->L, "allowHotReload");
-
-		// lua_pushcfunction(script->L, sleepmillis);
-		// lua_setglobal(script->L, "sleepMs");
 
 		lua_pushcfunction(script->L, mstime);
 		lua_setglobal(script->L, "msTime");
@@ -316,6 +328,12 @@ LuaScript *LuaScript_Open(cs_str name) {
 
 cs_bool LuaScript_Close(LuaScript *script) {
 	if(script->L) lua_close(script->L);
+#	ifdef CSLUA_PROFILE_MEMORY
+		Log_Info("%s made allocs: %d, reallocs: %d, frees: %d",
+			script->scrname, script->nallocs,
+			script->nreallocs, script->nfrees
+		);
+#	endif
 	Memory_Free((void *)script->scrname);
 	Mutex_Free(script->lock);
 	Memory_Free(script);
