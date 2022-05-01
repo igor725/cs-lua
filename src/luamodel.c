@@ -3,22 +3,6 @@
 #include <cpe.h>
 #include <str.h>
 
-/**
- * TODO:
- * Вообще было бы неплохо сделать так, чтобы
- * части модели и сама модель находились в
- * одном участке памяти. Т.е. не выделять ещё
- * один кусок памяти под части модели. Этот
- * прикол нам даст более скоростное 
- * высвобождение памяти, занятой моделью, так
- * как не нужно будет двух циклов сборщика
- * мусора, дабы высвободить обе юзердаты. Ну и
- * ко всему прочему, отпадёт надобность в
- * регистровой таблице, так как не надо будет
- * заставлять сборщик мусора не высвобождать
- * память частей модели, пока та ещё существует.
- */
-
 CPEModel *lua_checkmodel(lua_State *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MMODEL);
 }
@@ -41,7 +25,6 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 		part->minCoords = *lua_checkfloatvector(L, -1);
 	if(lua_checktabfieldud(L, -2, "maxCoords", CSLUA_MVECTOR))
 		part->maxCoords = *lua_checkfloatvector(L, -1);
-
 	if(lua_checktabfield(L, -3, "uvs", LUA_TTABLE)) {
 		for(int i = 0; i < 6; i++) {
 			lua_rawgeti(L, -1 - i * 5, i + 1);
@@ -87,32 +70,35 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 }
 
 static void parseModelParts(lua_State *L, CPEModel *mdl) {
-	int partsCount = (int)lua_objlen(L, -1);
-	if(!partsCount) luaL_error(L, "Model parts table can't be empty");
-	CPEModelPart *parts = lua_newuserdata(L, partsCount * sizeof(CPEModelPart));
-
-	for(int i = 0; i < partsCount; i++) {
+	for(cs_byte i = 0; i < mdl->partsCount; i++) {
 		lua_rawgeti(L, -2 - i, i + 1);
 		if(!lua_istable(L, -1)) {
 			luaL_error(L, "Model part #%d is not a table", i);
 			return;
 		}
-		readModelPart(L, &parts[i]);
-		if(i < partsCount - 1) // Устанавливаем ссылки на части модели
-			parts[i].next = &parts[i + 1];
+		readModelPart(L, &mdl->part[i]);
+		if(i < mdl->partsCount - 1) // Устанавливаем ссылки на части модели
+			mdl->part[i].next = &mdl->part[i + 1];
 		else
-			parts[i].next = NULL;
+			mdl->part[i].next = NULL;
 	}
-	lua_pop(L, partsCount);
-	mdl->partsCount = (cs_byte)partsCount;
-	mdl->part = parts;
+	lua_pop(L, mdl->partsCount);
 }
 
 static int model_create(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
-	CPEModel *mdl = lua_newuserdata(L, sizeof(CPEModel));
-	luaL_setmetatable(L, CSLUA_MMODEL);
+	CPEModel *mdl = NULL;
 
+	if(lua_checktabfield(L, 1, "parts", LUA_TTABLE)) {
+		cs_byte partsCount = (cs_byte)lua_objlen(L, -1);
+		if(!partsCount) luaL_error(L, "Model parts table can't be empty");
+		if(partsCount > 64) luaL_error(L, "Maximum model parts number exceeded");
+		mdl = lua_newuserdata(L, sizeof(CPEModel) + sizeof(CPEModelPart) * partsCount);
+		luaL_setmetatable(L, CSLUA_MMODEL);
+		mdl->partsCount = partsCount;
+		mdl->part = (CPEModelPart *)&mdl[1]; // Указатель на конец CPEModel и начало CPEModelPart
+		parseModelParts(L, mdl);
+	}
 	if(lua_checktabfield(L, 1, "name", LUA_TSTRING))
 		String_Copy(mdl->name, sizeof(mdl->name), lua_tostring(L, -1));
 	if(lua_checktabfield(L, 1, "flags", LUA_TNUMBER))
@@ -131,15 +117,8 @@ static int model_create(lua_State *L) {
 		mdl->uScale = (cs_uint16)lua_tointeger(L, -1);
 	if(lua_checktabfield(L, 1, "vScale", LUA_TNUMBER))
 		mdl->vScale = (cs_uint16)lua_tointeger(L, -1);
-	if(lua_checktabfield(L, 1, "parts", LUA_TTABLE)) {
-		parseModelParts(L, mdl);
-		lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RPARTS);
-		lua_pushvalue(L, -13); // Model userdata
-		lua_pushvalue(L, -3); // Model parts userdata
-		lua_settable(L, -3);
-	}
-	
-	lua_pop(L, 12);
+
+	lua_pop(L, 9);
 	return 1;
 }
 
@@ -167,13 +146,6 @@ static const luaL_Reg modellib[] = {
 };
 
 int luaopen_model(lua_State *L) {
-	lua_newtable(L);
-	lua_newtable(L);
-	lua_pushstring(L, "k");
-	lua_setfield(L, -2, "__mode");
-	lua_setmetatable(L, -2);
-	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RPARTS);
-
 	lua_indexedmeta(L, CSLUA_MMODEL, modelmeta);
 	lua_pop(L, 1);
 

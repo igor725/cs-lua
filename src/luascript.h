@@ -24,7 +24,6 @@ typedef struct LuaScript {
 #define CSLUA_RCLIENTS "csclients"
 #define CSLUA_RCMDS    "cscmds"
 #define CSLUA_RCUBOIDS "cscuboids"
-#define CSLUA_RPARTS   "csmdlparts"
 #define CSLUA_RCONTACT "cscontact"
 
 // Метатаблицы разных приколов
