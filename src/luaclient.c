@@ -693,6 +693,7 @@ static const luaL_Reg clientlib[] = {
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
 	{"getcount", client_getcount},
+
 	{"iterall", client_iterall},
 	{"newbot", client_newbot},
 

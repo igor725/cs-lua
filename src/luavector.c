@@ -109,6 +109,40 @@ static int vec_cross(lua_State *L) {
 	return 1;
 }
 
+static int vec_min(lua_State *L) {
+	LuaVector *dst = lua_checkvector(L, 1);
+
+	if(dst->type == LUAVECTOR_TFLOAT) {
+		Vec *v1 = lua_checkfloatvector(L, 2),
+		*v2 = lua_checkfloatvector(L, 3);
+		Vec_Min(dst->value.f, *v1, *v2);
+	} else if(dst->type == LUAVECTOR_TSHORT) {
+		SVec *v1 = lua_checkshortvector(L, 2),
+		*v2 = lua_checkshortvector(L, 3);
+		Vec_Min(dst->value.s, *v1, *v2);
+	}
+
+	lua_pop(L, 2);
+	return 1;
+}
+
+static int vec_max(lua_State *L) {
+	LuaVector *dst = lua_checkvector(L, 1);
+
+	if(dst->type == LUAVECTOR_TFLOAT) {
+		Vec *v1 = lua_checkfloatvector(L, 2),
+		*v2 = lua_checkfloatvector(L, 3);
+		Vec_Max(dst->value.f, *v1, *v2);
+	} else if(dst->type == LUAVECTOR_TSHORT) {
+		SVec *v1 = lua_checkshortvector(L, 2),
+		*v2 = lua_checkshortvector(L, 3);
+		Vec_Max(dst->value.s, *v1, *v2);
+	}
+
+	lua_pop(L, 2);
+	return 1;
+}
+
 static int vec_toshort(lua_State *L) {
 	LuaVector *src = lua_checkvector(L, 1);
 	LuaVector *dst = lua_newvector(L);
@@ -417,6 +451,9 @@ static const luaL_Reg vectormeta[] = {
 	{"normalized", vec_normalized},
 	{"magnitude", vec_magnitude},
 	{"cross", vec_cross},
+
+	{"min", vec_min},
+	{"max", vec_max},
 
 	{"toshort", vec_toshort},
 	{"tofloat", vec_tofloat},
