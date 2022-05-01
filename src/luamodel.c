@@ -26,6 +26,7 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 	if(lua_checktabfieldud(L, -2, "maxCoords", CSLUA_MVECTOR))
 		part->maxCoords = *lua_checkfloatvector(L, -1);
 	if(lua_checktabfield(L, -3, "uvs", LUA_TTABLE)) {
+		lua_checkstack(L, 6 * 5);
 		for(int i = 0; i < 6; i++) {
 			lua_rawgeti(L, -1 - i * 5, i + 1);
 			if(!lua_istable(L, -1))
@@ -44,6 +45,7 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 	if(lua_checktabfieldud(L, -5, "rotOrigin", CSLUA_MVECTOR))
 		part->rotOrigin = *lua_checkfloatvector(L, -1);
 	if(lua_checktabfield(L, -6, "anims", LUA_TTABLE)) {
+		lua_checkstack(L, 4 * 7);
 		for(int i = 0; i < 4; i++) {
 			lua_rawgeti(L, -1 - i * 7, i + 1);
 			if(!lua_istable(L, -1))
@@ -70,12 +72,11 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 }
 
 static void parseModelParts(lua_State *L, CPEModel *mdl) {
+	lua_checkstack(L, (int)mdl->partsCount);
 	for(cs_byte i = 0; i < mdl->partsCount; i++) {
 		lua_rawgeti(L, -2 - i, i + 1);
-		if(!lua_istable(L, -1)) {
+		if(!lua_istable(L, -1))
 			luaL_error(L, "Model part #%d is not a table", i);
-			return;
-		}
 		readModelPart(L, &mdl->part[i]);
 		if(i < mdl->partsCount - 1) // Устанавливаем ссылки на части модели
 			mdl->part[i].next = &mdl->part[i + 1];
@@ -87,6 +88,7 @@ static void parseModelParts(lua_State *L, CPEModel *mdl) {
 
 static int model_create(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
+	lua_checkstack(L, 10);
 	CPEModel *mdl = NULL;
 
 	if(lua_checktabfield(L, 1, "parts", LUA_TTABLE)) {
