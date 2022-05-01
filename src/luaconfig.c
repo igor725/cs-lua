@@ -152,6 +152,7 @@ static int config_new(lua_State *L) {
 		return 0;
 	}
 
+	lua_checkstack(L, 5);
 	for(size_t i = 1; i <= itemcnt; i++) {
 		lua_rawgeti(L, -1, (int)i);
 		lua_getfield(L, -1, "name");

@@ -50,7 +50,7 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 			lua_rawgeti(L, -1 - i * 7, i + 1);
 			if(!lua_istable(L, -1))
 				luaL_error(L, "Model anim #%d is not a table", i + 1);
-			
+
 			if(lua_checktabfield(L, -1, "flags", LUA_TNUMBER))
 				part->anims[i].flags = (cs_byte)lua_tointeger(L, -1);
 			if(lua_checktabfield(L, -2, "args", LUA_TTABLE)) {
