@@ -83,24 +83,19 @@ static cs_float magnitude(Vec *src) {
 }
 
 static int vec_cross(lua_State *L) {
-	LuaVector *src1 = lua_checkvector(L, 1);
-	LuaVector *src2 = lua_checkvector(L, 2);
-	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
-	LuaVector *dst;
+	LuaVector *dst = lua_checkvector(L, 1);
 
-	if(lua_isvector(L, 3)) {
-		dst = lua_checkvector(L, 3);
-		luaL_argcheck(L, dst->type == src1->type, 3, "v3 must be the same type as v1 and v2");
-	} else {
-		dst = lua_newvector(L);
-		dst->type = src1->type;
+	if(dst->type == LUAVECTOR_TFLOAT) {
+		Vec *src1 = lua_checkfloatvector(L, 2),
+		*src2 = lua_checkfloatvector(L, 3);
+		Vec_Cross(dst->value.f, *src1, *src2);
+	} else if(dst->type == LUAVECTOR_TSHORT) {
+		SVec *src1 = lua_checkshortvector(L, 2),
+		*src2 = lua_checkshortvector(L, 3);
+		Vec_Cross(dst->value.s, *src1, *src2);
 	}
 
-	if(dst->type == LUAVECTOR_TFLOAT)
-		Vec_Cross(dst->value.f, src1->value.f, src2->value.f);
-	else if(dst->type == LUAVECTOR_TSHORT)
-		Vec_Cross(dst->value.s, src1->value.s, src2->value.s);
-
+	lua_pop(L, 2);
 	return 1;
 }
 
