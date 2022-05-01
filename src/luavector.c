@@ -96,15 +96,10 @@ static int vec_cross(lua_State *L) {
 		dst->type = src1->type;
 	}
 
-	if(dst->type == LUAVECTOR_TFLOAT) {
-		dst->value.f.x = src1->value.f.y * src2->value.f.z - src1->value.f.z * src2->value.f.y;
-		dst->value.f.y = src1->value.f.z * src2->value.f.x - src1->value.f.x * src2->value.f.z;
-		dst->value.f.z = src1->value.f.x * src2->value.f.y - src1->value.f.y * src2->value.f.x;
-	} else if(dst->type == LUAVECTOR_TSHORT) {
-		dst->value.s.x = src1->value.s.y * src2->value.s.z - src1->value.s.z * src2->value.s.y;
-		dst->value.s.y = src1->value.s.z * src2->value.s.x - src1->value.s.x * src2->value.s.z;
-		dst->value.s.z = src1->value.s.x * src2->value.s.y - src1->value.s.y * src2->value.s.x;
-	}
+	if(dst->type == LUAVECTOR_TFLOAT)
+		Vec_Cross(dst->value.f, src1->value.f, src2->value.f);
+	else if(dst->type == LUAVECTOR_TSHORT)
+		Vec_Cross(dst->value.s, src1->value.s, src2->value.s);
 
 	return 1;
 }
