@@ -143,7 +143,7 @@ static void evtonclick(void *param) {
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onPlayerClick")) {
 			lua_pushclient(script->L, a->client);
-			lua_newtable(script->L);
+			lua_createtable(script->L, 0, 6);
 			lua_pushinteger(script->L, (lua_Integer)a->button);
 			lua_setfield(script->L, -2, "button");
 			lua_pushinteger(script->L, (lua_Integer)a->action);

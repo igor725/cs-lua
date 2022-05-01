@@ -335,7 +335,7 @@ const luaL_Reg contactmeta[] = {
 };
 
 int luaopen_contact(lua_State *L) {
-	lua_newtable(L);
+	lua_createtable(L, 0, CSLUA_CONTACT_MAX);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 
 	lua_indexedmeta(L, CSLUA_MCONTACT, contactmeta);

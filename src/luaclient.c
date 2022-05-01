@@ -700,7 +700,7 @@ static const luaL_Reg clientlib[] = {
 };
 
 int luaopen_client(lua_State *L) {
-	lua_newtable(L);
+	lua_createtable(L, MAX_CLIENTS, 0);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 
 	lua_indexedmeta(L, CSLUA_MCLIENT, clientmeta);

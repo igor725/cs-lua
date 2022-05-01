@@ -27,7 +27,7 @@ static cs_str const mods[5] = {
 };
 
 int luaopen_key(lua_State *L) {
-	lua_newtable(L);
+	lua_createtable(L, 0, 256 + 5);
 	for(int i = 0; i < 256; i++) {
 		if(keys[i]) {
 			lua_pushinteger(L, i);

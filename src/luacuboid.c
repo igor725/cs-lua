@@ -14,9 +14,8 @@ typedef struct _LuaCuboid {
 } LuaCuboid;
 
 static void setcube(lua_State *L, LuaCuboid *luacub) {
-	lua_pushinteger(L, Cuboid_GetID(luacub->cub));
-	lua_pushvalue(L, -5);
-	lua_settable(L, -3);
+	lua_pushvalue(L, -4);
+	lua_rawseti(L, -2, Cuboid_GetID(luacub->cub));
 }
 
 void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
@@ -37,8 +36,8 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 	lua_gettable(L, -3);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
-		lua_newtable(L); // Таблица кубов
-		lua_newtable(L); // Метатаблица для таблицы кубов (TODO: Сделать её общей для всех??)
+		lua_createtable(L, CLIENT_CUBOIDS_COUNT, 0); // Таблица кубов
+		lua_createtable(L, 0, 1); // Метатаблица для таблицы кубов (TODO: Сделать её общей для всех??)
 		// Делаем, чтобы сборщик мусора не учитывал ссылки внутри таблицы
 		lua_pushstring(L, "v");
 		lua_setfield(L, -2, "__mode");
@@ -185,7 +184,7 @@ static const luaL_Reg cuboidmeta[] = {
 };
 
 void luainit_cuboid(lua_State *L) {
-	lua_newtable(L);
+	lua_createtable(L, 0, MAX_CLIENTS);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 
 	lua_indexedmeta(L, CSLUA_MCUBOID, cuboidmeta);
