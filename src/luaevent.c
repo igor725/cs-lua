@@ -107,8 +107,8 @@ static void evtdisconnect(void *param) {
 			lua_pushstring(script->L, Client_GetDisconnectReason(param));
 			LuaScript_Call(script, 2, 0);
 		}
-		lua_clearclient(script->L, param);
 		lua_clearcuboids(script->L, param);
+		lua_clearclient(script->L, param);
 		LuaScript_Unlock(script);
 	}
 }
