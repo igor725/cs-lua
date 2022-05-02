@@ -20,9 +20,9 @@ typedef struct LuaScript {
 #	ifdef CSLUA_PROFILE_MEMORY
 		lua_Alloc af;
 		void *ad;
-		cs_int32 nfrees;
-		cs_int32 nallocs;
-		cs_int32 nreallocs;
+		cs_uint32 nfrees;
+		cs_uint32 nallocs;
+		cs_uint32 nreallocs;
 #	endif
 } LuaScript;
 

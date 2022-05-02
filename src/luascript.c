@@ -329,7 +329,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 cs_bool LuaScript_Close(LuaScript *script) {
 	if(script->L) lua_close(script->L);
 #	ifdef CSLUA_PROFILE_MEMORY
-		Log_Info("%s made allocs: %d, reallocs: %d, frees: %d",
+		Log_Info("%s made %u allocs, %u reallocs, %u frees",
 			script->scrname, script->nallocs,
 			script->nreallocs, script->nfrees
 		);
