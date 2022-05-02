@@ -154,8 +154,8 @@ static void evtonclick(void *param) {
 			*ang = a->angle;
 			lua_setfield(script->L, -2, "angle");
 			LuaVector *vec = lua_newvector(script->L);
+			vec->type = LUAVECTOR_TSHORT;
 			vec->value.s = a->tgpos;
-			vec->type = 1;
 			lua_setfield(script->L, -2, "position");
 			lua_pushinteger(script->L, (lua_Integer)a->tgface);
 			lua_setfield(script->L, -2, "face");
