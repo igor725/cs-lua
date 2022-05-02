@@ -243,6 +243,9 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 #endif
 
 LuaScript *LuaScript_Open(cs_str name) {
+	if(String_FindSubstr(name, ".."))
+		return NULL;
+
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
 	if(script) {
