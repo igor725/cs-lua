@@ -35,7 +35,6 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 	lua_pushvalue(L, -1); // Отправляем клиента дважды в стек, может пригодиться
 	lua_gettable(L, -3);
 	if(lua_isnil(L, -1)) {
-		lua_pop(L, 1);
 		lua_createtable(L, CLIENT_CUBOIDS_COUNT, 0); // Таблица кубов
 		lua_createtable(L, 0, 1); // Метатаблица для таблицы кубов (TODO: Сделать её общей для всех??)
 		// Делаем, чтобы сборщик мусора не учитывал ссылки внутри таблицы
@@ -44,8 +43,8 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 		lua_setmetatable(L, -2);
 		// Заносим куб в новоиспечённую таблицу
 		setcube(L, luacub);
-		lua_settable(L, -3); // Сохраняем таблицу кубов клиента в cscuboids
-		lua_pop(L, 1);
+		lua_settable(L, -4); // Сохраняем таблицу кубов клиента в cscuboids
+		lua_pop(L, 2);
 		return;
 	}
 
@@ -76,7 +75,7 @@ void lua_clearcuboids(lua_State *L, Client *client) {
 		if(lua_isfunction(L, -1)) { // Проверяем, функция ли она вообще
 			lua_pushvalue(L, -2); // Отправляем сам кубоид в качестве аргумента функции
 			lua_call(L, 1, 0);
-		} else luaL_error(L, "How it possible? :/"); // Сюда по идее мы не должны дойти ни при каких условиях
+		} else luaL_error(L, "How it possible? :/"); // Сюда, по идее мы не должны дойти ни при каких условиях
 		lua_pop(L, 1);
 	}
 

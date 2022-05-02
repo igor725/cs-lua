@@ -61,15 +61,14 @@ static int cmd_add(lua_State *L) {
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 	lua_getfield(L, -1, name);
 	if(lua_isnil(L, -1)) {
-		lua_pop(L, 1);
 		Command *cmd = Command_Register(name, descr, svcmd_luacmd, flags);
 		if(cmd) {
 			lua_pushvalue(L, 1);
 			lua_pushvalue(L, 4);
-			lua_settable(L, -3);
+			lua_settable(L, -4);
 			Command_SetUserData(cmd, lua_getscript(L));
 		}
-		lua_pop(L, 1);
+		lua_pop(L, 2);
 		lua_pushboolean(L, cmd != NULL);
 	} else {
 		lua_pushboolean(L, 0);

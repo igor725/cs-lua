@@ -95,7 +95,7 @@ static int vec_cross(lua_State *L) {
 		Vec_Cross(dst->value.s, *src1, *src2);
 	}
 
-	lua_pop(L, 2);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
@@ -112,7 +112,7 @@ static int vec_min(lua_State *L) {
 		Vec_Min(dst->value.s, *v1, *v2);
 	}
 
-	lua_pop(L, 2);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
@@ -129,7 +129,7 @@ static int vec_max(lua_State *L) {
 		Vec_Max(dst->value.s, *v1, *v2);
 	}
 
-	lua_pop(L, 2);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
