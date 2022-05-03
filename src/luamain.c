@@ -59,15 +59,23 @@ static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 	if(LuaScript_GlobalLookup(script, "onStop")) {
 		lua_pushboolean(script->L, force);
 		if(!LuaScript_Call(script, 1, 1)) {
-			unlerr:
-			LuaScript_Unlock(script);
-			return false;
-		}
-		if(!lua_isnil(script->L, -1) && !lua_toboolean(script->L, -1)) {
-			lua_pop(script->L, 1);
 			goto unlerr;
+		} else {
+			if(!lua_isnil(script->L, -1) && !lua_toboolean(script->L, -1)) {
+				lua_pop(script->L, 1);
+				goto unlerr;
+			}
 		}
+		goto unlok;
 	}
+
+	unlerr:
+	if(!force) {
+		LuaScript_Unlock(script);
+		return false;
+	}
+
+	unlok:
 	script->unloaded = true;
 	LuaScript_Unlock(script);
 	return true;
@@ -154,7 +162,11 @@ COMMAND_FUNC(Lua) {
 				}
 
 				if(String_CaselessCompare(subcmd, "unload")) {
-					if(LuaUnload(script, false)) {
+					cs_bool force = false;
+					if(COMMAND_GETARG(subcmd, 64, 2))
+						force = String_CaselessCompare(subcmd, "force");
+
+					if(LuaUnload(script, force)) {
 						COMMAND_PRINT("&aScript unloaded successfully");
 					} else {
 						COMMAND_PRINT("&cThis script cannot be unloaded right now");
