@@ -146,12 +146,11 @@ static void evtonclick(void *param) {
 			lua_createtable(script->L, 0, 6);
 			lua_pushinteger(script->L, (lua_Integer)a->button);
 			lua_setfield(script->L, -2, "button");
-			lua_pushinteger(script->L, (lua_Integer)a->action);
+			lua_pushboolean(script->L, a->action == 0);
 			lua_setfield(script->L, -2, "action");
 			lua_pushclient(script->L, Client_GetByID(a->tgid));
 			lua_setfield(script->L, -2, "target");
-			Ang *ang = lua_newangle(script->L);
-			*ang = a->angle;
+			*lua_newangle(script->L) = a->angle;
 			lua_setfield(script->L, -2, "angle");
 			LuaVector *vec = lua_newvector(script->L);
 			vec->type = LUAVECTOR_TSHORT;

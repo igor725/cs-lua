@@ -287,7 +287,7 @@ end
 function onPlayerClick(cl, params)
 	local tmp = Temp[cl]
 	local cpos = params.position
-	if params.action ~= 0 then
+	if not params.action then
 		return
 	end
 
