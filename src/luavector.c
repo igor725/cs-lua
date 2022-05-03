@@ -416,6 +416,42 @@ static int meta_div(lua_State *L) {
 	return 1;
 }
 
+static int meta_lt(lua_State *L) {
+	LuaVector *vec1 = lua_checkvector(L, 1);
+	LuaVector *vec2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, vec1->type == vec2->type, 2, CSLUA_MVECTOR " types mismatch");
+	if(vec1->type == LUAVECTOR_TFLOAT)
+		lua_pushboolean(L, vec1->value.f.x < vec2->value.f.x &&
+			vec1->value.f.y < vec2->value.f.y &&
+			vec1->value.f.z < vec2->value.f.z
+		);
+	else if(vec1->type == LUAVECTOR_TSHORT)
+		lua_pushboolean(L, vec1->value.s.x < vec2->value.s.x &&
+			vec1->value.s.y < vec2->value.s.y &&
+			vec1->value.s.z < vec2->value.s.z
+		);
+
+	return 1;
+}
+
+static int meta_le(lua_State *L) {
+	LuaVector *vec1 = lua_checkvector(L, 1);
+	LuaVector *vec2 = lua_checkvector(L, 2);
+	luaL_argcheck(L, vec1->type == vec2->type, 2, CSLUA_MVECTOR " types mismatch");
+	if(vec1->type == LUAVECTOR_TFLOAT)
+		lua_pushboolean(L, vec1->value.f.x <= vec2->value.f.x &&
+			vec1->value.f.y <= vec2->value.f.y &&
+			vec1->value.f.z <= vec2->value.f.z
+		);
+	else if(vec1->type == LUAVECTOR_TSHORT)
+		lua_pushboolean(L, vec1->value.s.x <= vec2->value.s.x &&
+			vec1->value.s.y <= vec2->value.s.y &&
+			vec1->value.s.z <= vec2->value.s.z
+		);
+
+	return 1;
+}
+
 static int meta_eq(lua_State *L) {
 	LuaVector *vec1 = lua_checkvector(L, 1);
 	LuaVector *vec2 = lua_checkvector(L, 2);
@@ -459,6 +495,8 @@ static const luaL_Reg vectormeta[] = {
 	{"__sub", meta_sub},
 	{"__mul", meta_mul},
 	{"__div", meta_div},
+	{"__lt", meta_lt},
+	{"__le", meta_le},
 	{"__eq", meta_eq},
 
 	{NULL, NULL}
