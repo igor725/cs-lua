@@ -1,8 +1,5 @@
 #include <core.h>
-#include <list.h>
 #include <str.h>
-#include <log.h>
-#include <platform.h>
 #include "luascript.h"
 #include "luacontact.h"
 #include "luaclient.h"

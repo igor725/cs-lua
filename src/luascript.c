@@ -1,6 +1,8 @@
 #include <core.h>
 #include <str.h>
+#ifdef CSLUA_PROFILE_MEMORY
 #include <log.h>
+#endif
 #include <platform.h>
 #include "luascript.h"
 #include "luaclient.h"

@@ -1,7 +1,8 @@
 #ifndef CSLUAANGLE_H
 #define CSLUAANGLE_H
+#include <core.h>
 #include <vector.h>
-#include "luascript.h"
+#include <lua.h>
 
 cs_bool lua_isangle(lua_State *L, int idx);
 Ang *lua_newangle(lua_State *L);

@@ -2,7 +2,7 @@
 #define CSLUAVECTOR_H
 #include <core.h>
 #include <vector.h>
-#include "luascript.h"
+#include <lua.h>
 
 typedef enum _ELuaVectorType {
 	LUAVECTOR_TFLOAT = 0,

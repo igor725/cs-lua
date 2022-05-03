@@ -1,6 +1,6 @@
 #ifndef LUACONTACT_H
 #define LUACONTACT_H
-#include "luascript.h"
+#include <lua.h>
 
 #define CSLUA_CONTACT_NAMELEN   32
 #define CSLUA_CONTACT_MAXSCRIPTS 16

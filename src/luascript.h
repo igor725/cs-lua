@@ -8,7 +8,8 @@
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <types/platform.h>
+#include <platform.h>
+#include <log.h>
 
 typedef struct LuaScript {
 	cs_bool hotreload;

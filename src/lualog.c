@@ -1,5 +1,6 @@
 #include <log.h>
 #include "lualog.h"
+#include "luascript.h"
 
 static void pushfmt(lua_State *L) {
 	int count = lua_gettop(L);

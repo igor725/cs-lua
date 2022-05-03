@@ -1,6 +1,6 @@
 #ifndef CSLUASURVIVAL_H
 #define CSLUASURVIVAL_H
-#include "luascript.h"
+#include <lua.h>
 
 int luaopen_survival(lua_State *L);
 #endif

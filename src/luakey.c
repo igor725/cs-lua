@@ -1,5 +1,4 @@
 #include <core.h>
-#include <types/keys.h>
 #include "luascript.h"
 
 static cs_str const keys[256] = {
