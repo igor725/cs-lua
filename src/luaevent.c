@@ -318,7 +318,6 @@ static cs_bool evtonmessage(void *param) {
 }
 
 static void evttick(void *param) {
-	(void)param;
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);

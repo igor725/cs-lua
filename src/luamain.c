@@ -55,6 +55,8 @@ static cs_bool LuaReload(LuaScript *script) {
 }
 
 static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
+	if(script->unloaded) return false;
+
 	LuaScript_Lock(script);
 	if(LuaScript_GlobalLookup(script, "onStop")) {
 		lua_pushboolean(script->L, force);
@@ -111,76 +113,62 @@ COMMAND_FUNC(Lua) {
 			LuaScript *script = getscript(plname);
 
 			if(String_CaselessCompare(subcmd, "load")) {
-				if(script) {
+				if(script)
 					COMMAND_PRINT("&cThis script is already loaded");
-				}
-				if(LuaLoad(plname)) {
+				if(LuaLoad(plname))
 					COMMAND_PRINTF("&aScript \"%s\" loaded successfully", plname);
-				} else {
+				else
 					COMMAND_PRINT("&cFailed to load specified script");
-				}
 			} else if(String_CaselessCompare(subcmd, "enable")) {
-				if(script) {
+				if(script)
 					COMMAND_PRINT("&cThis script is already enabled");
-				}
 				if(String_FormatBuf(newname, MAX_PATH, "scripts" PATH_DELIM "%s", plname) &&
 				String_FormatBuf(oldname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", plname)) {
 					if(File_Rename(oldname, newname)) {
-						if(LuaLoad(plname)) {
+						if(LuaLoad(plname))
 							COMMAND_PRINT("&aScript enabled successfully");
-						} else {
+						else
 							COMMAND_PRINT("&eScript enabled but not loaded");
-						}
-					} else {
+					} else
 						COMMAND_PRINT("&cFailed to enable specified script");
-					}
-				} else {
+				} else
 					COMMAND_PRINT("&cUnexpected error");
-				}
 			} else if(String_CaselessCompare(subcmd, "disable")) {
-				if(!script) {
+				if(!script)
 					COMMAND_PRINT("&cThis script is not loaded");
-				}
 
 				if(String_FormatBuf(oldname, MAX_PATH, "scripts" PATH_DELIM "%s", plname) &&
 				String_FormatBuf(newname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", plname)) {
 					if(File_Rename(oldname, newname)) {
-						if(LuaUnload(script, false)) {
+						if(LuaUnload(script, false))
 							COMMAND_PRINT("&aScript disabled successfully");
-						} else {
+						else
 							COMMAND_PRINT("&eScript will not be loaded at the next launch");
-						}
-					} else {
+					} else
 						COMMAND_PRINT("&cFailed to disabled specified script");
-					}
-				} else {
+				} else
 					COMMAND_PRINT("&cUnexpected error");
-				}
 			} else {
-				if(!script) {
+				if(!script)
 					COMMAND_PRINTF("&cScript \"%s\" not found", plname);
-				}
 
 				if(String_CaselessCompare(subcmd, "unload")) {
 					cs_bool force = false;
 					if(COMMAND_GETARG(subcmd, 64, 2))
 						force = String_CaselessCompare(subcmd, "force");
 
-					if(LuaUnload(script, force)) {
+					if(LuaUnload(script, force))
 						COMMAND_PRINT("&aScript unloaded successfully");
-					} else {
+					else
 						COMMAND_PRINT("&cThis script cannot be unloaded right now");
-					}
 				} else if(String_CaselessCompare(subcmd, "reload")) {
-					if(!script->hotreload) {
+					if(!script->hotreload)
 						COMMAND_PRINT("&cThis script does not support hot reloading");
-					}
 
-					if(LuaReload(script)) {
+					if(LuaReload(script))
 						COMMAND_PRINT("&aScript reloaded successfully");
-					} else {
+					else
 						COMMAND_PRINT("&cThis script cannot be reloaded right now");
-					}
 				}
 			}
 		}
