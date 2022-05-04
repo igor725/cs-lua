@@ -168,10 +168,22 @@ static cs_bool evtonblockplace(void *param) {
 	onBlockPlace *a = (onBlockPlace *)param;
 	AListField *tmp;
 
+	cs_str func = NULL;
+	switch(a->mode) {
+		case SETBLOCK_MODE_CREATE:
+			func = "onBlockPlace";
+			break;
+		case SETBLOCK_MODE_DESTROY:
+			func = "onBlockDestroy";
+			break;
+		default:
+			return true;
+	}
+
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, a->mode ? "onBlockPlace" : "onBlockDestroy")) {
+		if(LuaScript_GlobalLookup(script, func)) {
 			lua_pushclient(script->L, a->client);
 			LuaVector *vec = lua_newvector(script->L);
 			vec->value.s = a->pos;
