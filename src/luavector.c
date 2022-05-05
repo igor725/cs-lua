@@ -18,11 +18,11 @@ LuaVector *lua_newvector(lua_State *L) {
 }
 
 LuaVector *lua_checkvector(lua_State *L, int idx) {
-	return (LuaVector *)luaL_checkudata(L, idx, CSLUA_MVECTOR);
+	return luaL_checkudata(L, idx, CSLUA_MVECTOR);
 }
 
 LuaVector *lua_tovector(lua_State *L, int idx) {
-	return (LuaVector *)luaL_testudata(L, idx, CSLUA_MVECTOR);
+	return luaL_testudata(L, idx, CSLUA_MVECTOR);
 }
 
 Vec *lua_checkfloatvector(lua_State *L, int idx) {
@@ -74,7 +74,7 @@ static int vec_scale(lua_State *L) {
 	return 0;
 }
 
-static cs_float magnitude(Vec *src) {
+static INL cs_float magnitude(Vec *src) {
 	return Math_Sqrt(
 		src->x * src->x +
 		src->y * src->y +

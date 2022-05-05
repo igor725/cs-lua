@@ -1,6 +1,7 @@
 allowHotReload(true)
 LUA_COMMAND = 'LuaRun'
 LUA_COMMAND_DESC = 'Execute Lua script'
+LUA_COMMAND_EMPTY = '&cAttempt to execute an empty string'
 LUA_COMMAND_EXEC_WARN = '%s executed lua script: %s'
 LUA_COMMAND_EXEC_RTERR = '&cRuntime error: %s'
 LUA_COMMAND_EXEC_SUCC = '&aScript executed successfully'
@@ -14,7 +15,7 @@ end
 
 local function runScript(cl, script)
 	if not script or #script == 0 then
-		return '&cTrying to execute empty string'
+		return LUA_COMMAND_EMPTY
 	end
 
 	_G.self = cl

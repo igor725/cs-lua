@@ -51,17 +51,16 @@ static void callallworld(World *world, cs_str func) {
 	}
 }
 
-static void evthandshake(void *param) {
-	onHandshakeDone *a = (onHandshakeDone *)param;
+static void evthandshake(onHandshakeDone *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onHandshake")) {
-			lua_pushclient(script->L, a->client);
+			lua_pushclient(script->L, obj->client);
 			if(LuaScript_Call(script, 1, 1)) {
 				if(luaL_testudata(script->L, -1, CSLUA_MWORLD)) {
-					a->world = lua_checkworld(script->L, -1);
+					obj->world = lua_checkworld(script->L, -1);
 					LuaScript_Unlock(script);
 					break;
 				}
@@ -71,13 +70,13 @@ static void evthandshake(void *param) {
 	}
 }
 
-static cs_bool evtconnect(void *param) {
+static cs_bool evtconnect(Client *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onConnect")) {
-			lua_pushclient(script->L, param);
+			lua_pushclient(script->L, obj);
 			if(LuaScript_Call(script, 1, 1)) {
 				cs_bool succ = (cs_bool)lua_isnil(script->L, -1) ||
 				(cs_bool)lua_toboolean(script->L, -1);
@@ -97,66 +96,70 @@ static cs_bool evtconnect(void *param) {
 	return true;
 }
 
-static void evtdisconnect(void *param) {
+static void evtdisconnect(Client *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onDisconnect")) {
-			lua_pushclient(script->L, param);
-			lua_pushstring(script->L, Client_GetDisconnectReason(param));
+			lua_pushclient(script->L, obj);
+			lua_pushstring(script->L, Client_GetDisconnectReason(obj));
 			LuaScript_Call(script, 2, 0);
 		}
-		lua_clearcuboids(script->L, param);
-		lua_clearclient(script->L, param);
+		lua_clearcuboids(script->L, obj);
+		/**
+		 * WARN: После вызова функции lua_clearclient
+		 * не должно происходить никаких вызовов
+		 * lua_pushclient для данного поинтера!
+		 * 
+		 */
+		lua_clearclient(script->L, obj);
 		LuaScript_Unlock(script);
 	}
 }
 
-static void evtusertype(void *param) {
+static void evtusertype(Client *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onUserTypeChange")) {
-			lua_pushclient(script->L, param);
+			lua_pushclient(script->L, obj);
 			LuaScript_Call(script, 1, 0);
 		}
 		LuaScript_Unlock(script);
 	}
 }
 
-static void evtonspawn(void *param) {
-	onSpawn *a = (onSpawn *)param;
-	callallclient(a->client, "onSpawn");
+static void evtonspawn(onSpawn *obj) {
+	callallclient(obj->client, "onSpawn");
 }
 
-static void evtondespawn(void *param) {
-	callallclient(param, "onDespawn");
+static void evtondespawn(Client *obj) {
+	callallclient(obj, "onDespawn");
 }
 
-static void evtonclick(void *param) {
-	onPlayerClick *a = (onPlayerClick *)param;
+static void evtonclick(onPlayerClick *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onPlayerClick")) {
-			lua_pushclient(script->L, a->client);
+			lua_pushclient(script->L, obj->client);
 			lua_createtable(script->L, 0, 6);
-			lua_pushinteger(script->L, (lua_Integer)a->button);
+			lua_pushinteger(script->L, (lua_Integer)obj->button);
 			lua_setfield(script->L, -2, "button");
-			lua_pushboolean(script->L, a->action == 0);
+			lua_pushboolean(script->L, obj->action == 0);
 			lua_setfield(script->L, -2, "action");
-			lua_pushclient(script->L, Client_GetByID(a->tgid));
+			lua_pushclient(script->L, Client_GetByID(obj->tgid));
 			lua_setfield(script->L, -2, "target");
-			*lua_newangle(script->L) = a->angle;
+			*lua_newangle(script->L) = obj->angle;
 			lua_setfield(script->L, -2, "angle");
 			LuaVector *vec = lua_newvector(script->L);
 			vec->type = LUAVECTOR_TSHORT;
-			vec->value.s = a->tgpos;
+			vec->value.s = obj->tgpos;
 			lua_setfield(script->L, -2, "position");
-			lua_pushinteger(script->L, (lua_Integer)a->tgface);
+			lua_pushinteger(script->L, (lua_Integer)obj->tgface);
 			lua_setfield(script->L, -2, "face");
 			LuaScript_Call(script, 2, 0);
 		}
@@ -164,12 +167,11 @@ static void evtonclick(void *param) {
 	}
 }
 
-static cs_bool evtonblockplace(void *param) {
-	onBlockPlace *a = (onBlockPlace *)param;
+static cs_bool evtonblockplace(onBlockPlace *obj) {
 	AListField *tmp;
 
 	cs_str func = NULL;
-	switch(a->mode) {
+	switch(obj->mode) {
 		case SETBLOCK_MODE_CREATE:
 			func = "onBlockPlace";
 			break;
@@ -184,15 +186,15 @@ static cs_bool evtonblockplace(void *param) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, func)) {
-			lua_pushclient(script->L, a->client);
+			lua_pushclient(script->L, obj->client);
 			LuaVector *vec = lua_newvector(script->L);
-			vec->value.s = a->pos;
-			vec->type = 1;
-			lua_pushinteger(script->L, a->id);
+			vec->type = LUAVECTOR_TSHORT;
+			vec->value.s = obj->pos;
+			lua_pushinteger(script->L, obj->id);
 			if(LuaScript_Call(script, 3, 1)) {
 				cs_bool succ = true;
 				if(lua_isnumber(script->L, -1))
-					a->id = (BlockID)lua_tointeger(script->L, -1);
+					obj->id = (BlockID)lua_tointeger(script->L, -1);
 				else if(lua_isboolean(script->L, -1))
 					succ = (cs_bool)lua_toboolean(script->L, -1);
 				lua_pop(script->L, 1);
@@ -211,101 +213,81 @@ static cs_bool evtonblockplace(void *param) {
 	return true;
 }
 
-static void evtworldadded(void *param) {
-	callallworld(param, "onWorldAdded");
+static void evtworldadded(World *obj) {
+	callallworld(obj, "onWorldAdded");
 }
 
-static void evtworldremoved(void *param) {
+static void evtworldremoved(World *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onWorldRemoved")) {
-			lua_pushworld(script->L, param);
+			lua_pushworld(script->L, obj);
 			LuaScript_Call(script, 1, 0);
 		}
-		lua_clearworld(script->L, param);
+		lua_clearworld(script->L, obj);
 		LuaScript_Unlock(script);
 	}
 }
 
-static void evtworldloaded(void *param) {
-	callallworld(param, "onWorldLoaded");
+static void evtworldloaded(World *obj) {
+	callallworld(obj, "onWorldLoaded");
 }
 
-static void evtworldunloaded(void *param) {
-	callallworld(param, "onWorldUnloaded");
+static void evtworldunloaded(World *obj) {
+	callallworld(obj, "onWorldUnloaded");
 }
 
-static void evtonweather(void *param) {
-	callallworld(param, "onWeatherChange");
+static void evtonweather(World *obj) {
+	callallworld(obj, "onWeatherChange");
 }
 
-static void evtoncolor(void *param) {
-	callallworld(param, "onColorChange");
+static void evtoncolor(World *obj) {
+	callallworld(obj, "onColorChange");
 }
 
-static void evtmove(void *param) {
-	AListField *tmp;
-	List_Iter(tmp, headScript) {
-		LuaScript *script = getscriptptr(tmp);
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onMove")) {
-			lua_pushclient(script->L, param);
-			LuaScript_Call(script, 1, 0);
-		}
-		LuaScript_Unlock(script);
-	}
+static void evtmove(Client *obj) {
+	callallclient(obj, "onMove");
 }
 
-static void evtrotate(void *param) {
-	AListField *tmp;
-	List_Iter(tmp, headScript) {
-		LuaScript *script = getscriptptr(tmp);
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onRotate")) {
-			lua_pushclient(script->L, param);
-			LuaScript_Call(script, 1, 0);
-		}
-		LuaScript_Unlock(script);
-	}
+static void evtrotate(Client *obj) {
+	callallclient(obj, "onRotate");
 }
 
-static void evtheldchange(void *param) {
-	onHeldBlockChange *a = (onHeldBlockChange *)param;
+static void evtheldchange(onHeldBlockChange *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onHeldBlockChange")) {
-			lua_pushclient(script->L, a->client);
-			lua_pushinteger(script->L, a->curr);
-			lua_pushinteger(script->L, a->prev);
+			lua_pushclient(script->L, obj->client);
+			lua_pushinteger(script->L, obj->curr);
+			lua_pushinteger(script->L, obj->prev);
 			LuaScript_Call(script, 3, 0);
 		}
 		LuaScript_Unlock(script);
 	}
 }
 
-static cs_bool evtonmessage(void *param) {
-	onMessage *a = (onMessage *)param;
+static cs_bool evtonmessage(onMessage *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		cs_bool ret = true;
 		if(LuaScript_GlobalLookup(script, "onMessage")) {
-			lua_pushclient(script->L, a->client);
-			lua_pushnumber(script->L, a->type);
-			lua_pushstring(script->L, a->message);
+			lua_pushclient(script->L, obj->client);
+			lua_pushnumber(script->L, obj->type);
+			lua_pushstring(script->L, obj->message);
 			if(LuaScript_Call(script, 3, 2)) {
 				if(lua_isboolean(script->L, -2)) {
 					ret = (cs_bool)lua_toboolean(script->L, -2);
 				} else {
 					if(!lua_isnil(script->L, -2))
-						a->type = (cs_byte)luaL_checkinteger(script->L, -2);
+						obj->type = (cs_byte)luaL_checkinteger(script->L, -2);
 					if(!lua_isnil(script->L, -1))
-						a->message = (cs_char *)luaL_checkstring(script->L, -1);
+						obj->message = (cs_char *)luaL_checkstring(script->L, -1);
 				}
 				lua_pop(script->L, 2);
 			} else ret = false;
@@ -317,7 +299,7 @@ static cs_bool evtonmessage(void *param) {
 	return true;
 }
 
-static void evttick(void *param) {
+static void evttick(cs_int32 *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
@@ -328,7 +310,7 @@ static void evttick(void *param) {
 		} else {
 			LuaScript_Lock(script);
 			if(LuaScript_GlobalLookup(script, "onTick")) {
-				lua_pushinteger(script->L, (lua_Integer)*(cs_int32 *)param);
+				lua_pushinteger(script->L, (lua_Integer)*obj);
 				LuaScript_Call(script, 1, 0);
 			}
 			LuaScript_Unlock(script);
@@ -336,17 +318,15 @@ static void evttick(void *param) {
 	}
 }
 
-static void evtpluginmsg(void *param) {
-	onPluginMessage *a = (onPluginMessage *)param;
-
+static void evtpluginmsg(onPluginMessage *obj) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
 		LuaScript_Lock(script);
 		if(LuaScript_GlobalLookup(script, "onPluginMessage")) {
-			lua_pushclient(script->L, a->client);
-			lua_pushinteger(script->L, (lua_Integer)a->channel);
-			lua_pushlstring(script->L, a->message, 64);
+			lua_pushclient(script->L, obj->client);
+			lua_pushinteger(script->L, (lua_Integer)obj->channel);
+			lua_pushlstring(script->L, obj->message, 64);
 			LuaScript_Call(script, 3, 0);
 		}
 		LuaScript_Unlock(script);

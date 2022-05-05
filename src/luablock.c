@@ -10,7 +10,7 @@ BlockDef *lua_checkblockdef(lua_State *L, int idx) {
 }
 
 BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {
-	return (BulkBlockUpdate *)luaL_checkudata(L, idx, CSLUA_MBULK);
+	return luaL_checkudata(L, idx, CSLUA_MBULK);
 }
 
 static int meta_addtoworld(lua_State *L) {

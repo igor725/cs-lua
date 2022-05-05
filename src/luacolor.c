@@ -17,11 +17,11 @@ LuaColor *lua_newcolor(lua_State *L) {
 }
 
 LuaColor *lua_tocolor(lua_State *L, int idx) {
-	return (LuaColor *)luaL_testudata(L, idx, CSLUA_MCOLOR);
+	return luaL_testudata(L, idx, CSLUA_MCOLOR);
 }
 
 LuaColor *lua_checkcolor(lua_State *L, int idx) {
-	return (LuaColor *)luaL_checkudata(L, idx, CSLUA_MCOLOR);
+	return luaL_checkudata(L, idx, CSLUA_MCOLOR);
 }
 
 Color3 *lua_tocolor3(lua_State *L, int idx) {

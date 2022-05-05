@@ -17,7 +17,7 @@ Ang *lua_newangle(lua_State *L) {
 }
 
 Ang *lua_checkangle(lua_State *L, int idx) {
-	return (Ang *)luaL_checkudata(L, idx, CSLUA_MANGLE);
+	return luaL_checkudata(L, idx, CSLUA_MANGLE);
 }
 
 Ang *lua_toangle(lua_State *L, int idx) {
