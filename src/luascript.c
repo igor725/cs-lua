@@ -20,6 +20,7 @@
 #include "luamodel.h"
 #include "luakey.h"
 #include "luacontact.h"
+#include "luaparticle.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -111,6 +112,7 @@ static const luaL_Reg lualibs[] = {
 	{"color", luaopen_color},
 	{"group", luaopen_group},
 	{"model", luaopen_model},
+	{"particle", luaopen_particle},
 	{"contact", luaopen_contact},
 	{"survival", luaopen_survival},
 
@@ -311,14 +313,12 @@ LuaScript *LuaScript_Open(cs_str name) {
 			lua_pop(script->L, 1);
 		}
 
-#		ifdef CORE_USE_UNIX
-			lua_getglobal(script->L, "package");
-			lua_getfield(script->L, -1, "path");
-			lua_pushstring(script->L, ";./lua/?.lua;./lua/?/init.lua");
-			lua_concat(script->L, 2);
-			lua_setfield(script->L, -2, "path");
-			lua_pop(script->L, 1);
-#		endif
+		lua_getglobal(script->L, "package");
+		lua_pushstring(script->L, CSLUA_PATH);
+		lua_setfield(script->L, -2, "path");
+		lua_pushstring(script->L, CSLUA_CPATH);
+		lua_setfield(script->L, -2, "cpath");
+		lua_pop(script->L, 1);
 
 		if(!LuaScript_DoMainFile(script)) {
 			LuaScript_Close(script);

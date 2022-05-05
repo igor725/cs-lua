@@ -7,15 +7,15 @@ CPEModel *lua_checkmodel(lua_State *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MMODEL);
 }
 
-static int meta_destroy(lua_State *L) {
-	CPE_UndefineModelPtr(
+static int model_undefine(lua_State *L) {
+	lua_pushboolean(L, CPE_UndefineModelPtr(
 		lua_checkmodel(L, 1)
-	);
-	return 0;
+	));
+	return 1;
 }
 
 static const luaL_Reg modelmeta[] = {
-	{"__gc", meta_destroy},
+	{"__gc", model_undefine},
 
 	{NULL, NULL}
 };
@@ -128,13 +128,6 @@ static int model_define(lua_State *L) {
 	lua_pushboolean(L, CPE_DefineModel(
 		(cs_byte)luaL_checkinteger(L, 1),
 		lua_checkmodel(L, 2)
-	));
-	return 1;
-}
-
-static int model_undefine(lua_State *L) {
-	lua_pushboolean(L, CPE_UndefineModelPtr(
-		lua_checkmodel(L, 1)
 	));
 	return 1;
 }

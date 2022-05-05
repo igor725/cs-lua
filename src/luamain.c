@@ -9,6 +9,7 @@
 #include "luaevent.h"
 
 #define DISABLED_DIR "scripts" PATH_DELIM "disabled"
+#define CLIBS_DIR "lua" PATH_DELIM "clibs"
 
 AListField *headScript = NULL;
 
@@ -195,6 +196,7 @@ void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
 cs_bool Plugin_Load(void) {
 	DirIter sIter;
 	Directory_Ensure("lua"); // Папка для библиотек, подключаемых скриптами
+	Directory_Ensure(CLIBS_DIR); // Папка для библиотек, подключаемых скриптами
 	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
 	Directory_Ensure("luadata"); // Папка с данными для каждого скрипта
 	Directory_Ensure(DISABLED_DIR); // Сюда будут переноситься выключенные скрипты

@@ -36,17 +36,25 @@ typedef struct LuaScript {
 #define CSLUA_RCONTACT "cscontact"
 
 // Метатаблицы разных приколов
-#define CSLUA_MVECTOR  "Vector"
-#define CSLUA_MANGLE   "Angle"
-#define CSLUA_MCOLOR   "Color"
-#define CSLUA_MBLOCK   "Block"
-#define CSLUA_MBULK    "Bulk"
-#define CSLUA_MCONFIG  "Config"
-#define CSLUA_MCLIENT  "Client"
-#define CSLUA_MWORLD   "World"
-#define CSLUA_MCUBOID  "Cuboid"
-#define CSLUA_MMODEL   "Model"
-#define CSLUA_MCONTACT "Contact"
+#define CSLUA_MVECTOR   "Vector"
+#define CSLUA_MANGLE    "Angle"
+#define CSLUA_MCOLOR    "Color"
+#define CSLUA_MBLOCK    "Block"
+#define CSLUA_MBULK     "Bulk"
+#define CSLUA_MCONFIG   "Config"
+#define CSLUA_MCLIENT   "Client"
+#define CSLUA_MWORLD    "World"
+#define CSLUA_MCUBOID   "Cuboid"
+#define CSLUA_MMODEL    "Model"
+#define CSLUA_MCONTACT  "Contact"
+#define CSLUA_MPARTICLE "Particle"
+
+// Пути поиска C и Lua библиотек
+#define CSLUA_PATH "." PATH_DELIM "lua" PATH_DELIM "?.lua" \
+	";." PATH_DELIM "lua" PATH_DELIM "?" PATH_DELIM "init.lua"
+#define CSLUA_CPATH "." PATH_DELIM "lua" PATH_DELIM "clibs" \
+PATH_DELIM "?." DLIB_EXT ";." PATH_DELIM "lua" PATH_DELIM \
+	"clibs" PATH_DELIM "loadall." DLIB_EXT
 
 // Обеспечиваем совместимость с большинством версий Lua
 #if LUA_VERSION_NUM < 501

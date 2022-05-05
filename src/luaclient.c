@@ -505,6 +505,18 @@ static int meta_sendbulk(lua_State *L) {
 	return 0;
 }
 
+static int meta_particle(lua_State *L) {
+	Vec *position = lua_checkfloatvector(L, 3);
+	Vec *origin = lua_tofloatvector(L, 4);
+	if(!origin) origin = position;
+	lua_pushboolean(L, Client_SpawnParticle(
+		lua_checkclient(L, 1),
+		(cs_byte)luaL_checkinteger(L, 2),
+		position, origin
+	));
+	return 1;
+}
+
 static int meta_newcuboid(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_newcubref(L, client, Client_NewSelection(client));
@@ -614,8 +626,6 @@ static const luaL_Reg clientmeta[] = {
 	{"setskin", meta_setskin},
 	{"settexpack", meta_settexpack},
 	{"setvelocity", meta_setvelocity},
-	{"gotoworld", meta_gotoworld},
-	{"reload", meta_reload},
 
 	{"islocal", meta_islocal},
 	{"isspawned", meta_isspawned},
@@ -628,11 +638,14 @@ static const luaL_Reg clientmeta[] = {
 	{"spawn", meta_spawn},
 	{"despawn", meta_despawn},
 	{"sendbulk", meta_sendbulk},
+	{"particle", meta_particle},
 	{"newcuboid", meta_newcuboid},
 	{"plmesg", meta_plmesg},
 	{"update", meta_update},
 	{"teleport", meta_teleport},
 	{"tospawn", meta_tospawn},
+	{"gotoworld", meta_gotoworld},
+	{"reload", meta_reload},
 	{"kick", meta_kick},
 	{"chat", meta_chat},
 
