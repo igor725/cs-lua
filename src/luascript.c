@@ -86,20 +86,6 @@ int lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
 } 
 
 static const luaL_Reg lualibs[] = {
-	{"", luaopen_base},
-	{LUA_MATHLIBNAME, luaopen_math},
-	{LUA_STRLIBNAME, luaopen_string},
-	{LUA_TABLIBNAME, luaopen_table},
-	{LUA_IOLIBNAME, luaopen_io},
-	{LUA_OSLIBNAME, luaopen_os},
-	{LUA_LOADLIBNAME, luaopen_package},
-	{LUA_DBLIBNAME, luaopen_debug},
-#ifdef CSLUA_HAS_BIT
-	{LUA_BITLIBNAME, luaopen_bit},
-#endif
-#ifdef CSLUA_HAS_JIT
-	{LUA_JITLIBNAME, luaopen_jit},
-#endif
 	{"log", luaopen_log},
 	{"key", luaopen_key},
 	{"block", luaopen_block},
@@ -275,6 +261,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 		lua_pushcfunction(script->L, mstime);
 		lua_setglobal(script->L, "msTime");
 
+		luaL_openlibs(script->L);
 		for(const luaL_Reg *lib = lualibs; lib->func; lib++) {
 #			if LUA_VERSION_NUM < 502
 				lua_pushcfunction(script->L, lib->func);
