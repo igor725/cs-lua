@@ -4,6 +4,7 @@
 #include <str.h>
 #include <command.h>
 #include <plugin.h>
+#include <pager.h>
 #include "luamain.h"
 #include "luascript.h"
 #include "luaevent.h"
@@ -87,46 +88,59 @@ static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 COMMAND_FUNC(Lua) {
 	COMMAND_SETUSAGE("/lua <list/load/unload/reload/disable/enable> [scriptname]");
 
-	cs_char subcmd[64], plname[64];
-	if(COMMAND_GETARG(subcmd, 64, 0)) {
-		if(String_CaselessCompare(subcmd, "list")) {
-			COMMAND_PRINTLINE("&eList of loaded Lua scripts:");
+	cs_char temparg1[64], temparg2[64];
+	if(COMMAND_GETARG(temparg1, 64, 0)) {
+		if(String_CaselessCompare(temparg1, "list")) {
+			cs_int32 idx = 0, startPage = 1;
+			if(COMMAND_GETARG(temparg2, 8, 1))
+				startPage = String_ToInt(temparg2);
+			Pager pager = Pager_Init(startPage, PAGER_DEFAULT_PAGELEN);
+			COMMAND_APPEND("&eList of loaded Lua scripts&f:");
+
 			AListField *tmp;
-			cs_uint32 count = 0;
 			List_Iter(tmp, headScript) {
+				idx += 1;
+				Pager_Step(pager);
+
 				LuaScript *script = getscriptptr(tmp);
 				LuaScript_Lock(script);
 				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
-				COMMAND_PRINTFLINE("%d. &9%s&f, &a%dKb&f used", ++count, script->scrname, usage);
+				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%s&f, &a%dKb&f used", idx, script->scrname, usage);
 				LuaScript_Unlock(script);
 			}
-			return false;
-		} else if(String_CaselessCompare(subcmd, "version")) {
+
+			if(Pager_IsDirty(pager))
+				COMMAND_APPENDF(temparg1, 64, "\r\nPage %d/%d shown",
+					Pager_CurrentPage(pager), Pager_CountPages(pager)
+				);
+
+			return true;
+		} else if(String_CaselessCompare(temparg1, "version")) {
 			COMMAND_PRINTF("Lua plugin v%03d (%s) on %s", Plugin_Version, GIT_COMMIT_TAG, CSLUA_LIBVERSION);
 		} else {
-			if(!COMMAND_GETARG(plname, 64, 1)) {
+			if(!COMMAND_GETARG(temparg2, 64, 1))
 				COMMAND_PRINTUSAGE;
-			} else if(!String_FindSubstr(plname, ".lua")) {
-				String_Append(plname, 64, ".lua");
-			}
+
+			if(!String_FindSubstr(temparg2, ".lua"))
+				String_Append(temparg2, 64, ".lua");
 
 			cs_char oldname[MAX_PATH], newname[MAX_PATH];
-			LuaScript *script = getscript(plname);
+			LuaScript *script = getscript(temparg2);
 
-			if(String_CaselessCompare(subcmd, "load")) {
+			if(String_CaselessCompare(temparg1, "load")) {
 				if(script)
 					COMMAND_PRINT("&cThis script is already loaded");
-				if(LuaLoad(plname))
-					COMMAND_PRINTF("&aScript \"%s\" loaded successfully", plname);
+				if(LuaLoad(temparg2))
+					COMMAND_PRINTF("&aScript \"%s\" loaded successfully", temparg2);
 				else
 					COMMAND_PRINT("&cFailed to load specified script");
-			} else if(String_CaselessCompare(subcmd, "enable")) {
+			} else if(String_CaselessCompare(temparg1, "enable")) {
 				if(script)
 					COMMAND_PRINT("&cThis script is already enabled");
-				if(String_FormatBuf(newname, MAX_PATH, "scripts" PATH_DELIM "%s", plname) &&
-				String_FormatBuf(oldname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", plname)) {
+				if(String_FormatBuf(newname, MAX_PATH, "scripts" PATH_DELIM "%s", temparg2) &&
+				String_FormatBuf(oldname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", temparg2)) {
 					if(File_Rename(oldname, newname)) {
-						if(LuaLoad(plname))
+						if(LuaLoad(temparg2))
 							COMMAND_PRINT("&aScript enabled successfully");
 						else
 							COMMAND_PRINT("&eScript enabled but not loaded");
@@ -134,12 +148,12 @@ COMMAND_FUNC(Lua) {
 						COMMAND_PRINT("&cFailed to enable specified script");
 				} else
 					COMMAND_PRINT("&cUnexpected error");
-			} else if(String_CaselessCompare(subcmd, "disable")) {
+			} else if(String_CaselessCompare(temparg1, "disable")) {
 				if(!script)
 					COMMAND_PRINT("&cThis script is not loaded");
 
-				if(String_FormatBuf(oldname, MAX_PATH, "scripts" PATH_DELIM "%s", plname) &&
-				String_FormatBuf(newname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", plname)) {
+				if(String_FormatBuf(oldname, MAX_PATH, "scripts" PATH_DELIM "%s", temparg2) &&
+				String_FormatBuf(newname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", temparg2)) {
 					if(File_Rename(oldname, newname)) {
 						if(LuaUnload(script, false))
 							COMMAND_PRINT("&aScript disabled successfully");
@@ -151,18 +165,18 @@ COMMAND_FUNC(Lua) {
 					COMMAND_PRINT("&cUnexpected error");
 			} else {
 				if(!script)
-					COMMAND_PRINTF("&cScript \"%s\" not found", plname);
+					COMMAND_PRINTF("&cScript \"%s\" not found", temparg2);
 
-				if(String_CaselessCompare(subcmd, "unload")) {
+				if(String_CaselessCompare(temparg1, "unload")) {
 					cs_bool force = false;
-					if(COMMAND_GETARG(subcmd, 64, 2))
-						force = String_CaselessCompare(subcmd, "force");
+					if(COMMAND_GETARG(temparg1, 64, 2))
+						force = String_CaselessCompare(temparg1, "force");
 
 					if(LuaUnload(script, force))
 						COMMAND_PRINT("&aScript unloaded successfully");
 					else
 						COMMAND_PRINT("&cThis script cannot be unloaded right now");
-				} else if(String_CaselessCompare(subcmd, "reload")) {
+				} else if(String_CaselessCompare(temparg1, "reload")) {
 					if(!script->hotreload)
 						COMMAND_PRINT("&cThis script does not support hot reloading");
 
