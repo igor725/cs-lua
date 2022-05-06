@@ -13,14 +13,31 @@ MODE_VECTORS = {
 	vector.short(0, 1, 1)
 }
 
-local function calcCuboid(tmp, d)
+local function testBlocks(w, p1, p2)
+	local tmp = vector.short()
+	for x = p1.x, p2.x do
+		for y = p1.y, p2.y do
+			for z = p1.z, p2.z do
+				tmp:set(x, y, z)
+				if w:getblock(tmp) ~= block.AIR then
+					return false
+				end
+			end
+		end
+	end
+
+	return true
+end
+
+local function calcCuboid(tmp, wrld)
+	local dims = wrld:getdimensions()
 	local p1 = tmp.pos + vector.short(0, 1, 0)
 	local p2 = p1 + FCUBE_VECTOR * tmp.dir
 	tmp.cuboid:setpoints(p1, p2)
-	tmp.havespace = p1 > ZERO_VECTOR and p2 < d
+	tmp.havespace = p1 > ZERO_VECTOR and p2 < dims
 
 	if tmp.havespace then
-		-- TODO: Проверка блоков внутри области
+		tmp.havespace = testBlocks(wrld, p1, p2)
 	end
 
 	tmp.cuboid:setcolor(CUBOID_COLORS[tmp.havespace])
@@ -246,13 +263,18 @@ function onStart()
 	}
 	Games.meta.__index = Games.meta
 
-	command.add('tictactoe', 'Creates tictactoe game', CTTT_FLAGS, function(caller, args)
-		local ingame = false
+	command.add('TicTacToe', 'Creates tictactoe game', CTTT_FLAGS, function(caller, args)
+		local ingame, game = false, nil
 		for i = 1, #Games do
 			if Games[i]:isPlaying(caller) then
+				game = Games[i]
 				ingame = true
 				break
 			end
+		end
+		if ingame and args == 'cancel' then
+			game:forceEnd()
+			return
 		end
 		if ingame or Temp[caller] then
 			return '&cThe game is already in progress'
@@ -293,7 +315,6 @@ function onPlayerClick(cl, params)
 
 	if tmp then
 		local wrld = cl:getworld()
-		local dim = wrld:getdimensions()
 		if params.button == 0 then -- ЛКМ
 			if not tmp.havespace then
 				messageTo(cl, '&cTicTacToe field cannot be placed here!')
@@ -313,12 +334,12 @@ function onPlayerClick(cl, params)
 				tmp.mode = 1
 			end
 			tmp.dir = MODE_VECTORS[tmp.mode]
-			calcCuboid(tmp, dim)
+			calcCuboid(tmp, wrld)
 		elseif params.button == 1 then -- ПКМ
 			if cpos ~= INVALID_VECTOR then
 				tmp.pos = cpos
 				tmp.dir = MODE_VECTORS[tmp.mode]
-				calcCuboid(tmp, dim)
+				calcCuboid(tmp, wrld)
 			end
 		end
 
@@ -365,7 +386,7 @@ function onDisconnect(cl)
 end
 
 function preReload()
-	command.remove('tictactoe')
+	command.remove('TicTacToe')
 	for cl, data in pairs(Temp) do
 		data.cuboid:remove()
 	end
