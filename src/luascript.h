@@ -95,7 +95,7 @@ PATH_DELIM "?." DLIB_EXT ";." PATH_DELIM "lua" PATH_DELIM \
 
 int lua_checktabfield(lua_State *L, int idx, const char *fname, int ftype);
 int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta);
-int lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths);
+void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths);
 
 LuaScript *lua_getscript(lua_State *L);
 LuaScript *LuaScript_Open(cs_str name);

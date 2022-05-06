@@ -543,8 +543,6 @@ static const luaL_Reg vectorlib[] = {
 
 int luaopen_vector(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MVECTOR, vectormeta);
-	lua_pop(L, 1);
-
 	luaL_newlib(L, vectorlib);
 	return 1;
 }

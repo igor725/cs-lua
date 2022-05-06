@@ -477,9 +477,7 @@ static const luaL_Reg worldlib[] = {
 int luaopen_world(lua_State *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
-
 	lua_indexedmeta(L, CSLUA_MWORLD, worldmeta);
-	lua_pop(L, 1);
 
 	lua_addintconst(L, WORLD_COLOR_SKY);
 	lua_addintconst(L, WORLD_COLOR_CLOUD);

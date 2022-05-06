@@ -716,9 +716,7 @@ static const luaL_Reg clientlib[] = {
 int luaopen_client(lua_State *L) {
 	lua_createtable(L, MAX_CLIENTS, 0);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
-
 	lua_indexedmeta(L, CSLUA_MCLIENT, clientmeta);
-	lua_pop(L, 1);
 
 	lua_addintconst(L, MESSAGE_TYPE_CHAT);
 	lua_addintconst(L, MESSAGE_TYPE_STATUS1);

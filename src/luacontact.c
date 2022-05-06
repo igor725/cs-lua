@@ -336,8 +336,6 @@ int luaopen_contact(lua_State *L) {
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 
 	lua_indexedmeta(L, CSLUA_MCONTACT, contactmeta);
-	lua_pop(L, 1);
-
 	luaL_newlib(L, contactlib);
 	return 1;
 }

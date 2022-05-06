@@ -186,7 +186,5 @@ static const luaL_Reg cuboidmeta[] = {
 void luainit_cuboid(lua_State *L) {
 	lua_createtable(L, 0, MAX_CLIENTS);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
-
 	lua_indexedmeta(L, CSLUA_MCUBOID, cuboidmeta);
-	lua_pop(L, 1);
 }

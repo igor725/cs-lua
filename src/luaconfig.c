@@ -226,7 +226,6 @@ const luaL_Reg configlib[] = {
 
 int luaopen_config(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MCONFIG, configmeta);
-	lua_pop(L, 1);
 
 	lua_addintconst(L, CONFIG_ERROR_SUCCESS);
 	lua_addintconst(L, CONFIG_ERROR_INTERNAL);

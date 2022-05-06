@@ -124,8 +124,6 @@ static int ang_new(lua_State *L) {
 
 int luaopen_angle(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MANGLE, anglemeta);
-	lua_pop(L, 1);
-
 	lua_pushcfunction(L, ang_new);
 	return 1;
 }

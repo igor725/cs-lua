@@ -219,8 +219,6 @@ static const luaL_Reg colorlib[] = {
 
 int luaopen_color(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MCOLOR, colormeta);
-	lua_pop(L, 1);
-
 	luaL_newlib(L, colorlib);
 	return 1;
 }

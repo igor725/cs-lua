@@ -300,7 +300,6 @@ static void luablock_initconts(lua_State *L) {
 int luaopen_block(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MBLOCK, blockmeta);
 	lua_indexedmeta(L, CSLUA_MBULK, bulkmeta);
-	lua_pop(L, 2);
 
 	lua_addintconst(L, BDSOL_WALK);
 	lua_addintconst(L, BDSOL_SWIM);

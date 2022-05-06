@@ -142,8 +142,6 @@ static const luaL_Reg modellib[] = {
 
 int luaopen_model(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MMODEL, modelmeta);
-	lua_pop(L, 1);
-
 	luaL_newlib(L, modellib);
 	return 1;
 }

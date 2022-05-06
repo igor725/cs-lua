@@ -75,14 +75,14 @@ int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *me
 	return true;
 }
 
-int lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
-	if(!luaL_newmetatable(L, meta)) return 0;
+void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
+	if(!luaL_newmetatable(L, meta)) luaL_error(L, "Failed to create metatable");
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	lua_pushstring(L, "Huh? Tf you doing here?");
 	lua_setfield(L, -2, "__metatable");
 	luaL_setfuncs(L, meths, 0);
-	return 1;
+	lua_pop(L, 1);
 } 
 
 static const luaL_Reg lualibs[] = {
