@@ -150,7 +150,7 @@ static int meta_getposition(lua_State *L) {
 		vector = &lvec->value.f;
 	}
 
-	(void)Client_GetPosition(client, vector, NULL);
+	Client_GetPosition(client, vector, NULL);
 	return 1;
 }
 
@@ -158,7 +158,7 @@ static int meta_getrotation(lua_State *L) {
 	Ang *angle = lua_toangle(L, 2);
 	if(!angle) angle = lua_newangle(L);
 
-	(void)Client_GetPosition(
+	Client_GetPosition(
 		lua_checkclient(L, 1),
 		NULL, angle
 	);
