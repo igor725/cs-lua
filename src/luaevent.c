@@ -60,7 +60,7 @@ static void evthandshake(onHandshakeDone *obj) {
 			lua_pushclient(script->L, obj->client);
 			if(LuaScript_Call(script, 1, 1)) {
 				if(luaL_testudata(script->L, -1, CSLUA_MWORLD)) {
-					obj->world = lua_checkworld(script->L, -1);
+					obj->world = lua_toworld(script->L, -1);
 					LuaScript_Unlock(script);
 					break;
 				}
@@ -284,10 +284,10 @@ static cs_bool evtonmessage(onMessage *obj) {
 				if(lua_isboolean(script->L, -2)) {
 					ret = (cs_bool)lua_toboolean(script->L, -2);
 				} else {
-					if(!lua_isnil(script->L, -2))
-						obj->type = (cs_byte)luaL_checkinteger(script->L, -2);
-					if(!lua_isnil(script->L, -1))
-						obj->message = (cs_char *)luaL_checkstring(script->L, -1);
+					if(lua_isnumber(script->L, -2))
+						obj->type = (cs_byte)lua_tointeger(script->L, -2);
+					if(lua_isstring(script->L, -1))
+						obj->message = (cs_char *)lua_tostring(script->L, -1);
 				}
 				lua_pop(script->L, 2);
 			} else ret = false;

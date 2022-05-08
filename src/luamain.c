@@ -160,7 +160,7 @@ COMMAND_FUNC(Lua) {
 						else
 							COMMAND_PRINT("&eScript will not be loaded at the next launch");
 					} else
-						COMMAND_PRINT("&cFailed to disabled specified script");
+						COMMAND_PRINT("&cFailed to disable specified script");
 				} else
 					COMMAND_PRINT("&cUnexpected error");
 			} else {
