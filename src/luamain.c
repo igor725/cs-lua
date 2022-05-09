@@ -167,9 +167,10 @@ void *SurvInterface = NULL;
 
 void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
 	if(String_Compare(name, SURV_ITF_NAME)) {
-		if(size == sizeof(SurvItf) || (SurvInterface != NULL && size == 0))
+		if(size == sizeof(SurvItf) || (SurvInterface != NULL && size == 0)) {
+			if(SurvInterface) Memory_Free(SurvInterface);
 			SurvInterface = ptr;
-		else
+		} else
 			Log_Error("LuaScript failed to bind SurvItf: Structure size mismatch");
 	}
 }
@@ -208,6 +209,7 @@ cs_bool Plugin_Load(void) {
 		} while(Iter_Next(&sIter));
 	}
 	Iter_Close(&sIter);
+
 	if(Iter_Init(&sIter, CSLUA_PATH_RSCRIPTS, "lua")) { // Проходимся по общей директории
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
@@ -221,6 +223,7 @@ cs_bool Plugin_Load(void) {
 			loadscript(CSLUA_PATH_RSCRIPTS, sIter.cfile);
 		} while(Iter_Next(&sIter));
 	}
+	Iter_Close(&sIter);
 
 	return COMMAND_ADD(Lua, CMDF_OP, "Lua scripts management")
 	&& LuaEvent_Register();
@@ -230,6 +233,11 @@ cs_bool Plugin_Unload(cs_bool force) {
 	(void)force;
 	COMMAND_REMOVE(Lua);
 	LuaEvent_Unregister();
+
+#	ifdef CSLUA_USE_SURVIVAL
+		if(SurvInterface)
+			Memory_Free(SurvInterface);
+#	endif
 
 	while(headScript) {
 		LuaScript *script = (LuaScript *)AList_GetValue(headScript).ptr;
