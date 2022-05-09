@@ -18,7 +18,7 @@ World *lua_checkworld(lua_State *L, int idx) {
 }
 
 World *lua_toworld(lua_State *L, int idx) {
-	void **ud = luaL_checkudata(L, idx, CSLUA_MWORLD);
+	void **ud = luaL_testudata(L, idx, CSLUA_MWORLD);
 	return ud ? *ud : NULL;
 }
 

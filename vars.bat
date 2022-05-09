@@ -99,7 +99,7 @@ IF "%PLUGIN_INSTALL%"=="1" (
 		MD %SERVER_OUTROOT%\scripts
 	)
 	IF NOT EXIST "%SERVER_OUTROOT%\scripts\chatexec.lua" (
-		IF NOT EXIST "%SERVER_OUTROOT%\scripts\disabled\chatexec.lua" (
+		IF NOT EXIST "%SERVER_OUTROOT%\scripts\.chatexec.lua" (
 			COPY %ROOT%\scripts\chatexec.lua %SERVER_OUTROOT%\scripts\chatexec.lua 2>nul
 		)
 	)

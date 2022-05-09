@@ -55,7 +55,7 @@ if [ $PLUGIN_INSTALL -eq 1 ]; then
 		mkdir "$SERVER_OUTROOT/scripts"
 	fi
 	if [ ! -f "$SERVER_OUTROOT/scripts/chatexec.lua" ] &&
-	   [ ! -f "$SERVER_OUTROOT/scripts/disabled/chatexec.lua" ]; then
+	   [ ! -f "$SERVER_OUTROOT/scripts/.chatexec.lua" ]; then
 		cp $ROOT/scripts/chatexec.lua $SERVER_OUTROOT/scripts/chatexec.lua 2> /dev/null
 	fi
 fi

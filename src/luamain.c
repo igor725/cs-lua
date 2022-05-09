@@ -9,9 +9,6 @@
 #include "luascript.h"
 #include "luaevent.h"
 
-#define DISABLED_DIR "scripts" PATH_DELIM "disabled"
-#define CLIBS_DIR "lua" PATH_DELIM "clibs"
-
 AListField *headScript = NULL;
 
 Plugin_SetVersion(1);
@@ -20,14 +17,15 @@ static LuaScript *getscript(cs_str name) {
 	AListField *tmp;
 	List_Iter(tmp, headScript) {
 		LuaScript *script = getscriptptr(tmp);
-		if(String_Compare(script->scrname, name)) return script;
+		if(String_CaselessCompare(script->scrname, name)) return script;
 	}
 
 	return NULL;
 }
 
 static LuaScript *LuaLoad(cs_str name) {
-	LuaScript *script = LuaScript_Open(name);
+	LuaScript *script = LuaScript_Open(CSLUA_PATH_SCRIPTS, name);
+	if(!script) script = LuaScript_Open(CSLUA_PATH_RSCRIPTS, name);
 	if(script) AList_AddField(&headScript, script);
 	return script;
 }
@@ -86,7 +84,7 @@ static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 }
 
 COMMAND_FUNC(Lua) {
-	COMMAND_SETUSAGE("/lua <list/load/unload/reload/disable/enable> [scriptname]");
+	COMMAND_SETUSAGE("/lua <list/load/unload/reload> [scriptname]");
 
 	cs_char temparg1[64], temparg2[64];
 	if(COMMAND_GETARG(temparg1, 64, 0)) {
@@ -124,7 +122,6 @@ COMMAND_FUNC(Lua) {
 			if(!String_FindSubstr(temparg2, ".lua"))
 				String_Append(temparg2, 64, ".lua");
 
-			cs_char oldname[MAX_PATH], newname[MAX_PATH];
 			LuaScript *script = getscript(temparg2);
 
 			if(String_CaselessCompare(temparg1, "load")) {
@@ -134,35 +131,6 @@ COMMAND_FUNC(Lua) {
 					COMMAND_PRINTF("&aScript \"%s\" loaded successfully", temparg2);
 				else
 					COMMAND_PRINT("&cFailed to load specified script");
-			} else if(String_CaselessCompare(temparg1, "enable")) {
-				if(script)
-					COMMAND_PRINT("&cThis script is already enabled");
-				if(String_FormatBuf(newname, MAX_PATH, "scripts" PATH_DELIM "%s", temparg2) &&
-				String_FormatBuf(oldname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", temparg2)) {
-					if(File_Rename(oldname, newname)) {
-						if(LuaLoad(temparg2))
-							COMMAND_PRINT("&aScript enabled successfully");
-						else
-							COMMAND_PRINT("&eScript enabled but not loaded");
-					} else
-						COMMAND_PRINT("&cFailed to enable specified script");
-				} else
-					COMMAND_PRINT("&cUnexpected error");
-			} else if(String_CaselessCompare(temparg1, "disable")) {
-				if(!script)
-					COMMAND_PRINT("&cThis script is not loaded");
-
-				if(String_FormatBuf(oldname, MAX_PATH, "scripts" PATH_DELIM "%s", temparg2) &&
-				String_FormatBuf(newname, MAX_PATH, DISABLED_DIR PATH_DELIM "%s", temparg2)) {
-					if(File_Rename(oldname, newname)) {
-						if(LuaUnload(script, false))
-							COMMAND_PRINT("&aScript disabled successfully");
-						else
-							COMMAND_PRINT("&eScript will not be loaded at the next launch");
-					} else
-						COMMAND_PRINT("&cFailed to disable specified script");
-				} else
-					COMMAND_PRINT("&cUnexpected error");
 			} else {
 				if(!script)
 					COMMAND_PRINTF("&cScript \"%s\" not found", temparg2);
@@ -207,31 +175,52 @@ void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
 }
 #endif
 
+static cs_bool checkscrname(cs_str name) {
+	if(*name == '.') {
+		Log_Warn("File \"%s\" was ignored: File name starts with a dot", name);
+		return false;
+	}
+
+	return true;
+}
+
+static void loadscript(cs_str root, cs_str name) {
+	LuaScript *script = LuaScript_Open(root, name);
+	if(!script) {
+		Log_Error("Failed to load script \"%s%s\"", root, name);
+		return;
+	}
+	AList_AddField(&headScript, script);
+}
+
 cs_bool Plugin_Load(void) {
 	DirIter sIter;
-	Directory_Ensure("lua"); // Папка для библиотек, подключаемых скриптами
-	Directory_Ensure(CLIBS_DIR); // Папка для библиотек, подключаемых скриптами
-	Directory_Ensure("scripts"); // Сами скрипты, загружаются автоматически
 	Directory_Ensure("luadata"); // Папка с данными для каждого скрипта
-	Directory_Ensure(DISABLED_DIR); // Сюда будут переноситься выключенные скрипты
+	Directory_Ensure(CSLUA_PATH_LROOT); // Папка для библиотек, подключаемых скриптами
+	Directory_Ensure(CSLUA_PATH_CROOT); // Папка для библиотек, подключаемых скриптами
+	Directory_Ensure(CSLUA_PATH_SCRIPTS); // Сами скрипты, загружаются автоматически
 
-	if(Iter_Init(&sIter, "scripts", "lua")) {
+	if(Iter_Init(&sIter, CSLUA_PATH_SCRIPTS, "lua")) { // Проходимся по директории зависящей от версии Lua
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
-			cs_str ext = String_LastChar(sIter.cfile, '.');
-			if((ext - sIter.cfile) < 1) {
-				Log_Warn("File \"%s\" ignored", sIter.cfile);
-				continue;
-			}
-			LuaScript *script = LuaScript_Open(sIter.cfile);
-			if(!script) {
-				Log_Error("Failed to load script \"%s\"", sIter.cfile);
-				continue;
-			}
-			AList_AddField(&headScript, script);
+			if(!checkscrname(sIter.cfile)) continue;
+			loadscript(CSLUA_PATH_SCRIPTS, sIter.cfile);
 		} while(Iter_Next(&sIter));
 	}
 	Iter_Close(&sIter);
+	if(Iter_Init(&sIter, CSLUA_PATH_RSCRIPTS, "lua")) { // Проходимся по общей директории
+		do {
+			if(sIter.isDir || !sIter.cfile) continue;
+			if(getscript(sIter.cfile)) {
+				Log_Warn("File %s%s was ignored: script with the same name has already been loaded",
+					CSLUA_PATH_RSCRIPTS, sIter.cfile
+				);
+				continue;
+			}
+			if(!checkscrname(sIter.cfile)) continue;
+			loadscript(CSLUA_PATH_RSCRIPTS, sIter.cfile);
+		} while(Iter_Next(&sIter));
+	}
 
 	return COMMAND_ADD(Lua, CMDF_OP, "Lua scripts management")
 	&& LuaEvent_Register();

@@ -56,49 +56,6 @@ static void pushcontact(lua_State *L, struct _Contact *cont) {
 	*ud = cont;
 }
 
-static int cont_get(lua_State *L) {
-	cs_size namelen = 0;
-	cs_str name = luaL_checklstring(L, 1, &namelen);
-	luaL_argcheck(L, namelen < CSLUA_CONTACT_NAMELEN, 1, "Too long contact name");
-	LuaScript *LS = lua_getscript(L);
-
-	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
-	lua_getfield(L, -1, name); // cscontact[name]
-	if(lua_isnil(L, -1)) {
-		lua_pop(L, 1);
-		for(int i = 0; i < CSLUA_CONTACT_MAX; i++) {
-			struct _Contact *cont = &contacts[i];
-			if(String_Compare(cont->name, name)) {
-				if(addcontactscript(cont, LS)) {
-					pushcontact(L, cont);
-					goto cfinish;
-				} else
-					luaL_error(L, "Failed to connect to specified contact");
-				return 1;
-			}
-		}
-
-		pushcontact(L, newcontact(name, LS));
-
-		cfinish:
-		lua_newtable(L);
-		lua_newtable(L);
-		lua_rawseti(L, -2, 0);
-		lua_pushvalue(L, -2); // Contact
-		lua_rawseti(L, -2, 1);
-		lua_setfield(L, -3, name);
-		return 1;
-	}
-
-	return 1;
-}
-
-const luaL_Reg contactlib[] = {
-	{"get", cont_get},
-
-	{NULL, NULL}
-};
-
 static int meta_pop(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
@@ -118,15 +75,26 @@ static int meta_pop(lua_State *L) {
 	return 1;
 }
 
-static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx);
+static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt);
 
-static cs_bool copyudata(lua_State *L_to, lua_State *L_from, int idx) {
+static void copyudata(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	void *tmp = lua_toclient(L_from, idx);
-	if(tmp) return (lua_pushclient(L_to, tmp), true);
+	if(tmp) {
+		lua_pushclient(L_to, tmp);
+		return;
+	}
 	tmp = lua_toworld(L_from, idx);
-	if(tmp) return (lua_pushworld(L_to, tmp), true);
+	if(tmp) {
+		lua_pushworld(L_to, tmp);
+		return;
+	}
 
-	return false;
+	if(luaL_getmetafield(L_from, idx, "__name"))
+		*errt = lua_tostring(L_from, -1);
+	else
+		*errt = luaL_typename(L_from, idx);
+
+	return;
 }
 
 static int writer(lua_State *L, const void *b, size_t size, void *B) {
@@ -140,29 +108,39 @@ static const char *reader(lua_State *L, void *b, size_t *size) {
 	return lua_tolstring(L, -1, size);
 }
 
-static cs_bool copyfunction(lua_State *L_to, lua_State *L_from, int idx) {
+static void copyfunction(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
+	if(lua_iscfunction(L_from, idx)) {
+		*errt = "C function";
+		return;
+	} else
+		*errt = lua_typename(L_from, idx);
+
 	luaL_Buffer b;
 	luaL_buffinit(L_to, &b);
 	lua_pushvalue(L_from, idx);
 #	if LUA_VERSION_NUM > 502
 		if(lua_dump(L_from, writer, &b, 0) != 0)
-			return false;
+			return;
 		luaL_pushresult(&b);
-		if(lua_load(L_to, reader, NULL, "transfered chunk", "binary"))
-			return false;
 #	else
 		if(lua_dump(L_from, writer, &b) != 0)
-			return false;
+			return;
 		luaL_pushresult(&b);
+#	endif
+
+#	if LUA_VERSION_NUM > 501
+		if(lua_load(L_to, reader, NULL, "transfered chunk", "binary"))
+			return;
+#	else
 		if(lua_load(L_to, reader, NULL, "transfered chunk"))
-			return false;
+			return;
 #	endif
 
 	lua_remove(L_to, -2);
-	return true;
+	*errt = NULL;
 }
 
-static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
+static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	switch(lua_type(L_from, idx)) {
 		case LUA_TNIL:
 			lua_pushnil(L_to);
@@ -185,28 +163,25 @@ static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
 			break;
 
 		case LUA_TTABLE:
-			if(!copytable(L_to, L_from, idx))
-				return false;
+			copytable(L_to, L_from, idx, errt);
 			break;
 
 		case LUA_TUSERDATA:
-			if(!copyudata(L_to, L_from, idx))
-				return false;
+			copyudata(L_to, L_from, idx, errt);
 			break;
 
 		case LUA_TFUNCTION:
-			if(!copyfunction(L_to, L_from, idx))
-				return false;
+			copyfunction(L_to, L_from, idx, errt);
 			break;
 
 		default:
-			return false;
+			*errt = luaL_typename(L_from, idx);
 	}
 
-	return true;
+	return *errt == NULL;
 }
 
-static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx) {
+static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	// Превращаем относительный индекс в абсолютный
 	if(idx < 0) idx = lua_gettop(L_from) + idx + 1;
 
@@ -215,23 +190,24 @@ static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx) {
 	while(lua_next(L_from, idx) != 0) {
 		if(lua_rawequal(L_from, idx, -2)) // Если ключ сама же эта таблица, то её и пушим
 			lua_pushvalue(L_to, -1);
-		else if(!copyvalue(L_to, L_from, -2))
-			return false;
+		else if(!copyvalue(L_to, L_from, -2, errt))
+			return;
 
 		if(lua_rawequal(L_from, idx, -1))
 			lua_pushvalue(L_to, -2);
-		else if(!copyvalue(L_to, L_from, -1))
-			return false;
+		else if(!copyvalue(L_to, L_from, -1, errt))
+			return;
 
 		lua_rawset(L_to, -3);
 		lua_pop(L_from, 1);
 	}
 
-	return true;
+	return;
 }
 
 static int meta_push(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
+	cs_str errt = NULL;
 
 	for(int i = 0; i < CSLUA_CONTACT_MAXSCRIPTS; i++) {
 		LuaScript *_LS = cont->scripts[i];
@@ -243,10 +219,10 @@ static int meta_push(lua_State *L) {
 			lua_getfield(_LS->L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 			lua_getfield(_LS->L, -1, cont->name);
 			lua_rawgeti(_LS->L, -1, 0);
-			if(!copyvalue(_LS->L, L, 2)) {
+			if(!copyvalue(_LS->L, L, 2, &errt)) {
 				lua_settop(_LS->L, tstart);
 				LuaScript_Unlock(_LS);
-				luaL_error(L, "Attempt to push unsupported value");
+				luaL_error(L, "Attempt to push an unsupported value: %s", errt);
 				return 0;
 			}
 			lua_rawseti(_LS->L, -2, (int)lua_objlen(_LS->L, -2) + 1);
@@ -330,6 +306,50 @@ const luaL_Reg contactmeta[] = {
 	{"close", meta_close},
 
 	{"__gc", meta_close},
+
+	{NULL, NULL}
+};
+
+static int cont_get(lua_State *L) {
+	cs_size namelen = 0;
+	cs_str name = luaL_checklstring(L, 1, &namelen);
+	luaL_argcheck(L, namelen < CSLUA_CONTACT_NAMELEN, 1, "Too long contact name");
+	LuaScript *LS = lua_getscript(L);
+
+	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
+	lua_getfield(L, -1, name); // cscontact[name]
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		for(int i = 0; i < CSLUA_CONTACT_MAX; i++) {
+			struct _Contact *cont = &contacts[i];
+			if(String_Compare(cont->name, name)) {
+				if(addcontactscript(cont, LS)) {
+					pushcontact(L, cont);
+					goto cfinish;
+				} else
+					luaL_error(L, "Failed to connect to specified contact");
+				return 1;
+			}
+		}
+
+		pushcontact(L, newcontact(name, LS));
+
+		cfinish:
+		lua_newtable(L);
+		lua_newtable(L);
+		lua_rawseti(L, -2, 0);
+		lua_pushvalue(L, -2); // Contact
+		lua_rawseti(L, -2, 1);
+		lua_setfield(L, -3, name);
+		return 1;
+	}
+
+	lua_rawgeti(L, -1, 1);
+	return 1;
+}
+
+const luaL_Reg contactlib[] = {
+	{"get", cont_get},
 
 	{NULL, NULL}
 };

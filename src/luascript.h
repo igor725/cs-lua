@@ -15,6 +15,7 @@ typedef struct LuaScript {
 	cs_bool hotreload;
 	cs_bool unloaded;
 	cs_str scrname;
+	cs_str scrpath;
 	lua_State *L;
 	Mutex *lock;
 
@@ -49,12 +50,35 @@ typedef struct LuaScript {
 #define CSLUA_MCONTACT  "Contact"
 #define CSLUA_MPARTICLE "Particle"
 
-// Пути поиска C и Lua библиотек
-#define CSLUA_PATH "." PATH_DELIM "lua" PATH_DELIM "?.lua" \
-	";." PATH_DELIM "lua" PATH_DELIM "?" PATH_DELIM "init.lua"
-#define CSLUA_CPATH "." PATH_DELIM "lua" PATH_DELIM "clibs" \
-PATH_DELIM "?." DLIB_EXT ";." PATH_DELIM "lua" PATH_DELIM \
-	"clibs" PATH_DELIM "loadall." DLIB_EXT
+// Пути поиска C/Lua библиотек и запускаемых скриптов
+#ifdef LUA_VERSION_MAJOR
+#	define CSLUA_PATH_VER LUA_VERSION_MAJOR "." LUA_VERSION_MINOR PATH_DELIM
+#elif LUA_VERSION_NUM == 501
+#	define CSLUA_PATH_VER "5.1" PATH_DELIM
+#endif
+
+#define CSLUA_PATH_LROOT "." PATH_DELIM "lua" PATH_DELIM
+#define CSLUA_PATH_CROOT CSLUA_PATH_LROOT "clibs" PATH_DELIM
+#define CSLUA_PATH_LOADALL "loadall." DLIB_EXT
+#define CSLUA_PATH_CFILE "?." DLIB_EXT
+#define CSLUA_PATH_LFILE "?.lua"
+#define CSLUA_PATH_IFILE "?" PATH_DELIM "init.lua"
+#define CSLUA_PATH_RSCRIPTS "." PATH_DELIM "scripts" PATH_DELIM
+#define CSLUA_PATH_SCRIPTS CSLUA_PATH_RSCRIPTS CSLUA_PATH_VER
+
+#ifdef CSLUA_PATH_VER
+#	define CSLUA_PATH_LADD CSLUA_PATH_LROOT CSLUA_PATH_VER CSLUA_PATH_LFILE ";" \
+           CSLUA_PATH_LROOT CSLUA_PATH_VER CSLUA_PATH_IFILE ";"
+#	define CSLUA_PATH_CADD CSLUA_PATH_CROOT CSLUA_PATH_VER CSLUA_PATH_CFILE ";" \
+           CSLUA_PATH_CROOT CSLUA_PATH_VER CSLUA_PATH_LOADALL ";"
+#else
+#	define CSLUA_PATH_ADD ""
+#endif
+
+#define CSLUA_PATH CSLUA_PATH_LADD CSLUA_PATH_LROOT CSLUA_PATH_LFILE ";" \
+        CSLUA_PATH_LROOT CSLUA_PATH_IFILE
+#define CSLUA_CPATH CSLUA_PATH_CADD CSLUA_PATH_CROOT CSLUA_PATH_CFILE ";" \
+        CSLUA_PATH_CROOT CSLUA_PATH_LOADALL
 
 // Обеспечиваем совместимость с большинством версий Lua
 #if LUA_VERSION_NUM < 501
@@ -98,7 +122,7 @@ int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *me
 void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths);
 
 LuaScript *lua_getscript(lua_State *L);
-LuaScript *LuaScript_Open(cs_str name);
+LuaScript *LuaScript_Open(cs_str root, cs_str name);
 cs_bool LuaScript_DoMainFile(LuaScript *script);
 cs_bool LuaScript_GlobalLookup(LuaScript *plugin, cs_str key);
 cs_bool LuaScript_RegistryLookup(LuaScript *plugin, cs_str regtab, cs_str key);

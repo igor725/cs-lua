@@ -79,11 +79,15 @@ void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
 	if(!luaL_newmetatable(L, meta)) luaL_error(L, "Failed to create metatable");
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
+#	if LUA_VERSION_NUM < 503
+		lua_pushstring(L, meta);
+		lua_setfield(L, -2, "__name");
+#	endif
 	lua_pushstring(L, "Huh? Tf you doing here?");
 	lua_setfield(L, -2, "__metatable");
 	luaL_setfuncs(L, meths, 0);
 	lua_pop(L, 1);
-} 
+}
 
 static const luaL_Reg lualibs[] = {
 	{"log", luaopen_log},
@@ -114,8 +118,8 @@ LuaScript *lua_getscript(lua_State *L) {
 
 cs_bool LuaScript_DoMainFile(LuaScript *script) {
 	if(script->unloaded) return false;
-	cs_char path[MAX_PATH] = {0};
-	String_Append(path, MAX_PATH, "scripts/");
+	cs_char path[MAX_PATH];
+	String_Copy(path, MAX_PATH, script->scrpath);
 	String_Append(path, MAX_PATH, script->scrname);
 	if(luaL_dofile(script->L, path)) {
 		LuaScript_PrintError(script);
@@ -232,7 +236,7 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 }
 #endif
 
-LuaScript *LuaScript_Open(cs_str name) {
+LuaScript *LuaScript_Open(cs_str root, cs_str name) {
 	if(String_FindSubstr(name, ".."))
 		return NULL;
 
@@ -242,6 +246,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 		script->scrname = String_AllocCopy(name);
 		script->lock = Mutex_Create();
 		script->L = luaL_newstate();
+		script->scrpath = root;
 		if(!script->L) {
 			LuaScript_Close(script);
 			return NULL;
