@@ -207,17 +207,20 @@ static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx) {
 }
 
 static cs_bool copytable(lua_State *L_to, lua_State *L_from, int idx) {
-	/**
-	 * Если используется относительный указатель на позицию стека,
-	 * то нам надо из него вычесть 1, т.к. в стек бросается ещё
-	 * одно значение - ключ таблицы для итерации.
-	 */
-	if(idx < 0) idx--;
+	// Превращаем относительный индекс в абсолютный
+	if(idx < 0) idx = lua_gettop(L_from) + idx + 1;
 
 	lua_pushnil(L_from);
 	lua_newtable(L_to);
 	while(lua_next(L_from, idx) != 0) {
-		if(!copyvalue(L_to, L_from, -2) || !copyvalue(L_to, L_from, -1))
+		if(lua_rawequal(L_from, idx, -2)) // Если ключ сама же эта таблица, то её и пушим
+			lua_pushvalue(L_to, -1);
+		else if(!copyvalue(L_to, L_from, -2))
+			return false;
+
+		if(lua_rawequal(L_from, idx, -1))
+			lua_pushvalue(L_to, -2);
+		else if(!copyvalue(L_to, L_from, -1))
 			return false;
 
 		lua_rawset(L_to, -3);

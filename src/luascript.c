@@ -274,13 +274,6 @@ LuaScript *LuaScript_Open(cs_str name) {
 #			endif
 		}
 
-#		ifdef CSLUA_HAS_JIT
-			luaL_findtable(script->L, LUA_REGISTRYINDEX, "_PRELOAD", 1);
-			lua_pushcfunction(script->L, luaopen_ffi);
-			lua_setfield(script->L, -2, LUA_FFILIBNAME);
-			lua_pop(script->L, 1);
-#		endif
-
 		luainit_cuboid(script->L);
 
 		if(LuaScript_GlobalLookup(script, LUA_IOLIBNAME)) {
