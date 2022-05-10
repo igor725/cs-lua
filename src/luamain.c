@@ -24,8 +24,7 @@ static LuaScript *getscript(cs_str name) {
 }
 
 static LuaScript *LuaLoad(cs_str name) {
-	LuaScript *script = LuaScript_Open(CSLUA_PATH_SCRIPTS, name);
-	if(!script) script = LuaScript_Open(CSLUA_PATH_RSCRIPTS, name);
+	LuaScript *script = LuaScript_Open(name);
 	if(script) AList_AddField(&headScript, script);
 	return script;
 }
@@ -185,10 +184,10 @@ static cs_bool checkscrname(cs_str name) {
 	return true;
 }
 
-static void loadscript(cs_str root, cs_str name) {
-	LuaScript *script = LuaScript_Open(root, name);
+static void loadscript(cs_str name) {
+	LuaScript *script = LuaScript_Open(name);
 	if(!script) {
-		Log_Error("Failed to load script \"%s%s\"", root, name);
+		Log_Error("Failed to load script \"%s\"", name);
 		return;
 	}
 	AList_AddField(&headScript, script);
@@ -196,16 +195,16 @@ static void loadscript(cs_str root, cs_str name) {
 
 cs_bool Plugin_Load(void) {
 	DirIter sIter;
-	Directory_Ensure("luadata"); // Папка с данными для каждого скрипта
+	Directory_Ensure(CSLUA_PATH_LDATA); // Папка с данными для каждого скрипта
 	Directory_Ensure(CSLUA_PATH_LROOT); // Папка для библиотек, подключаемых скриптами
-	Directory_Ensure(CSLUA_PATH_CROOT); // Папка для библиотек, подключаемых скриптами
+	Directory_Ensure(CSLUA_PATH_CROOT); // Папка для C модулей, подключаемых скриптами
 	Directory_Ensure(CSLUA_PATH_SCRIPTS); // Сами скрипты, загружаются автоматически
 
 	if(Iter_Init(&sIter, CSLUA_PATH_SCRIPTS, "lua")) { // Проходимся по директории зависящей от версии Lua
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
 			if(!checkscrname(sIter.cfile)) continue;
-			loadscript(CSLUA_PATH_SCRIPTS, sIter.cfile);
+			loadscript(sIter.cfile);
 		} while(Iter_Next(&sIter));
 	}
 	Iter_Close(&sIter);
@@ -220,7 +219,7 @@ cs_bool Plugin_Load(void) {
 				continue;
 			}
 			if(!checkscrname(sIter.cfile)) continue;
-			loadscript(CSLUA_PATH_RSCRIPTS, sIter.cfile);
+			loadscript(sIter.cfile);
 		} while(Iter_Next(&sIter));
 	}
 	Iter_Close(&sIter);

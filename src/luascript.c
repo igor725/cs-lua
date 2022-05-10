@@ -118,10 +118,8 @@ LuaScript *lua_getscript(lua_State *L) {
 
 cs_bool LuaScript_DoMainFile(LuaScript *script) {
 	if(script->unloaded) return false;
-	cs_char path[MAX_PATH];
-	String_Copy(path, MAX_PATH, script->scrpath);
-	String_Append(path, MAX_PATH, script->scrname);
-	if(luaL_dofile(script->L, path)) {
+
+	if(luaL_dofile(script->L, script->scrpath)) {
 		LuaScript_PrintError(script);
 		return false;
 	}
@@ -194,7 +192,7 @@ static int ioscrname(lua_State *L) {
 }
 
 static int iodatafolder(lua_State *L) {
-	lua_pushstring(L, "luadata" PATH_DELIM);
+	lua_pushstring(L, CSLUA_PATH_LDATA);
 	ioscrname(L);
 	lua_concat(L, 2);
 	return 1;
@@ -236,17 +234,26 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 }
 #endif
 
-LuaScript *LuaScript_Open(cs_str root, cs_str name) {
+LuaScript *LuaScript_Open(cs_str name) {
 	if(String_FindSubstr(name, ".."))
 		return NULL;
+
+	cs_char path[MAX_PATH];
+	String_Copy(path, MAX_PATH, CSLUA_PATH_SCRIPTS);
+	String_Append(path, MAX_PATH, name);
+	if(File_Access(path, 04)) {
+		String_Copy(path, MAX_PATH, CSLUA_PATH_RSCRIPTS);
+		String_Append(path, MAX_PATH, name);
+		if(File_Access(path, 04)) return NULL;
+	}
 
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
 	if(script) {
 		script->scrname = String_AllocCopy(name);
+		script->scrpath = String_AllocCopy(path);
 		script->lock = Mutex_Create();
 		script->L = luaL_newstate();
-		script->scrpath = root;
 		if(!script->L) {
 			LuaScript_Close(script);
 			return NULL;
