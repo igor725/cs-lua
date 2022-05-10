@@ -238,11 +238,12 @@ LuaScript *LuaScript_Open(cs_str name) {
 	if(String_FindSubstr(name, ".."))
 		return NULL;
 
+	cs_size offset;
 	cs_char path[MAX_PATH];
-	String_Copy(path, MAX_PATH, CSLUA_PATH_SCRIPTS);
+	offset = String_Copy(path, MAX_PATH, CSLUA_PATH_SCRIPTS);
 	String_Append(path, MAX_PATH, name);
 	if(File_Access(path, 04)) {
-		String_Copy(path, MAX_PATH, CSLUA_PATH_RSCRIPTS);
+		offset = String_Copy(path, MAX_PATH, CSLUA_PATH_RSCRIPTS);
 		String_Append(path, MAX_PATH, name);
 		if(File_Access(path, 04)) return NULL;
 	}
@@ -250,8 +251,8 @@ LuaScript *LuaScript_Open(cs_str name) {
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
 	if(script) {
-		script->scrname = String_AllocCopy(name);
 		script->scrpath = String_AllocCopy(path);
+		script->scrname = script->scrpath + offset;
 		script->lock = Mutex_Create();
 		script->L = luaL_newstate();
 		if(!script->L) {
@@ -331,7 +332,7 @@ cs_bool LuaScript_Close(LuaScript *script) {
 			script->nreallocs, script->nfrees
 		);
 #	endif
-	Memory_Free((void *)script->scrname);
+	Memory_Free((void *)script->scrpath);
 	Mutex_Free(script->lock);
 	Memory_Free(script);
 	return false;
