@@ -5,7 +5,7 @@
 
 static const char *errors[] = {
 	// Lua returns
-	"Command already exists",
+	"Command with the same name already exists",
 	"Command with this name is not registred",
 	"This command was not registred by this lua_State",
 	"Command name cannot be empty",

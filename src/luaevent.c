@@ -3,6 +3,7 @@
 #include <list.h>
 #include <server.h>
 #include <client.h>
+#include <command.h>
 #include <platform.h>
 #include "luamain.h"
 #include "luascript.h"
@@ -333,6 +334,27 @@ static void evtpluginmsg(onPluginMessage *obj) {
 	}
 }
 
+static void evtprecommand(preCommand *obj) {
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		if(script != Command_GetUserData(obj->command)) continue;
+		LuaScript_Lock(script);
+		if(LuaScript_GlobalLookup(script, "preCommand")) {
+			lua_pushstring(script->L, Command_GetName(obj->command));
+			lua_pushclient(script->L, obj->caller);
+			lua_pushstring(script->L, obj->args);
+			lua_pushboolean(script->L, obj->allowed);
+			if(LuaScript_Call(script, 4, 1)) {
+				if(lua_isboolean(script->L, -1))
+					obj->allowed = (cs_bool)lua_toboolean(script->L, -1);
+				lua_pop(script->L, 1);
+			}
+		}
+		LuaScript_Unlock(script);
+	}	
+}
+
 Event_DeclareBunch (events) {
 	EVENT_BUNCH_ADD('v', EVT_POSTSTART, evtpoststart)
 	EVENT_BUNCH_ADD('v', EVT_ONTICK, evttick)
@@ -355,6 +377,7 @@ Event_DeclareBunch (events) {
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDREMOVED, evtworldremoved)
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDUNLOADED, evtworldunloaded)
 	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg)
+	EVENT_BUNCH_ADD('v', EVT_PRECOMMAND, evtprecommand)
 
 	EVENT_BUNCH_END
 };

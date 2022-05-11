@@ -313,6 +313,7 @@ const luaL_Reg contactmeta[] = {
 static int cont_get(lua_State *L) {
 	cs_size namelen = 0;
 	cs_str name = luaL_checklstring(L, 1, &namelen);
+	luaL_argcheck(L, namelen > 0, 1, "Empty contact name");
 	luaL_argcheck(L, namelen < CSLUA_CONTACT_NAMELEN, 1, "Too long contact name");
 	LuaScript *LS = lua_getscript(L);
 

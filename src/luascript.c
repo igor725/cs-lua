@@ -75,6 +75,16 @@ int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *me
 	return true;
 }
 
+static int generic_tostring(lua_State *L) {
+	cs_str typename = NULL;
+	if(luaL_getmetafield(L, 1, "__name") && lua_isstring(L, -1))
+		typename = lua_tostring(L, -1);
+	else typename = luaL_typename(L, 1);
+
+	lua_pushfstring(L, "%s: %p", typename, lua_touserdata(L, 1));
+	return 1;
+}
+
 void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
 	if(!luaL_newmetatable(L, meta)) luaL_error(L, "Failed to create metatable");
 	lua_pushvalue(L, -1);
@@ -82,6 +92,8 @@ void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
 #	if LUA_VERSION_NUM < 503
 		lua_pushstring(L, meta);
 		lua_setfield(L, -2, "__name");
+		lua_pushcfunction(L, generic_tostring);
+		lua_setfield(L, -2, "__tostring");
 #	endif
 	lua_pushstring(L, "Huh? Tf you doing here?");
 	lua_setfield(L, -2, "__metatable");
