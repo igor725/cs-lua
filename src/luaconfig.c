@@ -110,13 +110,6 @@ static int meta_poperror(lua_State *L) {
 	return 3;
 }
 
-static int meta_tostring(lua_State *L) {
-	lua_pushfstring(L, "Config(%p)",
-		lua_checkcfgstore(L, 1)
-	);
-	return 1;
-}
-
 static int meta_destroy(lua_State *L) {
 	CStore *store = lua_checkcfgstore(L, 1);
 	*(void **)lua_touserdata(L, 1) = NULL;
@@ -133,7 +126,6 @@ const luaL_Reg configmeta[] = {
 	{"reset", meta_reset},
 	{"poperror", meta_poperror},
 
-	{"__tostring", meta_tostring},
 	{"__gc", meta_destroy},
 
 	{NULL, NULL}

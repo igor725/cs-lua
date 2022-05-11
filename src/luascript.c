@@ -217,8 +217,8 @@ static cs_str const iodel[] = {
 };
 
 static cs_str const osdel[] = {
-	"setlocale", "execute", "exit",
-	"getenv", NULL
+	"setlocale", "execute",
+	"exit", "getenv", NULL
 };
 
 static const luaL_Reg iofuncs[] = {

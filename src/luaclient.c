@@ -579,13 +579,6 @@ static int meta_chat(lua_State *L) {
 	return 0;
 }
 
-static int meta_tostring(lua_State *L) {
-	lua_pushfstring(L, "Client(%p)",
-		lua_checkclient(L, 1)
-	);
-	return 1;
-}
-
 static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
 	{"getstate", meta_getstate},
@@ -648,8 +641,6 @@ static const luaL_Reg clientmeta[] = {
 	{"reload", meta_reload},
 	{"kick", meta_kick},
 	{"chat", meta_chat},
-
-	{"__tostring", meta_tostring},
 
 	{NULL, NULL}
 };

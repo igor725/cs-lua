@@ -52,20 +52,12 @@ static int meta_gc(lua_State *L) {
 	return 0;
 }
 
-static int meta_tostring(lua_State *L) {
-	lua_pushfstring(L, "BlockDef(%p)",
-		lua_checkblockdef(L, 1)
-	);
-	return 1;
-}
-
 static const luaL_Reg blockmeta[] = {
 	{"addtoworld", meta_addtoworld},
 	{"undefine", meta_undefine},
 	{"globundefine", meta_globundefine},
 	{"update", meta_update},
 
-	{"__tostring", meta_tostring},
 	{"__gc", meta_gc},
 
 	{NULL, NULL}
