@@ -46,12 +46,16 @@ void lua_pushworld(lua_State *L, World *world) {
 
 void lua_clearworld(lua_State *L, World *world) {
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
-	lua_pushstring(L, World_GetName(world));
-	lua_gettable(L, -2);
+	lua_getfield(L, -1, World_GetName(world));
+
+	lua_pushnil(L);
+	lua_setfield(L, -3, World_GetName(world)); // CSLUA_RWORLDS[wname] = nil;
+
 	if(!lua_isuserdata(L, -1)) {
 		lua_pop(L, 1);
 		return;
 	}
+
 	void **ud = lua_touserdata(L, -1);
 	*ud = NULL;
 }
