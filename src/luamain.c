@@ -102,7 +102,7 @@ COMMAND_FUNC(Lua) {
 				LuaScript *script = getscriptptr(tmp);
 				LuaScript_Lock(script);
 				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
-				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%s&f, &a%dKb&f used", idx, script->scrname, usage);
+				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%.32s&f, &a%dKb&f used", idx, script->scrname, usage);
 				LuaScript_Unlock(script);
 			}
 

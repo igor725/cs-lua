@@ -61,8 +61,9 @@ void lua_clearworld(lua_State *L, World *world) {
 }
 
 static int meta_getname(lua_State *L) {
-	World *world = lua_checkworld(L, 1);
-	lua_pushstring(L, World_GetName(world));
+	lua_pushstring(L, World_GetName(
+		lua_checkworld(L, 1)
+	));
 	return 1;
 }
 
@@ -345,7 +346,9 @@ static int meta_remove(lua_State *L) {
 }
 
 static int meta_unload(lua_State *L) {
-	World_Unload(lua_checkworld(L, 1));
+	World_Unload(
+		lua_checkworld(L, 1)
+	);
 	return 0;
 }
 
@@ -372,7 +375,9 @@ static int meta_lock(lua_State *L) {
 }
 
 static int meta_unlock(lua_State *L) {
-	World_Unlock(lua_checkworld(L, 1));
+	World_Unlock(
+		lua_checkworld(L, 1)
+	);
 	return 0;
 }
 
