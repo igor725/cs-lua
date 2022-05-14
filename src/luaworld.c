@@ -157,6 +157,13 @@ static int meta_gettexpack(lua_State *L) {
 	return 1;
 }
 
+static int meta_getseed(lua_State *L) {
+	lua_pushinteger(L, World_GetSeed(
+		lua_checkworld(L, 1)
+	));
+	return 1;
+}
+
 static int meta_getplayercount(lua_State *L) {
 	lua_pushinteger(L, (lua_Integer)World_CountPlayers(
 		lua_checkworld(L, 1)
@@ -391,6 +398,7 @@ static const luaL_Reg worldmeta[] = {
 	{"getenvprop", meta_getenvprop},
 	{"getweather", meta_getweather},
 	{"gettexpack", meta_gettexpack},
+	{"getseed", meta_getseed},
 	{"getplayercount", meta_getplayercount},
 
 	{"setspawn", meta_setspawn},
