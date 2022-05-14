@@ -24,14 +24,13 @@ static struct _Contact *newcontact(cs_str name, LuaScript *LS) {
 }
 
 static struct _Contact *checkcontact(lua_State *L, int idx) {
-	struct _Contact *cont = *(struct _Contact **)luaL_checkudata(L, idx, CSLUA_MCONTACT);
+	struct _Contact *cont = *(void **)luaL_checkudata(L, idx, CSLUA_MCONTACT);
 	luaL_argcheck(L, *cont->name != '\0', idx, "Contact closed");
 	return cont;
 }
 
 static struct _Contact *tocontact(lua_State *L, int idx) {
-	struct _Contact **cont = (struct _Contact **)luaL_checkudata(L, idx, CSLUA_MCONTACT);
-	return cont ? *cont : NULL;
+	return *(void **)luaL_checkudata(L, idx, CSLUA_MCONTACT);
 }
 
 static cs_bool addcontactscript(struct _Contact *cont, LuaScript *LS) {

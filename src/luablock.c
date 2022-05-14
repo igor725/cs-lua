@@ -6,7 +6,7 @@
 #include "luablock.h"
 
 BlockDef *lua_checkblockdef(lua_State *L, int idx) {
-	return *(BlockDef **)luaL_checkudata(L, idx, CSLUA_MBLOCK);
+	return *(void **)luaL_checkudata(L, idx, CSLUA_MBLOCK);
 }
 
 BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {

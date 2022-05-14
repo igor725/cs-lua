@@ -21,6 +21,7 @@
 #include "luakey.h"
 #include "luacontact.h"
 #include "luaparticle.h"
+#include "luaserver.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -101,7 +102,7 @@ void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
 	lua_pop(L, 1);
 }
 
-static const luaL_Reg lualibs[] = {
+static const luaL_Reg serverlibs[] = {
 	{"log", luaopen_log},
 	{"key", luaopen_key},
 	{"block", luaopen_block},
@@ -116,6 +117,7 @@ static const luaL_Reg lualibs[] = {
 	{"model", luaopen_model},
 	{"particle", luaopen_particle},
 	{"contact", luaopen_contact},
+	{"server", luaopen_server},
 	{"survival", luaopen_survival},
 
 	{NULL,NULL}
@@ -287,7 +289,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 		lua_setglobal(script->L, "msTime");
 
 		luaL_openlibs(script->L);
-		for(const luaL_Reg *lib = lualibs; lib->func; lib++) {
+		for(const luaL_Reg *lib = serverlibs; lib->func; lib++) {
 #			if LUA_VERSION_NUM < 502
 				lua_pushcfunction(script->L, lib->func);
 				lua_pushstring(script->L, lib->name);

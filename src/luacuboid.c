@@ -99,9 +99,8 @@ static LuaCuboid *lua_tocuboid(lua_State *L, int idx) {
 }
 
 static int meta_setpoints(lua_State *L) {
-	LuaCuboid *luacub = lua_checkcuboid(L, 1);
 	Cuboid_SetPositions(
-		luacub->cub,
+		lua_checkcuboid(L, 1)->cub,
 		*lua_checkshortvector(L, 2),
 		*lua_checkshortvector(L, 3)
 	);
