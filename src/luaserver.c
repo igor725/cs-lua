@@ -40,6 +40,11 @@ static const luaL_Reg serverlib[] = {
 };
 
 int luaopen_server(lua_State *L) {
+	lua_addintconst(L, SERVERINFO_FLAG_DEBUG);
+	lua_addintconst(L, SERVERINFO_FLAG_WININET);
+	lua_addintconst(L, SERVERINFO_FLAG_LIBCURL);
+	lua_addintconst(L, SERVERINFO_FLAG_WINCRYPT);
+	lua_addintconst(L, SERVERINFO_FLAG_LIBCRYPTO);
 	luaL_newlib(L, serverlib);
 	return 1;
 }
