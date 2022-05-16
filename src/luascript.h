@@ -51,6 +51,10 @@ typedef struct LuaScript {
 #define CSLUA_MPARTICLE "Particle"
 
 // Обеспечиваем совместимость с большинством версий Lua
+#if LUA_VERSION_NUM < 503 // Компилимся под чем-ито ниже Lua 5.3
+#	define lua_absindex(L, idx) ((idx) > 0 || ((idx) <= LUA_REGISTRYINDEX) ? (idx) : lua_gettop(L) + (idx) + 1)
+#endif
+
 #if LUA_VERSION_NUM < 501
 // Кто-то вообще будет пытаться собрать плагин с этими версиями?
 #	error "This version of Lua is not supported"

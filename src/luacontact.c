@@ -182,7 +182,7 @@ static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx, cs_str *er
 
 static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	// Превращаем относительный индекс в абсолютный
-	if(idx < 0) idx = lua_gettop(L_from) + idx + 1;
+	if(idx < 0) idx = lua_absindex(L_from, idx);
 
 	lua_pushnil(L_from);
 	lua_newtable(L_to);
