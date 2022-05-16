@@ -39,7 +39,8 @@ COMMAND_FUNC(luacmd) {
 		succ = lua_pcall(script->L, 2, 1, 0) == 0;
 		if(lua_isstring(script->L, -1))
 			output = luaL_checkstring(script->L, -1);
-		else output = "&e[non-string value]";
+		else if(!lua_isnoneornil(script->L, -1))
+			output = "&e[non-string value]";
 		lua_pop(script->L, 1);
 	} else output = errors[6];
 	LuaScript_Unlock(script);
