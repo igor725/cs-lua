@@ -77,10 +77,10 @@ static int cmd_add(lua_State *L) {
 
 static int cmd_remove(lua_State *L) {
 	Command *cmd = getstatecommand(L, 1);
-	Command_Unregister(cmd);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 	lua_pushnil(L);
 	lua_setfield(L, -2, Command_GetName(cmd));
+	Command_Unregister(cmd);
 	return 0;
 }
 
