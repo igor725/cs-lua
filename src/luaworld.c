@@ -441,10 +441,15 @@ static int world_create(lua_State *L) {
 		2, "Invalid Vector passed"
 	);
 	World *world = World_Create(wname);
-	World_SetDimensions(world, dims);
+	if(!World_SetDimensions(world, dims)) {
+		World_Free(world);
+		luaL_error(L, "World is too big");
+	}
 	World_AllocBlockArray(world);
-	if(!World_IsReadyToPlay(world))
-		luaL_error(L, "Failed to create world");
+	if(!World_IsReadyToPlay(world)) {
+		World_Free(world);
+		luaL_error(L, "Failed to create the world");
+	}
 	World_Add(world);
 	lua_pushworld(L, world);
 	return 1;
