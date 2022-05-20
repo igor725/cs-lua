@@ -158,7 +158,7 @@ static int meta_gettexpack(lua_State *L) {
 }
 
 static int meta_getseed(lua_State *L) {
-	lua_pushinteger(L, World_GetSeed(
+	lua_pushinteger(L, (lua_Integer)World_GetSeed(
 		lua_checkworld(L, 1)
 	));
 	return 1;
