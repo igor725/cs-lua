@@ -73,10 +73,23 @@ static int particle_define(lua_State *L) {
 	return 1;
 }
 
+static int particle_freeid(lua_State *L) {
+	cs_int16 id = -1;
+	for(cs_byte i = 0; i < CPE_PARTICLES_COUNT; i++) {
+		if(!CPE_IsParticleDefined(i)) {
+			id = i;
+			break;
+		}
+	}
+	lua_pushinteger(L, (lua_Integer)id);
+	return 1;
+}
+
 static const luaL_Reg particlelib[] = {
 	{"create", particle_create},
 	{"define", particle_define},
 	{"undefine", particle_undefine},
+	{"freeid", particle_freeid},
 
 	{NULL, NULL}
 };

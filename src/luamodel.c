@@ -132,10 +132,23 @@ static int model_define(lua_State *L) {
 	return 1;
 }
 
+static int model_freeid(lua_State *L) {
+	cs_int16 id = -1;
+	for(cs_byte i = 0; i < CPE_MODELS_COUNT; i++) {
+		if(!CPE_IsModelDefined(i)) {
+			id = i;
+			break;
+		}
+	}
+	lua_pushinteger(L, (lua_Integer)id);
+	return 1;
+}
+
 static const luaL_Reg modellib[] = {
 	{"create", model_create},
 	{"define", model_define},
 	{"undefine", model_undefine},
+	{"freeid", model_freeid},
 
 	{NULL, NULL}
 };
