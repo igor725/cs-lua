@@ -327,7 +327,6 @@ static int meta_iterplayers(lua_State *L) {
 	World *world = lua_checkworld(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	World_Lock(world, 0);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client && Client_IsInWorld(client, world)) {
@@ -340,7 +339,6 @@ static int meta_iterplayers(lua_State *L) {
 			}
 		}
 	}
-	World_Unlock(world);
 
 	return 0;
 }
