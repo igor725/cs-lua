@@ -206,9 +206,15 @@ static int ioscrname(lua_State *L) {
 }
 
 static int iodatafolder(lua_State *L) {
+	int argc = lua_gettop(L);
 	lua_pushstring(L, CSLUA_PATH_LDATA);
 	ioscrname(L);
-	lua_concat(L, 2);
+	if(argc > 0 && lua_isstring(L, 1)) {
+		lua_pushstring(L, PATH_DELIM);
+		lua_pushvalue(L, 1);
+		lua_concat(L, 4);
+	} else
+		lua_concat(L, 2);
 	return 1;
 }
 
