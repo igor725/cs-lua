@@ -477,10 +477,22 @@ static int world_iterall(lua_State *L) {
 	return 0;
 }
 
+static int world_getmain(lua_State *L) {
+	lua_pushworld(L, World_Main);
+	return 1;
+}
+
+static int world_setmain(lua_State *L) {
+	World_Main = lua_checkworld(L, 1);
+	return 0;
+}
+
 static const luaL_Reg worldlib[] = {
 	{"create", world_create},
 	{"getbyname", world_getname},
 	{"iterall", world_iterall},
+	{"getmain", world_getmain},
+	{"setmain", world_setmain},
 
 	{NULL, NULL}
 };

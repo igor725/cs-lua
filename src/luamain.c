@@ -239,7 +239,7 @@ cs_bool Plugin_Unload(cs_bool force) {
 #	endif
 
 	while(headScript) {
-		LuaScript *script = (LuaScript *)AList_GetValue(headScript).ptr;
+		LuaScript *script = AList_GetValue(headScript).ptr;
 		LuaScript_Lock(script);
 		AList_Remove(&headScript, headScript);
 		LuaUnload(script, true);
