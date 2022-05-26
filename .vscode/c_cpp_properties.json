@@ -8,7 +8,8 @@
             ],
             "defines": [
                 "_DEBUG",
-                "CORE_BUILD_PLUGIN"
+                "CORE_BUILD_PLUGIN",
+                "CSLUA_USE_SURVIVAL"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",
@@ -24,7 +25,8 @@
             ],
             "defines": [
                 "_DEBUG",
-                "CORE_BUILD_PLUGIN"
+                "CORE_BUILD_PLUGIN",
+                "CSLUA_USE_SURVIVAL"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",
@@ -44,7 +46,8 @@
             "intelliSenseMode": "linux-gcc-x64",
             "defines": [
                 "_DEBUG",
-                "CORE_BUILD_PLUGIN"
+                "CORE_BUILD_PLUGIN",
+                "CSLUA_USE_SURVIVAL"
             ],
             "compilerArgs": [],
             "mergeConfigurations": false,

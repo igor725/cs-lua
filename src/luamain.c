@@ -68,7 +68,7 @@ static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 			}
 		}
 		goto unlok;
-	}
+	} else goto unlok;
 
 	unlerr:
 	if(!force) {
