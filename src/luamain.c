@@ -194,7 +194,7 @@ static void loadscript(cs_str name) {
 }
 
 cs_bool Plugin_Load(void) {
-	DirIter sIter;
+	DirIter sIter = {0};
 	Directory_Ensure(CSLUA_PATH_LDATA); // Папка с данными для каждого скрипта
 	Directory_Ensure(CSLUA_PATH_LROOT); // Папка для библиотек, подключаемых скриптами
 	Directory_Ensure(CSLUA_PATH_CROOT); // Папка для C модулей, подключаемых скриптами

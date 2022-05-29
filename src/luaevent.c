@@ -288,7 +288,7 @@ static cs_bool evtonmessage(onMessage *obj) {
 					if(lua_isnumber(script->L, -2))
 						obj->type = (cs_byte)lua_tointeger(script->L, -2);
 					if(lua_isstring(script->L, -1))
-						obj->message = (cs_char *)lua_tostring(script->L, -1);
+						String_Copy(obj->message, sizeof(obj->message), lua_tostring(script->L, -1));
 				}
 				lua_pop(script->L, 2);
 			} else ret = false;
@@ -352,7 +352,28 @@ static void evtprecommand(preCommand *obj) {
 			}
 		}
 		LuaScript_Unlock(script);
-	}	
+	}
+}
+
+static void evtprehandshakedone(preHandshakeDone *obj) {
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		LuaScript_Lock(script);
+		if(LuaScript_GlobalLookup(script, "preHandshakeDone")) {
+			lua_pushclient(script->L, obj->client);
+			lua_pushstring(script->L, obj->name);
+			lua_pushstring(script->L, obj->motd);
+			if(LuaScript_Call(script, 3, 2)) {
+				if(lua_isstring(script->L, -1))
+					String_Copy(obj->motd, sizeof(obj->motd), lua_tostring(script->L, -1));
+				if(lua_isstring(script->L, -2))
+					String_Copy(obj->name, sizeof(obj->name), lua_tostring(script->L, -2));
+				lua_pop(script->L, 2);
+			}
+		}
+		LuaScript_Unlock(script);
+	}
 }
 
 Event_DeclareBunch (events) {
@@ -378,6 +399,7 @@ Event_DeclareBunch (events) {
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDUNLOADED, evtworldunloaded)
 	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg)
 	EVENT_BUNCH_ADD('v', EVT_PRECOMMAND, evtprecommand)
+	EVENT_BUNCH_ADD('v', EVT_PREHANDSHAKEDONE, evtprehandshakedone)
 
 	EVENT_BUNCH_END
 };
