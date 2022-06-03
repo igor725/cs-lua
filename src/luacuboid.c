@@ -36,7 +36,7 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 	lua_gettable(L, -3);
 	if(lua_isnil(L, -1)) {
 		lua_pop(L, 1);
-		lua_createtable(L, CLIENT_CUBOIDS_COUNT, 0); // Таблица кубов
+		lua_createtable(L, CPE_MAX_CUBOIDS, 0); // Таблица кубов
 		lua_createtable(L, 0, 1); // Метатаблица для таблицы кубов (TODO: Сделать её общей для всех??)
 		// Делаем, чтобы сборщик мусора не учитывал ссылки внутри таблицы
 		lua_pushstring(L, "v");
@@ -65,7 +65,7 @@ void lua_clearcuboids(lua_State *L, Client *client) {
 	}
 
 	// Проходимся по таблице и удаляем найденные кубоиды
-	for(lua_Integer i = 0; i < CLIENT_CUBOIDS_COUNT; i++) {
+	for(lua_Integer i = 0; i < CPE_MAX_CUBOIDS; i++) {
 		lua_pushinteger(L, i);
 		lua_gettable(L, -2);
 		if(lua_isnil(L, -1)) { // Кубоид с указанным id не существует в таблице кубоидов

@@ -75,7 +75,7 @@ static int particle_define(lua_State *L) {
 
 static int particle_freeid(lua_State *L) {
 	cs_int16 id = -1;
-	for(cs_byte i = 0; i < CPE_PARTICLES_COUNT; i++) {
+	for(cs_byte i = 0; i < CPE_MAX_PARTICLES; i++) {
 		if(!CPE_IsParticleDefined(i)) {
 			id = i;
 			break;

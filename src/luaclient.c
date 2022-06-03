@@ -388,7 +388,7 @@ static int meta_setorderblock(lua_State *L) {
 static int meta_setskin(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_str url = (cs_str)luaL_checkstring(L, 2);
-	luaL_argcheck(L, String_Length(url) < 65, 2, "URL is too long");
+	luaL_argcheck(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
 	lua_pushboolean(L, Client_SetSkin(client, url));
 	return 1;
 }
@@ -396,7 +396,7 @@ static int meta_setskin(lua_State *L) {
 static int meta_settexpack(lua_State *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_str url = (cs_str)luaL_checkstring(L, 2);
-	luaL_argcheck(L, String_Length(url) < 65, 2, "URL is too long");
+	luaL_argcheck(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
 	lua_pushboolean(L, Client_SetTexturePack(client, url));
 	return 1;
 }

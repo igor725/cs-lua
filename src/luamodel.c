@@ -134,7 +134,7 @@ static int model_define(lua_State *L) {
 
 static int model_freeid(lua_State *L) {
 	cs_int16 id = -1;
-	for(cs_byte i = 0; i < CPE_MODELS_COUNT; i++) {
+	for(cs_byte i = 0; i < CPE_MAX_MODELS; i++) {
 		if(!CPE_IsModelDefined(i)) {
 			id = i;
 			break;
