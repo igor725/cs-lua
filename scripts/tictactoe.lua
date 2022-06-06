@@ -149,7 +149,7 @@ function onStart()
 								break
 							end
 						end
-						
+
 						if diagWinner ~= self.field[j][x] then
 							win = false
 							break

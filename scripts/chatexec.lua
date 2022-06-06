@@ -72,7 +72,7 @@ function onMessage(cl, type, text)
 
 			return ''
 		end)
-		
+
 		cl:chat(runScript(cl, text))
 		return false
 	end

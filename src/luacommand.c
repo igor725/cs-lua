@@ -14,7 +14,7 @@ static const char *errors[] = {
 	// Command execution errors
 	"&cLua execution error: %s",
 	"function was not found in the registry table",
-	
+
 	// Server errors??
 	"Command registration failed"
 };

@@ -246,7 +246,7 @@ static int meta_tostring(lua_State *L) {
 				vec->value.s.x, vec->value.s.y, vec->value.s.z
 			);
 			break;
-		
+
 		default:
 			lua_pushfstring(L, "UnknownVector(%p)", vec);
 			break;

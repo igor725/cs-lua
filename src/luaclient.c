@@ -464,7 +464,7 @@ static int meta_isinstate(lua_State *L) {
 			return 1;
 		}
 	}
-	
+
 	lua_pushboolean(L, 0);
 	return 1;
 }

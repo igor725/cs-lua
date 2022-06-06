@@ -1,12 +1,13 @@
 #include <core.h>
 #include <block.h>
 #include <platform.h>
+#include <str.h>
 #include "luascript.h"
 #include "luaworld.h"
 #include "luablock.h"
 
 BlockDef *lua_checkblockdef(lua_State *L, int idx) {
-	return *(void **)luaL_checkudata(L, idx, CSLUA_MBLOCK);
+	return luaL_checkudata(L, idx, CSLUA_MBLOCK);
 }
 
 BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {
@@ -48,7 +49,6 @@ static int meta_gc(lua_State *L) {
 	BlockDef *bdef = lua_checkblockdef(L, 1);
 	Block_UndefineGlobal(bdef);
 	Block_UpdateDefinition(bdef);
-	Block_Free(bdef);
 	return 0;
 }
 
@@ -142,56 +142,56 @@ static const luaL_Reg bulkmeta[] = {
 	{NULL, NULL}
 };
 
-#define readtabval(I, K, S, T, D) \
-(lua_getfield(L, -I, K), bdef->params.S = (T)luaL_optinteger(L, -1, D))
+#define readtabval(K, S, T, D) \
+(lua_getfield(L, params, K), bdef->params.S = (T)luaL_optinteger(L, -1, D))
 
-#define readtabbool(I, K, S) \
-(lua_getfield(L, -I, K), bdef->params.S = (cs_bool)lua_toboolean(L, -1))
+#define readtabbool(K, S) \
+(lua_getfield(L, params, K), bdef->params.S = (cs_bool)lua_toboolean(L, -1))
 
 // TODO: Использовать SVec для установки минимальных и максимальных значений
 // TODO2: Использовать Color3 для установки цвета тумана
 
-static void ReadExtendedBlockTable(lua_State *L, BlockDef *bdef) {
-	readtabval(1, "solidity", ext.solidity, EBlockSolidity, BDSOL_SOLID);
-	readtabval(2, "movespeed", ext.moveSpeed, cs_byte, 128);
-	readtabval(3, "toptex", ext.topTex, cs_byte, 0);
-	readtabval(4, "lefttex", ext.leftTex, cs_byte, 0);
-	readtabval(5, "righttex", ext.rightTex, cs_byte, 0);
-	readtabval(6, "fronttex", ext.frontTex, cs_byte, 0);
-	readtabval(7, "backtex", ext.backTex, cs_byte, 0);
-	readtabval(8, "bottomtex", ext.bottomTex, cs_byte, 0);
-	readtabbool(9, "transmitslight", ext.transmitsLight);
-	readtabval(10, "walksound", ext.walkSound, EBlockSounds, BDSND_NONE);
-	readtabbool(11, "fullbright", ext.fullBright);
-	readtabval(12, "minx", ext.minX, cs_byte, 0);
-	readtabval(13, "miny", ext.minY, cs_byte, 0);
-	readtabval(14, "minz", ext.minZ, cs_byte, 0);
-	readtabval(15, "maxx", ext.maxX, cs_byte, 16);
-	readtabval(16, "maxy", ext.maxY, cs_byte, 16);
-	readtabval(17, "maxz", ext.maxZ, cs_byte, 16);
-	readtabval(18, "drawtype", ext.blockDraw, EBlockDrawTypes, BDDRW_OPAQUE);
-	readtabval(19, "fogdensity", ext.fogDensity, cs_byte, 0);
-	readtabval(20, "fogr", ext.fogR, cs_byte, 0);
-	readtabval(21, "fogg", ext.fogG, cs_byte, 0);
-	readtabval(22, "fogb", ext.fogB, cs_byte, 0);
+static void ReadExtendedBlockTable(lua_State *L, BlockDef *bdef, int params) {
+	readtabval("solidity", ext.solidity, EBlockSolidity, BDSOL_SOLID);
+	readtabval("movespeed", ext.moveSpeed, cs_byte, 128);
+	readtabval("toptex", ext.topTex, cs_byte, 0);
+	readtabval("lefttex", ext.leftTex, cs_byte, 0);
+	readtabval("righttex", ext.rightTex, cs_byte, 0);
+	readtabval("fronttex", ext.frontTex, cs_byte, 0);
+	readtabval("backtex", ext.backTex, cs_byte, 0);
+	readtabval("bottomtex", ext.bottomTex, cs_byte, 0);
+	readtabbool("transmitslight", ext.transmitsLight);
+	readtabval("walksound", ext.walkSound, EBlockSounds, BDSND_NONE);
+	readtabbool("fullbright", ext.fullBright);
+	readtabval("minx", ext.minX, cs_byte, 0);
+	readtabval("miny", ext.minY, cs_byte, 0);
+	readtabval("minz", ext.minZ, cs_byte, 0);
+	readtabval("maxx", ext.maxX, cs_byte, 16);
+	readtabval("maxy", ext.maxY, cs_byte, 16);
+	readtabval("maxz", ext.maxZ, cs_byte, 16);
+	readtabval("drawtype", ext.blockDraw, EBlockDrawTypes, BDDRW_OPAQUE);
+	readtabval("fogdensity", ext.fogDensity, cs_byte, 0);
+	readtabval("fogr", ext.fogR, cs_byte, 0);
+	readtabval("fogg", ext.fogG, cs_byte, 0);
+	readtabval("fogb", ext.fogB, cs_byte, 0);
 	lua_pop(L, 22);
 }
 
-static void ReadBlockTable(lua_State *L, BlockDef *bdef) {
-	readtabval(1, "solidity", nonext.solidity, EBlockSolidity, BDSOL_SOLID);
-	readtabval(2, "movespeed", nonext.moveSpeed, cs_byte, 128);
-	readtabval(3, "toptex", nonext.topTex, cs_byte, 0);
-	readtabval(4, "sidetex", nonext.sideTex, cs_byte, 0);
-	readtabval(5, "bottomtex", nonext.bottomTex, cs_byte, 0);
-	readtabbool(6, "transmitslight", nonext.transmitsLight);
-	readtabval(7, "walksound", nonext.walkSound, EBlockSounds, BDSND_NONE);
-	readtabbool(8, "fullbright", nonext.fullBright);
-	readtabval(9, "shape", nonext.shape, cs_byte, 16);
-	readtabval(10, "drawtype", nonext.blockDraw, EBlockDrawTypes, BDDRW_OPAQUE);
-	readtabval(11, "fogdensity", nonext.fogDensity, cs_byte, 0);
-	readtabval(12, "fogr", nonext.fogR, cs_byte, 0);
-	readtabval(13, "fogg", nonext.fogG, cs_byte, 0);
-	readtabval(14, "fogb", nonext.fogB, cs_byte, 0);
+static void ReadBlockTable(lua_State *L, BlockDef *bdef, int params) {
+	readtabval("solidity", nonext.solidity, EBlockSolidity, BDSOL_SOLID);
+	readtabval("movespeed", nonext.moveSpeed, cs_byte, 128);
+	readtabval("toptex", nonext.topTex, cs_byte, 0);
+	readtabval("sidetex", nonext.sideTex, cs_byte, 0);
+	readtabval("bottomtex", nonext.bottomTex, cs_byte, 0);
+	readtabbool("transmitslight", nonext.transmitsLight);
+	readtabval("walksound", nonext.walkSound, EBlockSounds, BDSND_NONE);
+	readtabbool("fullbright", nonext.fullBright);
+	readtabval("shape", nonext.shape, cs_byte, 16);
+	readtabval("drawtype", nonext.blockDraw, EBlockDrawTypes, BDDRW_OPAQUE);
+	readtabval("fogdensity", nonext.fogDensity, cs_byte, 0);
+	readtabval("fogr", nonext.fogR, cs_byte, 0);
+	readtabval("fogg", nonext.fogG, cs_byte, 0);
+	readtabval("fogb", nonext.fogB, cs_byte, 0);
 	lua_pop(L, 14);
 }
 
@@ -205,22 +205,21 @@ static int block_define(lua_State *L) {
 	if(lua_checktabfield(L, 1, "fallback", LUA_TNUMBER))
 		fallback = (BlockID)lua_tointeger(L, -1);
 	lua_checktabfield(L, 1, "params", LUA_TTABLE);
+	int params = lua_absindex(L, -1);
 
-	BlockDef *bdef = NULL;
-
-	if(lua_toboolean(L, -3)) {
-		bdef = Block_New(name, BDF_EXTENDED);
-		ReadExtendedBlockTable(L, bdef);
-	} else {
-		bdef = Block_New(name, 0);
-		ReadBlockTable(L, bdef);
-	}
-	lua_pop(L, 4);
-
-	void **ud = lua_newuserdata(L, sizeof(BlockDef *));
+	BlockDef *bdef = lua_newuserdata(L, sizeof(BlockDef));
 	luaL_setmetatable(L, CSLUA_MBLOCK);
+	String_Copy(bdef->name, MAX_STR_LEN, name);
 	bdef->fallback = fallback;
-	*ud = bdef;
+
+	if(lua_toboolean(L, -4)) {
+		bdef->flags = BDF_EXTENDED;
+		ReadExtendedBlockTable(L, bdef, params);
+	} else {
+		bdef->flags = 0;
+		ReadBlockTable(L, bdef, params);
+	}
+
 	return 1;
 }
 
@@ -296,7 +295,7 @@ int luaopen_block(lua_State *L) {
 	lua_addintconst(L, BDSOL_WALK);
 	lua_addintconst(L, BDSOL_SWIM);
 	lua_addintconst(L, BDSOL_SOLID);
-	
+
 	lua_addintconst(L, BDSND_NONE);
 	lua_addintconst(L, BDSND_WOOD);
 	lua_addintconst(L, BDSND_GRAVEL);

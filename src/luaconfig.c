@@ -31,7 +31,7 @@ static int meta_get(lua_State *L) {
 		case CONFIG_TYPE_STR:
 			lua_pushstring(L, Config_GetStr(ent));
 			break;
-		
+
 		case CONFIG_MAX_TYPE:
 		default:
 			lua_pushstring(L, "Internal error");
@@ -64,7 +64,7 @@ static int meta_set(lua_State *L) {
 		case CONFIG_TYPE_STR:
 			Config_SetStr(ent, luaL_checkstring(L, 3));
 			break;
-		
+
 		case CONFIG_MAX_TYPE:
 		default:
 			lua_pushstring(L, "Internal error");
