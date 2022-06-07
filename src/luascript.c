@@ -259,12 +259,12 @@ LuaScript *LuaScript_Open(cs_str name) {
 		return NULL;
 
 	cs_size offset;
-	cs_char path[MAX_PATH];
-	offset = String_Copy(path, MAX_PATH, CSLUA_PATH_SCRIPTS);
-	String_Append(path, MAX_PATH, name);
+	cs_char path[MAX_PATH_LEN];
+	offset = String_Copy(path, MAX_PATH_LEN, CSLUA_PATH_SCRIPTS);
+	String_Append(path, MAX_PATH_LEN, name);
 	if(File_Access(path, 04)) {
-		offset = String_Copy(path, MAX_PATH, CSLUA_PATH_RSCRIPTS);
-		String_Append(path, MAX_PATH, name);
+		offset = String_Copy(path, MAX_PATH_LEN, CSLUA_PATH_RSCRIPTS);
+		String_Append(path, MAX_PATH_LEN, name);
 		if(File_Access(path, 04)) return NULL;
 	}
 
