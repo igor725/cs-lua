@@ -255,8 +255,8 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 #endif
 
 LuaScript *LuaScript_Open(cs_str name) {
-	if(String_FindSubstr(name, ".."))
-		return NULL;
+	if(!String_IsSafe(name)) return NULL;
+	// TODO: Проверять, успешно и полностью ли собрались пути до файлов
 
 	cs_size offset;
 	cs_char path[MAX_PATH_LEN];
