@@ -540,11 +540,19 @@ static int meta_update(lua_State *L) {
 }
 
 static int meta_teleport(lua_State *L) {
-	lua_pushboolean(L, Client_TeleportTo(
-		lua_checkclient(L, 1),
-		lua_checkfloatvector(L, 2),
-		lua_checkangle(L, 3)
-	));
+	if (lua_isnumber(L, 2)) {
+		lua_pushboolean(L, Client_ExtTeleportTo(
+			lua_checkclient(L, 1),
+			(cs_byte)luaL_checkinteger(L, 2),
+			lua_checkfloatvector(L, 3),
+			lua_checkangle(L, 4)
+		));
+	} else
+		lua_pushboolean(L, Client_TeleportTo(
+			lua_checkclient(L, 1),
+			lua_checkfloatvector(L, 2),
+			lua_checkangle(L, 3)
+		));
 	return 1;
 }
 
