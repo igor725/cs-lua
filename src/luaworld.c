@@ -157,6 +157,15 @@ static int meta_gettexpack(lua_State *L) {
 	return 1;
 }
 
+static int meta_getaddr(lua_State *L) {
+	cs_uint32 size;
+	lua_pushlightuserdata(L, World_GetBlockArray(
+		lua_checkworld(L, 1), &size
+	));
+	lua_pushinteger(L, (lua_Integer)size);
+	return 2;
+}
+
 static int meta_getseed(lua_State *L) {
 	lua_pushinteger(L, (lua_Integer)World_GetSeed(
 		lua_checkworld(L, 1)
@@ -396,6 +405,7 @@ static const luaL_Reg worldmeta[] = {
 	{"getenvprop", meta_getenvprop},
 	{"getweather", meta_getweather},
 	{"gettexpack", meta_gettexpack},
+	{"getaddr", meta_getaddr},
 	{"getseed", meta_getseed},
 	{"getplayercount", meta_getplayercount},
 
