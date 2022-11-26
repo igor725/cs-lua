@@ -12,6 +12,7 @@
 AListField *headScript = NULL;
 
 Plugin_SetVersion(1);
+Plugin_SetURL("https://github.com/igor725/cs-lua");
 
 static LuaScript *getscript(cs_str name) {
 	AListField *tmp;

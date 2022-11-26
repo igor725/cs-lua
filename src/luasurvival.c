@@ -168,9 +168,9 @@ int luaopen_survival(lua_State *L) {
 	return 1;
 }
 #else
+#warning "Compiling without the survival module"
 int luaopen_survival(lua_State *L) {
 	lua_pushnil(L);
 	return 1;
 }
 #endif
-
