@@ -120,7 +120,7 @@ static const luaL_Reg serverlibs[] = {
 	{"server", luaopen_server},
 	{"survival", luaopen_survival},
 
-	{NULL,NULL}
+	{NULL, NULL}
 };
 
 LuaScript *lua_getscript(lua_State *L) {
