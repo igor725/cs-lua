@@ -377,29 +377,29 @@ static void evtprehandshakedone(preHandshakeDone *obj) {
 }
 
 Event_DeclareBunch (events) {
-	EVENT_BUNCH_ADD('v', EVT_POSTSTART, evtpoststart)
-	EVENT_BUNCH_ADD('v', EVT_ONTICK, evttick)
-	EVENT_BUNCH_ADD('b', EVT_ONCONNECT, evtconnect)
-	EVENT_BUNCH_ADD('v', EVT_ONHANDSHAKEDONE, evthandshake)
-	EVENT_BUNCH_ADD('v', EVT_ONUSERTYPECHANGE, evtusertype)
-	EVENT_BUNCH_ADD('v', EVT_ONDISCONNECT, evtdisconnect)
-	EVENT_BUNCH_ADD('v', EVT_ONSPAWN, evtonspawn)
-	EVENT_BUNCH_ADD('v', EVT_ONDESPAWN, evtondespawn)
-	EVENT_BUNCH_ADD('b', EVT_ONMESSAGE, evtonmessage)
-	EVENT_BUNCH_ADD('v', EVT_ONHELDBLOCKCHNG, evtheldchange)
-	EVENT_BUNCH_ADD('b', EVT_ONBLOCKPLACE, evtonblockplace)
-	EVENT_BUNCH_ADD('v', EVT_ONCLICK, evtonclick)
-	EVENT_BUNCH_ADD('v', EVT_ONMOVE, evtmove)
-	EVENT_BUNCH_ADD('v', EVT_ONROTATE, evtrotate)
-	EVENT_BUNCH_ADD('v', EVT_ONWEATHER, evtonweather)
-	EVENT_BUNCH_ADD('v', EVT_ONCOLOR, evtoncolor)
-	EVENT_BUNCH_ADD('v', EVT_ONWORLDADDED, evtworldadded)
-	EVENT_BUNCH_ADD('v', EVT_ONWORLDLOADED, evtworldloaded)
-	EVENT_BUNCH_ADD('v', EVT_ONWORLDREMOVED, evtworldremoved)
-	EVENT_BUNCH_ADD('v', EVT_ONWORLDUNLOADED, evtworldunloaded)
-	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg)
-	EVENT_BUNCH_ADD('v', EVT_PRECOMMAND, evtprecommand)
-	EVENT_BUNCH_ADD('v', EVT_PREHANDSHAKEDONE, evtprehandshakedone)
+	EVENT_BUNCH_ADD('v', EVT_POSTSTART, evtpoststart),
+	EVENT_BUNCH_ADD('v', EVT_ONTICK, evttick),
+	EVENT_BUNCH_ADD('b', EVT_ONCONNECT, evtconnect),
+	EVENT_BUNCH_ADD('v', EVT_ONHANDSHAKEDONE, evthandshake),
+	EVENT_BUNCH_ADD('v', EVT_ONUSERTYPECHANGE, evtusertype),
+	EVENT_BUNCH_ADD('v', EVT_ONDISCONNECT, evtdisconnect),
+	EVENT_BUNCH_ADD('v', EVT_ONSPAWN, evtonspawn),
+	EVENT_BUNCH_ADD('v', EVT_ONDESPAWN, evtondespawn),
+	EVENT_BUNCH_ADD('b', EVT_ONMESSAGE, evtonmessage),
+	EVENT_BUNCH_ADD('v', EVT_ONHELDBLOCKCHNG, evtheldchange),
+	EVENT_BUNCH_ADD('b', EVT_ONBLOCKPLACE, evtonblockplace),
+	EVENT_BUNCH_ADD('v', EVT_ONCLICK, evtonclick),
+	EVENT_BUNCH_ADD('v', EVT_ONMOVE, evtmove),
+	EVENT_BUNCH_ADD('v', EVT_ONROTATE, evtrotate),
+	EVENT_BUNCH_ADD('v', EVT_ONWEATHER, evtonweather),
+	EVENT_BUNCH_ADD('v', EVT_ONCOLOR, evtoncolor),
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDADDED, evtworldadded),
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDLOADED, evtworldloaded),
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDREMOVED, evtworldremoved),
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDUNLOADED, evtworldunloaded),
+	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg),
+	EVENT_BUNCH_ADD('v', EVT_PRECOMMAND, evtprecommand),
+	EVENT_BUNCH_ADD('v', EVT_PREHANDSHAKEDONE, evtprehandshakedone),
 
 	EVENT_BUNCH_END
 };
