@@ -512,6 +512,8 @@ int luaopen_world(lua_State *L) {
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 	lua_indexedmeta(L, CSLUA_MWORLD, worldmeta);
 
+	lua_addintconst(L, CPE_WMODVAL_NONE);
+
 	lua_addintconst(L, WORLD_COLOR_SKY);
 	lua_addintconst(L, WORLD_COLOR_CLOUD);
 	lua_addintconst(L, WORLD_COLOR_FOG);

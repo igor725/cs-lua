@@ -240,12 +240,31 @@ static void evtworldunloaded(World *obj) {
 	callallworld(obj, "onWorldUnloaded");
 }
 
-static void evtonweather(World *obj) {
-	callallworld(obj, "onWeatherChange");
-}
+static cs_bool evtpreworldenvupdate(preWorldEnvUpdate *obj) {
+	AListField *tmp;
+	List_Iter(tmp, headScript) {
+		LuaScript *script = getscriptptr(tmp);
+		LuaScript_Lock(script);
+		if(LuaScript_GlobalLookup(script, "preWorldEnvUpdate")) {
+			lua_pushworld(script->L, obj->world);
+			lua_pushinteger(script->L, obj->values);
+			lua_pushinteger(script->L, obj->props);
+			lua_pushinteger(script->L, obj->colors);
+			if(LuaScript_Call(script, 4, 1)) {
+				if(!lua_isnil(script->L, -1)) {
+					cs_bool ret = (cs_bool)lua_toboolean(script->L, -1);
+					lua_pop(script->L, 1);
+					return ret;
+				}
+			} else {
+				LuaScript_Unlock(script);
+				return false;
+			}
+		}
+		LuaScript_Unlock(script);
+	}
 
-static void evtoncolor(World *obj) {
-	callallworld(obj, "onColorChange");
+	return true;
 }
 
 static void evtmove(Client *obj) {
@@ -391,8 +410,6 @@ Event_DeclareBunch (events) {
 	EVENT_BUNCH_ADD('v', EVT_ONCLICK, evtonclick),
 	EVENT_BUNCH_ADD('v', EVT_ONMOVE, evtmove),
 	EVENT_BUNCH_ADD('v', EVT_ONROTATE, evtrotate),
-	EVENT_BUNCH_ADD('v', EVT_ONWEATHER, evtonweather),
-	EVENT_BUNCH_ADD('v', EVT_ONCOLOR, evtoncolor),
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDADDED, evtworldadded),
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDLOADED, evtworldloaded),
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDREMOVED, evtworldremoved),
@@ -400,6 +417,7 @@ Event_DeclareBunch (events) {
 	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg),
 	EVENT_BUNCH_ADD('v', EVT_PRECOMMAND, evtprecommand),
 	EVENT_BUNCH_ADD('v', EVT_PREHANDSHAKEDONE, evtprehandshakedone),
+	EVENT_BUNCH_ADD('b', EVT_PREWORLDENVUPDATE, evtpreworldenvupdate),
 
 	EVENT_BUNCH_END
 };
