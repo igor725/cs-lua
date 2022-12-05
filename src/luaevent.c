@@ -232,12 +232,8 @@ static void evtworldremoved(World *obj) {
 	}
 }
 
-static void evtworldloaded(World *obj) {
-	callallworld(obj, "onWorldLoaded");
-}
-
-static void evtworldunloaded(World *obj) {
-	callallworld(obj, "onWorldUnloaded");
+static void evtworldstatus(World *obj) {
+	callallworld(obj, "onWorldStatusChanged");
 }
 
 static cs_bool evtpreworldenvupdate(preWorldEnvUpdate *obj) {
@@ -410,10 +406,9 @@ Event_DeclareBunch (events) {
 	EVENT_BUNCH_ADD('v', EVT_ONCLICK, evtonclick),
 	EVENT_BUNCH_ADD('v', EVT_ONMOVE, evtmove),
 	EVENT_BUNCH_ADD('v', EVT_ONROTATE, evtrotate),
+	EVENT_BUNCH_ADD('v', EVT_ONWORLDSTATUSCHANGE, evtworldstatus),
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDADDED, evtworldadded),
-	EVENT_BUNCH_ADD('v', EVT_ONWORLDLOADED, evtworldloaded),
 	EVENT_BUNCH_ADD('v', EVT_ONWORLDREMOVED, evtworldremoved),
-	EVENT_BUNCH_ADD('v', EVT_ONWORLDUNLOADED, evtworldunloaded),
 	EVENT_BUNCH_ADD('v', EVT_ONPLUGINMESSAGE, evtpluginmsg),
 	EVENT_BUNCH_ADD('v', EVT_PRECOMMAND, evtprecommand),
 	EVENT_BUNCH_ADD('v', EVT_PREHANDSHAKEDONE, evtprehandshakedone),
