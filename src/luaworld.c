@@ -302,10 +302,10 @@ static int meta_poperror(lua_State *L) {
 }
 
 static int meta_update(lua_State *L) {
-	World_FinishEnvUpdate(
+	lua_pushboolean(L, World_FinishEnvUpdate(
 		lua_checkworld(L, 1)
-	);
-	return 0;
+	));
+	return 1;
 }
 
 static int meta_generate(lua_State *L) {
