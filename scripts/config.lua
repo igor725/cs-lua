@@ -3,9 +3,9 @@ function onStart()
 		name = 'mycfg.cfg',
 		items = {
 			{
-				name = 'my-key-i16',
-				type = CONFIG_TYPE_INT16,
-				comment = 'Signed short key',
+				name = 'my-key-int',
+				type = CONFIG_TYPE_INT,
+				comment = 'Signed int key',
 				default = -1
 			},
 			{
@@ -25,5 +25,5 @@ function onStart()
 	mycfg:save(not mycfg:load())
 	print('Config string:', mycfg:get('my-key-str'))
 	print('Config bool:', mycfg:get('my-key-bool'))
-	print('Config short:', mycfg:get('my-key-i16'))
+	print('Config int:', mycfg:get('my-key-int'))
 end

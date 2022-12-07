@@ -19,14 +19,8 @@ static int meta_get(lua_State *L) {
 		case CONFIG_TYPE_BOOL:
 			lua_pushboolean(L, (cs_bool)Config_GetBool(ent));
 			break;
-		case CONFIG_TYPE_INT16:
-			lua_pushinteger(L, (lua_Integer)Config_GetInt16(ent));
-			break;
-		case CONFIG_TYPE_INT32:
-			lua_pushinteger(L, (lua_Integer)Config_GetInt32(ent));
-			break;
-		case CONFIG_TYPE_INT8:
-			lua_pushinteger(L, (lua_Integer)Config_GetInt8(ent));
+		case CONFIG_TYPE_INT:
+			lua_pushinteger(L, (lua_Integer)Config_GetInt(ent));
 			break;
 		case CONFIG_TYPE_STR:
 			lua_pushstring(L, Config_GetStr(ent));
@@ -52,14 +46,8 @@ static int meta_set(lua_State *L) {
 		case CONFIG_TYPE_BOOL:
 			Config_SetBool(ent, (cs_bool)lua_toboolean(L, 3));
 			break;
-		case CONFIG_TYPE_INT16:
-			Config_SetInt16(ent, (cs_int16)lua_tointeger(L, 3));
-			break;
-		case CONFIG_TYPE_INT32:
-			Config_SetInt32(ent, (cs_int32)lua_tointeger(L, 3));
-			break;
-		case CONFIG_TYPE_INT8:
-			Config_SetInt8(ent, (cs_int8)lua_tointeger(L, 3));
+		case CONFIG_TYPE_INT:
+			Config_SetInt(ent, (cs_int32)lua_tointeger(L, 3));
 			break;
 		case CONFIG_TYPE_STR:
 			Config_SetStr(ent, luaL_checkstring(L, 3));
@@ -167,14 +155,8 @@ static int config_new(lua_State *L) {
 				case CONFIG_TYPE_BOOL:
 					Config_SetDefaultBool(ent, (cs_bool)lua_toboolean(L, -1));
 					break;
-				case CONFIG_TYPE_INT16:
-					Config_SetDefaultInt16(ent, (cs_int16)lua_tointeger(L, -1));
-					break;
-				case CONFIG_TYPE_INT32:
-					Config_SetDefaultInt32(ent, (cs_int32)lua_tointeger(L, -1));
-					break;
-				case CONFIG_TYPE_INT8:
-					Config_SetDefaultInt8(ent, (cs_int8)lua_tointeger(L, -1));
+				case CONFIG_TYPE_INT:
+					Config_SetDefaultInt(ent, (cs_int32)lua_tointeger(L, -1));
 					break;
 				case CONFIG_TYPE_STR:
 					Config_SetDefaultStr(ent,
@@ -232,9 +214,7 @@ int luaopen_config(lua_State *L) {
 	lua_addintconst(L, CONFIG_EXTRA_PARSE_END);
 
 	lua_addintconst(L, CONFIG_TYPE_BOOL);
-	lua_addintconst(L, CONFIG_TYPE_INT32);
-	lua_addintconst(L, CONFIG_TYPE_INT16);
-	lua_addintconst(L, CONFIG_TYPE_INT8);
+	lua_addintconst(L, CONFIG_TYPE_INT);
 	lua_addintconst(L, CONFIG_TYPE_STR);
 
 	luaL_newlib(L, configlib);
