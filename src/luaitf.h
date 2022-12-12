@@ -2,7 +2,9 @@
 #define LUAITF_H
 #include <core.h>
 
-#define MAX_LUA_CALLBACKS 64u
+#include "luascript.h"
+#define CSLUA_MAX_CALLBACKS 64u
+#define CSLUA_ITF_NAME "LuaController_v1"
 
 typedef struct _LuaInfo {
 	cs_uint32 id, version;
@@ -12,7 +14,8 @@ typedef struct _LuaInfo {
 
 typedef enum _ELuaEvent {
 	LUAEVENT_ADDSCRIPT,
-	LUAEVENT_REMOVESCRIPT
+	LUAEVENT_REMOVESCRIPT,
+	LUAEVENT_UPDATEINFO
 } ELuaEvent;
 
 typedef enum _ELuaCommand {
@@ -20,7 +23,7 @@ typedef enum _ELuaCommand {
 	LUACOMMAND_UNLOAD
 } ELuaCommand;
 
-typedef void(*LuaEventFunc)(ELuaEvent type, LuaInfo *li);
+typedef void(*LuaEventFunc)(ELuaEvent type, const void *li);
 
 typedef struct _LuaItf {
 	cs_bool(*addCallback)(LuaEventFunc func);
@@ -28,11 +31,11 @@ typedef struct _LuaItf {
 
 	void(*lockScriptList)(void);
 	void(*unlockScriptList)(void);
-	cs_bool(*runScriptCommand)(ELuaCommand cmd, cs_uint32 idx);
+	cs_bool(*runScriptCommand)(ELuaCommand cmd, cs_uint32 id);
 
 	cs_uint32(*requestScriptInfo)(LuaInfo *li, cs_uint32 id);
 	void(*discardScriptInfo)(LuaInfo *li);
 } LuaItf;
 
-void runcallback(ELuaEvent type, LuaScript *li);
+void runcallback(ELuaEvent type, LuaScript *scr);
 #endif

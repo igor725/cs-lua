@@ -122,6 +122,11 @@ EXIT /b 1
 :incfound
 SET LUAPATH=%1
 SET LUAPATH=%LUAPATH:~1,-1%
+IF "%CSLUA_ONLY_INCLUDES%"=="1" (
+	SET INCLUDE=%LUAPATH%!__SUBINC:~1,-1!;..;!INCLUDE!
+	ECHO Lua includes from %LUAPATH% were added to the project
+	EXIT /b 0
+)
 FOR %%a IN (%POSSIBLE_LIBPATHS%) DO (
 	FOR %%b IN (%POSSIBLE_LIBS%) DO (
 		IF EXIST "%1\%%a\%%blib" (

@@ -22,6 +22,7 @@
 #include "luacontact.h"
 #include "luaparticle.h"
 #include "luaserver.h"
+#include "luaitf.h"
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
@@ -133,7 +134,7 @@ LuaScript *lua_getscript(lua_State *L) {
 cs_bool LuaScript_DoMainFile(LuaScript *script) {
 	if(script->unloaded) return false;
 
-	if(luaL_dofile(script->L, script->scrpath)) {
+	if(luaL_dofile(script->L, script->path)) {
 		LuaScript_PrintError(script);
 		return false;
 	}
@@ -184,6 +185,21 @@ static int allowhotreload(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TBOOLEAN);
 	LuaScript *script = lua_getscript(L);
 	script->hotreload = (cs_bool)lua_toboolean(L, 1);
+	runcallback(LUAEVENT_UPDATEINFO, script);
+	return 0;
+}
+
+static int setoptions(lua_State *L) {
+	luaL_checktype(L, 1, LUA_TTABLE);
+	LuaScript *script = lua_getscript(L);
+	if(script->home) Memory_Free((void *)script->home);
+	lua_getfield(L, 1, "home"); luaL_checktype(L, -1, LUA_TSTRING);
+	lua_getfield(L, 1, "version"); luaL_checktype(L, -1, LUA_TNUMBER);
+	lua_getfield(L, 1, "hotreload"); luaL_checktype(L, -1, LUA_TBOOLEAN);
+	script->hotreload = (cs_bool)lua_toboolean(L, -1);
+	script->version = (cs_uint32)lua_tointeger(L, -2);
+	script->home = String_AllocCopy(lua_tostring(L, -3));
+	runcallback(LUAEVENT_UPDATEINFO, script);
 	return 0;
 }
 
@@ -200,8 +216,8 @@ static int ioensure(lua_State *L) {
 
 static int ioscrname(lua_State *L) {
 	LuaScript *script = lua_getscript(L);
-	cs_str ext = String_LastChar(script->scrname, '.');
-	lua_pushlstring(L, script->scrname, ext - script->scrname);
+	cs_str ext = String_LastChar(script->name, '.');
+	lua_pushlstring(L, script->name, ext - script->name);
 	return 1;
 }
 
@@ -271,10 +287,11 @@ LuaScript *LuaScript_Open(cs_str name) {
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
 	if(script) {
-		script->scrpath = String_AllocCopy(path);
-		script->scrname = script->scrpath + offset;
+		script->path = String_AllocCopy(path);
+		script->name = script->path + offset;
 		script->lock = Mutex_Create();
 		script->L = luaL_newstate();
+		script->version = 1;
 		if(!script->L) {
 			LuaScript_Close(script);
 			return NULL;
@@ -290,6 +307,9 @@ LuaScript *LuaScript_Open(cs_str name) {
 
 		lua_pushcfunction(script->L, allowhotreload);
 		lua_setglobal(script->L, "allowHotReload");
+
+		lua_pushcfunction(script->L, setoptions);
+		lua_setglobal(script->L, "setOptions");
 
 		lua_pushcfunction(script->L, mstime);
 		lua_setglobal(script->L, "msTime");
@@ -348,11 +368,11 @@ cs_bool LuaScript_Close(LuaScript *script) {
 	if(script->L) lua_close(script->L);
 #	ifdef CSLUA_PROFILE_MEMORY
 		Log_Info("%s made %u allocs, %u reallocs, %u frees",
-			script->scrname, script->nallocs,
+			script->name, script->nallocs,
 			script->nreallocs, script->nfrees
 		);
 #	endif
-	Memory_Free((void *)script->scrpath);
+	Memory_Free((void *)script->path);
 	Mutex_Free(script->lock);
 	Memory_Free(script);
 	return false;

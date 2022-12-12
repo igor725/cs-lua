@@ -6,10 +6,10 @@
 #include "luascript.h"
 #include "luaitf.h"
 
-LuaEventFunc callbacks[MAX_LUA_CALLBACKS] = {NULL};
+LuaEventFunc callbacks[CSLUA_MAX_CALLBACKS] = {NULL};
 
 static cs_bool addcallback(LuaEventFunc func) {
-	for (cs_uint32 i = 0; i < MAX_LUA_CALLBACKS; i++) {
+	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++) {
 		if (!callbacks[i]) {
 			callbacks[i] = func;
 			return true;
@@ -20,7 +20,7 @@ static cs_bool addcallback(LuaEventFunc func) {
 }
 
 static cs_bool removecallback(LuaEventFunc func) {
-	for (cs_uint32 i = 0; i < MAX_LUA_CALLBACKS; i++) {
+	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++) {
 		if (callbacks[i] == func) {
 			callbacks[i] = NULL;
 			return true;
@@ -50,19 +50,19 @@ static cs_bool runcommand(ELuaCommand cmd, cs_uint32 idx) {(void)idx;
 	return false;
 }
 
-static cs_uint32 reqscrinf(LuaInfo *li, cs_uint32 idx) {
-	if (idx > 0 && idx < MAX_SCRIPTS_COUNT) {
-		LuaScript *script = scripts[idx];
-		li->name = String_AllocCopy(script->scrname);
-		li->hotreload = script->hotreload;
-		li->id = script->id;
-		li->version = 1;
-	} else return 0;
+static cs_uint32 reqscrinf(LuaInfo *li, cs_uint32 id) {
+	if (id >= MAX_SCRIPTS_COUNT) return 0;
+	LuaScript *scr = scripts[id++]; if (!scr) return 0;
+	li->name = String_AllocCopy(scr->name);
+	li->home = scr->home ? String_AllocCopy(scr->home) : NULL;
+	li->hotreload = scr->hotreload;
+	li->version = scr->version;
+	li->id = scr->id;
 
-	for (cs_uint32 i = ++idx; i < MAX_SCRIPTS_COUNT; i++)
-		if (scripts[idx]) return i;
+	for (; id < MAX_SCRIPTS_COUNT; id++)
+		if (scripts[id]) return id;
 
-	return 0;
+	return id;
 }
 
 static void disscrinf(LuaInfo *li) {
@@ -73,19 +73,22 @@ static void disscrinf(LuaInfo *li) {
 
 void runcallback(ELuaEvent type, LuaScript *scr) {
 	LuaInfo li = {
-		.name = String_AllocCopy(scr->scrname),
-		// Заменить первые два NULLа на указатель на домашнюю страницу скрипта, когда она появится
-		.home = NULL ? NULL : NULL,
-		.hotreload = scr->hotreload,
-		.id = scr->id,
-		.version = 1
+		.id = scr->id
 	};
+	cs_bool bli = type == LUAEVENT_ADDSCRIPT || type == LUAEVENT_REMOVESCRIPT;
 
-	for (cs_uint32 i = 0; i < MAX_LUA_CALLBACKS; i++)
-		if (callbacks[i]) callbacks[i](type, &li);
+	if (bli) {
+		li.name = String_AllocCopy(scr->name);
+		li.home = scr->home ? String_AllocCopy(scr->home) : NULL;
+		li.hotreload = scr->hotreload;
+		li.version = scr->version;
+		li.id = scr->id;
+	}
 
-	if (li.name) Memory_Free((void *)li.name);
-	if (li.home) Memory_Free((void *)li.home);
+	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++)
+		if (callbacks[i]) callbacks[i](type, bli ? (void *)&li : (void *)&li.id);
+
+	if (bli) disscrinf(&li);
 }
 
 LuaItf litf = {
@@ -101,7 +104,7 @@ LuaItf litf = {
 };
 
 Plugin_DeclareInterfaces {
-	PLUGIN_IFACE_ADD("LuaController_v1", litf),
+	PLUGIN_IFACE_ADD(CSLUA_ITF_NAME, litf),
 
 	PLUGIN_IFACE_END
 };

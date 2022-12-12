@@ -28,7 +28,7 @@ static cs_uint32 getfreescriptid(void) {
 static LuaScript *getscript(cs_str name) {
 	for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
 		LuaScript *script = scripts[i];
-		if(script && String_CaselessCompare(script->scrname, name)) return script;
+		if(script && String_CaselessCompare(script->name, name)) return script;
 	}
 
 	return NULL;
@@ -77,7 +77,6 @@ static cs_bool LuaReload(LuaScript *script) {
 	}
 
 	LuaScript_DoMainFile(script);
-	runcallback(LUAEVENT_ADDSCRIPT, script);
 	LuaScript_Unlock(script);
 	return true;
 }
@@ -132,7 +131,7 @@ COMMAND_FUNC(Lua) {
 
 				LuaScript_Lock(script);
 				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
-				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%.32s&f, &a%dKb&f used", idx, script->scrname, usage);
+				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%.32s&f, &a%dKb&f used", idx, script->name, usage);
 				LuaScript_Unlock(script);
 			}
 

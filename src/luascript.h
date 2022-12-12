@@ -12,11 +12,10 @@
 #include <log.h>
 
 typedef struct LuaScript {
-	cs_uint32 id;
+	cs_uint32 id, version;
 	cs_bool hotreload;
 	cs_bool unloaded;
-	cs_str scrname;
-	cs_str scrpath;
+	cs_str name, path, home;
 	lua_State *L;
 	Mutex *lock;
 
@@ -121,7 +120,7 @@ typedef struct LuaScript {
 #define lua_addintconst(L, n) (lua_pushinteger(L, n), lua_setglobal(L, #n))
 #define LuaScript_Lock(p) Mutex_Lock((p)->lock)
 #define LuaScript_Unlock(p) Mutex_Unlock((p)->lock)
-#define LuaScript_PrintError(p) Log_Error("Script \"%s\" got an error: %s", (p)->scrname, lua_tostring((p)->L, -1))
+#define LuaScript_PrintError(p) Log_Error("Script \"%s\" got an error: %s", (p)->name, lua_tostring((p)->L, -1))
 
 int lua_checktabfield(lua_State *L, int idx, const char *fname, int ftype);
 int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta);
