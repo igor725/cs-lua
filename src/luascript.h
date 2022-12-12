@@ -12,6 +12,7 @@
 #include <log.h>
 
 typedef struct LuaScript {
+	cs_uint32 id;
 	cs_bool hotreload;
 	cs_bool unloaded;
 	cs_str scrname;

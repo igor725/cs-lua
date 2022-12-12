@@ -1,11 +1,22 @@
 #ifndef CSLUAMAIN_H
 #define CSLUAMAIN_H
-#include <list.h>
+#include <core.h>
+#include <platform.h>
 #include "luascript.h"
 
-extern AListField *headScript;
+#define MAX_SCRIPTS_COUNT 128u
+extern LuaScript *scripts[MAX_SCRIPTS_COUNT];
+extern Mutex *listMutex;
 
-INL static LuaScript *getscriptptr(AListField *field) {
-	return (LuaScript *)AList_GetValue(field).ptr;
-}
+#define LuaScriptList_Iter(body) \
+Mutex_Lock(listMutex); \
+for (cs_uint32 _si = 0; _si < MAX_SCRIPTS_COUNT; _si++) { \
+	LuaScript *script = scripts[_si]; \
+	if (!script) continue; \
+	##body \
+} \
+Mutex_Unlock(listMutex);
+
+#define LuaScriptList_RemoveCurrent() \
+scripts[_si] = NULL
 #endif

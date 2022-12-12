@@ -1,35 +1,60 @@
 #include <core.h>
-#include <list.h>
 #include <log.h>
 #include <str.h>
 #include <command.h>
 #include <plugin.h>
 #include <pager.h>
+
 #include "luamain.h"
+#include "luaitf.h"
 #include "luascript.h"
 #include "luaevent.h"
 
-AListField *headScript = NULL;
+LuaScript *scripts[MAX_SCRIPTS_COUNT] = {NULL};
+Mutex *listMutex = NULL;
 
 Plugin_SetVersion(1);
 #if PLUGIN_API_NUM > 1
 Plugin_SetURL("https://github.com/igor725/cs-lua");
 #endif
 
+static cs_uint32 getfreescriptid(void) {
+	for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++)
+		if (scripts[i] == NULL) return i;
+
+	return (cs_uint32)-1;
+}
+
 static LuaScript *getscript(cs_str name) {
-	AListField *tmp;
-	List_Iter(tmp, headScript) {
-		LuaScript *script = getscriptptr(tmp);
-		if(String_CaselessCompare(script->scrname, name)) return script;
+	for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
+		LuaScript *script = scripts[i];
+		if(script && String_CaselessCompare(script->scrname, name)) return script;
 	}
 
 	return NULL;
 }
 
 static LuaScript *LuaLoad(cs_str name) {
+	Mutex_Lock(listMutex);
+	cs_uint32 id = getfreescriptid();
+	if (id == -1) {
+		Log_Error("Failed to allocate id for script, too many scripts loaded already");
+		Mutex_Unlock(listMutex);
+		return NULL;
+	}
+
 	LuaScript *script = LuaScript_Open(name);
-	if(script) AList_AddField(&headScript, script);
-	return script;
+	if(script) {
+		script->id = id;
+		scripts[id] = script;
+		runcallback(LUAEVENT_ADDSCRIPT, script);
+		Mutex_Unlock(listMutex);
+		return script;
+	}
+
+	Log_Error("Failed to load specified script");
+	Mutex_Unlock(listMutex);
+	return NULL;
 }
 
 static cs_bool LuaReload(LuaScript *script) {
@@ -91,18 +116,18 @@ COMMAND_FUNC(Lua) {
 	cs_char temparg1[64], temparg2[64];
 	if(COMMAND_GETARG(temparg1, 64, 0)) {
 		if(String_CaselessCompare(temparg1, "list")) {
-			cs_int32 idx = 0, startPage = 1;
+			cs_uint32 idx = 0, startPage = 1;
 			if(COMMAND_GETARG(temparg2, 8, 1))
 				startPage = String_ToInt(temparg2);
 			Pager pager = Pager_Init(startPage, PAGER_DEFAULT_PAGELEN);
 			COMMAND_APPEND("&eList of loaded Lua scripts&f:");
 
-			AListField *tmp;
-			List_Iter(tmp, headScript) {
+			for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
+				LuaScript *script = scripts[i];
+				if (!script) continue;
 				idx += 1;
 				Pager_Step(pager);
 
-				LuaScript *script = getscriptptr(tmp);
 				LuaScript_Lock(script);
 				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
 				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%.32s&f, &a%dKb&f used", idx, script->scrname, usage);
@@ -187,27 +212,19 @@ static cs_bool checkscrname(cs_str name) {
 	return true;
 }
 
-static void loadscript(cs_str name) {
-	LuaScript *script = LuaScript_Open(name);
-	if(!script) {
-		Log_Error("Failed to load script \"%s\"", name);
-		return;
-	}
-	AList_AddField(&headScript, script);
-}
-
 cs_bool Plugin_Load(void) {
 	DirIter sIter = {0};
 	Directory_Ensure(CSLUA_PATH_LDATA); // Папка с данными для каждого скрипта
 	Directory_Ensure(CSLUA_PATH_LROOT); // Папка для библиотек, подключаемых скриптами
 	Directory_Ensure(CSLUA_PATH_CROOT); // Папка для C модулей, подключаемых скриптами
 	Directory_Ensure(CSLUA_PATH_SCRIPTS); // Сами скрипты, загружаются автоматически
+	listMutex = Mutex_Create();
 
 	if(Iter_Init(&sIter, CSLUA_PATH_SCRIPTS, "lua")) { // Проходимся по директории зависящей от версии Lua
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
 			if(!checkscrname(sIter.cfile)) continue;
-			loadscript(sIter.cfile);
+			LuaLoad(sIter.cfile);
 		} while(Iter_Next(&sIter));
 	}
 	Iter_Close(&sIter);
@@ -222,7 +239,7 @@ cs_bool Plugin_Load(void) {
 				continue;
 			}
 			if(!checkscrname(sIter.cfile)) continue;
-			loadscript(sIter.cfile);
+			LuaLoad(sIter.cfile);
 		} while(Iter_Next(&sIter));
 	}
 	Iter_Close(&sIter);
@@ -235,16 +252,18 @@ cs_bool Plugin_Unload(cs_bool force) {
 	(void)force;
 	COMMAND_REMOVE(Lua);
 	LuaEvent_Unregister();
+	if (listMutex) Mutex_Free(listMutex);
 
 #	ifdef CSLUA_USE_SURVIVAL
 		if(SurvInterface)
 			Memory_Free(SurvInterface);
 #	endif
 
-	while(headScript) {
-		LuaScript *script = AList_GetValue(headScript).ptr;
+	for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
+		LuaScript *script = scripts[i];
+		if (!script) continue;
 		LuaScript_Lock(script);
-		AList_Remove(&headScript, headScript);
+		scripts[i] = NULL;
 		LuaUnload(script, true);
 		LuaScript_Unlock(script);
 		LuaScript_Close(script);
