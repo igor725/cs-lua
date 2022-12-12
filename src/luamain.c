@@ -77,6 +77,7 @@ static cs_bool LuaReload(LuaScript *script) {
 	}
 
 	LuaScript_DoMainFile(script);
+	runcallback(LUAEVENT_ADDSCRIPT, script);
 	LuaScript_Unlock(script);
 	return true;
 }
@@ -106,6 +107,7 @@ static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 
 	unlok:
 	script->unloaded = true;
+	runcallback(LUAEVENT_REMOVESCRIPT, script);
 	LuaScript_Unlock(script);
 	return true;
 }
