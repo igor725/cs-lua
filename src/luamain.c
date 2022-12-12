@@ -37,7 +37,7 @@ static LuaScript *getscript(cs_str name) {
 static LuaScript *LuaLoad(cs_str name) {
 	Mutex_Lock(listMutex);
 	cs_uint32 id = getfreescriptid();
-	if (id == -1) {
+	if (id == (cs_uint32)-1) {
 		Log_Error("Failed to allocate id for script, too many scripts loaded already");
 		Mutex_Unlock(listMutex);
 		return NULL;

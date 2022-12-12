@@ -12,8 +12,8 @@ extern Mutex *listMutex;
 Mutex_Lock(listMutex); \
 for (cs_uint32 _si = 0; _si < MAX_SCRIPTS_COUNT; _si++) { \
 	LuaScript *script = scripts[_si]; \
-	if (!script) continue; \
-	##body \
+	if (!script) { continue; } \
+	body \
 } \
 Mutex_Unlock(listMutex);
 
