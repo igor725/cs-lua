@@ -513,6 +513,29 @@ int luaopen_world(lua_State *L) {
 	lua_indexedmeta(L, CSLUA_MWORLD, worldmeta);
 
 	lua_addintconst(L, CPE_WMODVAL_NONE);
+	lua_addintconst(L, CPE_WMODVAL_COLORS);
+	lua_addintconst(L, CPE_WMODVAL_PROPS);
+	lua_addintconst(L, CPE_WMODVAL_TEXPACK);
+	lua_addintconst(L, CPE_WMODVAL_WEATHER);
+
+	lua_addintconst(L, CPE_WMODCOL_NONE);
+	lua_addintconst(L, CPE_WMODCOL_SKY);
+	lua_addintconst(L, CPE_WMODCOL_CLOUD);
+	lua_addintconst(L, CPE_WMODCOL_FOG);
+	lua_addintconst(L, CPE_WMODCOL_AMBIENT);
+	lua_addintconst(L, CPE_WMODCOL_DIFFUSE);
+	lua_addintconst(L, CPE_WMODCOL_SKYBOX);
+
+	lua_addintconst(L, CPE_WMODPROP_NONE);
+	lua_addintconst(L, CPE_WMODPROP_EDGEID);
+	lua_addintconst(L, CPE_WMODPROP_EDGEHEIGHT);
+	lua_addintconst(L, CPE_WMODPROP_CLOUDSHEIGHT);
+	lua_addintconst(L, CPE_WMODPROP_FOGDISTANCE);
+	lua_addintconst(L, CPE_WMODPROP_CLOUDSSPEED);
+	lua_addintconst(L, CPE_WMODPROP_WEATHERSPEED);
+	lua_addintconst(L, CPE_WMODPROP_WEATHERFADE);
+	lua_addintconst(L, CPE_WMODPROP_EXPONENTIALFOG);
+	lua_addintconst(L, CPE_WMODPROP_MAPEDGEHEIGHT);
 
 	lua_addintconst(L, WORLD_COLOR_SKY);
 	lua_addintconst(L, WORLD_COLOR_CLOUD);
