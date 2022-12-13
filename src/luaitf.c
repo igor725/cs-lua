@@ -75,7 +75,7 @@ void runcallback(ELuaEvent type, LuaScript *scr) {
 	LuaInfo li = {
 		.id = scr->id
 	};
-	cs_bool bli = type == LUAEVENT_ADDSCRIPT || type == LUAEVENT_REMOVESCRIPT;
+	cs_bool bli = type == LUAEVENT_ADDSCRIPT || type == LUAEVENT_UPDATEINFO;
 
 	if (bli) {
 		li.name = String_AllocCopy(scr->name);
