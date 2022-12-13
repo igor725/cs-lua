@@ -189,7 +189,7 @@ static int allowhotreload(lua_State *L) {
 	return 0;
 }
 
-static int setoptions(lua_State *L) {
+static int setinfo(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	LuaScript *script = lua_getscript(L);
 	if(script->home) Memory_Free((void *)script->home);
@@ -308,8 +308,8 @@ LuaScript *LuaScript_Open(cs_str name) {
 		lua_pushcfunction(script->L, allowhotreload);
 		lua_setglobal(script->L, "allowHotReload");
 
-		lua_pushcfunction(script->L, setoptions);
-		lua_setglobal(script->L, "setOptions");
+		lua_pushcfunction(script->L, setinfo);
+		lua_setglobal(script->L, "setInfo");
 
 		lua_pushcfunction(script->L, mstime);
 		lua_setglobal(script->L, "msTime");
