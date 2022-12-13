@@ -192,10 +192,16 @@ static int allowhotreload(lua_State *L) {
 static int setinfo(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	LuaScript *script = lua_getscript(L);
+	lua_getfield(L, 1, "home");
+	if (lua_type(L, -1) != LUA_TSTRING)
+		luaL_error(L, "Field \"home\" must be a string");
+	lua_getfield(L, 1, "version");
+	if (lua_type(L, -1) != LUA_TNUMBER)
+		luaL_error(L, "Field \"version\" must be a number");
+	lua_getfield(L, 1, "hotreload");
+	if (lua_type(L, -1) != LUA_TBOOLEAN)
+		luaL_error(L, "Field \"hotreload\" must be a boolean");
 	if(script->home) Memory_Free((void *)script->home);
-	lua_getfield(L, 1, "home"); luaL_checktype(L, -1, LUA_TSTRING);
-	lua_getfield(L, 1, "version"); luaL_checktype(L, -1, LUA_TNUMBER);
-	lua_getfield(L, 1, "hotreload"); luaL_checktype(L, -1, LUA_TBOOLEAN);
 	script->hotreload = (cs_bool)lua_toboolean(L, -1);
 	script->version = (cs_uint32)lua_tointeger(L, -2);
 	script->home = String_AllocCopy(lua_tostring(L, -3));
