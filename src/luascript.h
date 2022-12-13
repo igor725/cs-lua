@@ -15,6 +15,7 @@ typedef struct LuaScript {
 	cs_uint32 id, version;
 	cs_bool hotreload;
 	cs_bool unloaded;
+	cs_bool infoupd;
 	cs_str name, path, home;
 	lua_State *L;
 	Mutex *lock;
@@ -127,7 +128,7 @@ int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *me
 void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths);
 LuaScript *lua_getscript(lua_State *L);
 
-LuaScript *LuaScript_Open(cs_str name);
+LuaScript *LuaScript_Open(cs_str name, cs_uint32 id);
 cs_bool LuaScript_DoMainFile(LuaScript *script);
 cs_bool LuaScript_GlobalLookup(LuaScript *plugin, cs_str key);
 cs_bool LuaScript_RegistryLookup(LuaScript *plugin, cs_str regtab, cs_str key);

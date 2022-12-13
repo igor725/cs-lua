@@ -75,20 +75,18 @@ void runcallback(ELuaEvent type, LuaScript *scr) {
 	LuaInfo li = {
 		.id = scr->id
 	};
-	cs_bool bli = type == LUAEVENT_ADDSCRIPT || type == LUAEVENT_UPDATEINFO;
 
-	if (bli) {
+	if (type == LUAEVENT_UPDATESCRIPT) {
 		li.name = String_AllocCopy(scr->name);
 		li.home = scr->home ? String_AllocCopy(scr->home) : NULL;
 		li.hotreload = scr->hotreload;
 		li.version = scr->version;
-		li.id = scr->id;
 	}
 
 	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++)
-		if (callbacks[i]) callbacks[i](type, bli ? (void *)&li : (void *)&li.id);
+		if (callbacks[i]) callbacks[i](type, type == LUAEVENT_UPDATESCRIPT ? (void *)&li : (void *)&li.id);
 
-	if (bli) disscrinf(&li);
+	if (type == LUAEVENT_UPDATESCRIPT) disscrinf(&li);
 }
 
 LuaItf litf = {

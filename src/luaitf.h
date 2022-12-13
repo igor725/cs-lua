@@ -13,9 +13,8 @@ typedef struct _LuaInfo {
 } LuaInfo;
 
 typedef enum _ELuaEvent {
-	LUAEVENT_ADDSCRIPT,
-	LUAEVENT_REMOVESCRIPT,
-	LUAEVENT_UPDATEINFO
+	LUAEVENT_UPDATESCRIPT,
+	LUAEVENT_REMOVESCRIPT
 } ELuaEvent;
 
 typedef enum _ELuaCommand {

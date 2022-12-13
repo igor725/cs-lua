@@ -185,7 +185,6 @@ static int allowhotreload(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TBOOLEAN);
 	LuaScript *script = lua_getscript(L);
 	script->hotreload = (cs_bool)lua_toboolean(L, 1);
-	runcallback(LUAEVENT_UPDATEINFO, script);
 	return 0;
 }
 
@@ -205,7 +204,8 @@ static int setinfo(lua_State *L) {
 	script->hotreload = (cs_bool)lua_toboolean(L, -1);
 	script->version = (cs_uint32)lua_tointeger(L, -2);
 	script->home = String_AllocCopy(lua_tostring(L, -3));
-	runcallback(LUAEVENT_UPDATEINFO, script);
+	runcallback(LUAEVENT_UPDATESCRIPT, script);
+	script->infoupd = true;
 	return 0;
 }
 
@@ -276,7 +276,7 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize) {
 }
 #endif
 
-LuaScript *LuaScript_Open(cs_str name) {
+LuaScript *LuaScript_Open(cs_str name, cs_uint32 id) {
 	if(!String_IsSafe(name)) return NULL;
 	// TODO: Проверять, успешно и полностью ли собрались пути до файлов
 
@@ -293,6 +293,7 @@ LuaScript *LuaScript_Open(cs_str name) {
 	LuaScript *script = Memory_TryAlloc(1, sizeof(LuaScript));
 
 	if(script) {
+		script->id = id;
 		script->path = String_AllocCopy(path);
 		script->name = script->path + offset;
 		script->lock = Mutex_Create();

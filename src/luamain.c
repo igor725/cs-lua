@@ -43,11 +43,11 @@ static LuaScript *LuaLoad(cs_str name) {
 		return NULL;
 	}
 
-	LuaScript *script = LuaScript_Open(name);
+	LuaScript *script = LuaScript_Open(name, id);
 	if(script) {
-		script->id = id;
 		scripts[id] = script;
-		runcallback(LUAEVENT_ADDSCRIPT, script);
+		if (!script->infoupd)
+			runcallback(LUAEVENT_UPDATESCRIPT, script);
 		Mutex_Unlock(listMutex);
 		return script;
 	}
