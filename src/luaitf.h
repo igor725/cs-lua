@@ -19,7 +19,8 @@ typedef enum _ELuaEvent {
 
 typedef enum _ELuaCommand {
 	LUACOMMAND_RELOAD,
-	LUACOMMAND_UNLOAD
+	LUACOMMAND_UNLOAD,
+	LUACOMMAND_FORCEUNLOAD
 } ELuaCommand;
 
 typedef void(*LuaEventFunc)(ELuaEvent type, const void *li);

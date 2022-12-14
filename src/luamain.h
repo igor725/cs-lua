@@ -19,4 +19,7 @@ Mutex_Unlock(listMutex);
 
 #define LuaScriptList_RemoveCurrent() \
 scripts[_si] = NULL
+
+cs_bool LuaReload(LuaScript *script);
+cs_bool LuaUnload(LuaScript *script, cs_bool force);
 #endif

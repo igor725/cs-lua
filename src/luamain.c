@@ -57,7 +57,7 @@ static LuaScript *LuaLoad(cs_str name) {
 	return NULL;
 }
 
-static cs_bool LuaReload(LuaScript *script) {
+cs_bool LuaReload(LuaScript *script) {
 	LuaScript_Lock(script);
 	if(script->unloaded) {
 		LuaScript_Unlock(script);
@@ -81,7 +81,7 @@ static cs_bool LuaReload(LuaScript *script) {
 	return true;
 }
 
-static cs_bool LuaUnload(LuaScript *script, cs_bool force) {
+cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 	if(script->unloaded) return false;
 
 	LuaScript_Lock(script);

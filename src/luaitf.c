@@ -39,12 +39,16 @@ static void unlocklist(void) {
 }
 
 static cs_bool runcommand(ELuaCommand cmd, cs_uint32 idx) {(void)idx;
-	// TODO: Выполнялка команд
+	LuaScript *script;
+	if (idx >= MAX_SCRIPTS_COUNT || (script = scripts[idx]) == NULL)
+		return false;
+
 	switch (cmd) {
 		case LUACOMMAND_RELOAD:
-			break;
+			return LuaReload(script);
 		case LUACOMMAND_UNLOAD:
-			break;
+		case LUACOMMAND_FORCEUNLOAD:
+			return LuaUnload(script, cmd == LUACOMMAND_FORCEUNLOAD);
 	}
 
 	return false;
