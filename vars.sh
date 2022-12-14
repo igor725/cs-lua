@@ -9,6 +9,9 @@ if [ $LUA_FROM_PKG -eq 1 ]; then
 	LJNAME="luajit >= 2.0"
 	LNAME="lua >= 5.1"
 	PKCFG=$MACH-pkg-config
+	if ! command -v $PKCFG 2> /dev/null; then
+		PKCFG=pkg-config
+	fi
 
 	if $PKCFG --exists $LJNAME; then
 		LUA_LIB=$($PKCFG --libs $LJNAME)
@@ -38,6 +41,11 @@ else
 			make HOST_CC="$HOSTCC" CROSS="$MACH-"
 		else
 			make CC="$CC"
+		fi
+		if [ $? -ne 0 ]; then
+			popd
+			echo "Failed to build LuaJIT"
+			exit 1
 		fi
 		popd
 	fi
