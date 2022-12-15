@@ -6,29 +6,22 @@ SET POSSIBLE_PATHS=
 IF NOT "%PLUGIN_ARGS%"=="" (
 	FOR %%a IN (%PLUGIN_ARGS%) DO (
 		IF "%%a"=="mem" (
-			SET CFLAGS=!CFLAGS! /DCSLUA_PROFILE_MEMORY
-		) ELSE (
-			SET PREFER_LVERSION=%%a
+			IF NOT "%CSLUA_ONLY_INCLUDES%"=="1" (
+				SET CFLAGS=!CFLAGS! /DCSLUA_PROFILE_MEMORY
+			)
+		) ELSE IF "%%a"=="jit2" (
+			GOTO :lj2
+		) ELSE IF "%%a"=="jit" (
+			GOTO :lj
+		) ELSE IF "%%a"=="51" (
+			GOTO :l51
+		) ELSE IF "%%a"=="52" (
+			GOTO :l52
+		) ELSE IF "%%a"=="53" (
+			GOTO :l53
+		) ELSE IF "%%a"=="54" (
+			GOTO :l54
 		)
-	)
-)
-
-IF NOT "!PREFER_LVERSION!"=="" (
-	IF "!PREFER_LVERSION!"=="jit2" (
-		GOTO :lj2
-	) ELSE IF "!PREFER_LVERSION!"=="jit" (
-		GOTO :lj
-	) ELSE IF "!PREFER_LVERSION!"=="51" (
-		GOTO :l51
-	) ELSE IF "!PREFER_LVERSION!"=="52" (
-		GOTO :l52
-	) ELSE IF "!PREFER_LVERSION!"=="53" (
-		GOTO :l53
-	) ELSE IF "!PREFER_LVERSION!"=="54" (
-		GOTO :l54
-	) ELSE (
-		ECHO Invalid Lua version specified
-		EXIT /b 1
 	)
 )
 
