@@ -55,13 +55,15 @@ static cs_bool runcommand(ELuaCommand cmd, cs_uint32 idx) {(void)idx;
 }
 
 static cs_uint32 reqscrinf(LuaInfo *li, cs_uint32 id) {
+	LuaScript *ptr = NULL;
+	while (!ptr && id < MAX_SCRIPTS_COUNT)
+		ptr = scripts[id++];
 	if (id >= MAX_SCRIPTS_COUNT) return 0;
-	LuaScript *scr = scripts[id++]; if (!scr) return 0;
-	li->name = String_AllocCopy(scr->name);
-	li->home = scr->home ? String_AllocCopy(scr->home) : NULL;
-	li->hotreload = scr->hotreload;
-	li->version = scr->version;
-	li->id = scr->id;
+	li->name = String_AllocCopy(ptr->name);
+	li->home = ptr->home ? String_AllocCopy(ptr->home) : NULL;
+	li->hotreload = ptr->hotreload;
+	li->version = ptr->version;
+	li->id = ptr->id;
 
 	for (; id < MAX_SCRIPTS_COUNT; id++)
 		if (scripts[id]) return id;
