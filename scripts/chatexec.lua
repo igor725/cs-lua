@@ -1,12 +1,17 @@
-allowHotReload(true)
-LUA_COMMAND = 'LuaRun'
-LUA_COMMAND_DESC = 'Execute Lua script'
-LUA_COMMAND_EMPTY = '&cAttempt to execute an empty string'
-LUA_COMMAND_EXEC_WARN = '%s executed lua script: %s'
-LUA_COMMAND_EXEC_RTERR = '&cRuntime error: %s'
-LUA_COMMAND_EXEC_SUCC = '&aScript executed successfully'
-LUA_COMMAND_EXEC_SYNT = '&cSyntax error: %s'
-LUA_COMMAND_EXEC_OUT = '&aOutput&f: '
+setInfo {
+	version = 1,
+	hutreload = true,
+	home = 'https://github.com/igor725/cs-lua/blob/main/scripts/chatexec.lua'
+}
+
+local LUA_COMMAND = 'LuaRun'
+local LUA_COMMAND_DESC = 'Execute Lua script'
+local LUA_COMMAND_EMPTY = '&cAttempt to execute an empty string'
+local LUA_COMMAND_EXEC_WARN = '%s executed lua script: %s'
+local LUA_COMMAND_EXEC_RTERR = '&cRuntime error: %s'
+local LUA_COMMAND_EXEC_SUCC = '&aScript executed successfully'
+local LUA_COMMAND_EXEC_SYNT = '&cSyntax error: %s'
+local LUA_COMMAND_EXEC_OUT = '&aOutput&f: '
 
 local executor = load
 if _VERSION == 'Lua 5.1' and not jit then
@@ -59,7 +64,7 @@ function onStart()
 	command.add(LUA_COMMAND, LUA_COMMAND_DESC, CMDF_OP, runScript)
 end
 
-function onMessage(cl, type, text)
+function onMessage(cl, _, text)
 	if not cl:isop() then
 		return true
 	end
