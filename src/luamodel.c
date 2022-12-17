@@ -3,11 +3,11 @@
 #include <cpe.h>
 #include <str.h>
 
-CPEModel *lua_checkmodel(lua_State *L, int idx) {
+CPEModel *lua_checkmodel(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MMODEL);
 }
 
-static int model_undefine(lua_State *L) {
+static int model_undefine(scr_Context *L) {
 	lua_pushboolean(L, CPE_UndefineModelPtr(
 		lua_checkmodel(L, 1)
 	));
@@ -20,7 +20,7 @@ static const luaL_Reg modelmeta[] = {
 	{NULL, NULL}
 };
 
-static void readModelPart(lua_State *L, CPEModelPart *part) {
+static void readModelPart(scr_Context *L, CPEModelPart *part) {
 	if(lua_checktabfieldud(L, -1, "minCoords", CSLUA_MVECTOR))
 		part->minCoords = *lua_checkfloatvector(L, -1);
 	if(lua_checktabfieldud(L, -2, "maxCoords", CSLUA_MVECTOR))
@@ -71,7 +71,7 @@ static void readModelPart(lua_State *L, CPEModelPart *part) {
 	lua_pop(L, 7);
 }
 
-static void parseModelParts(lua_State *L, CPEModel *mdl) {
+static void parseModelParts(scr_Context *L, CPEModel *mdl) {
 	lua_checkstack(L, (int)mdl->partsCount);
 	for(cs_byte i = 0; i < mdl->partsCount; i++) {
 		lua_rawgeti(L, -2 - i, i + 1);
@@ -86,7 +86,7 @@ static void parseModelParts(lua_State *L, CPEModel *mdl) {
 	lua_pop(L, mdl->partsCount);
 }
 
-static int model_create(lua_State *L) {
+static int model_create(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	lua_checkstack(L, 10);
 	CPEModel *mdl = NULL;
@@ -124,7 +124,7 @@ static int model_create(lua_State *L) {
 	return 1;
 }
 
-static int model_define(lua_State *L) {
+static int model_define(scr_Context *L) {
 	lua_pushboolean(L, CPE_DefineModel(
 		(cs_byte)luaL_checkinteger(L, 1),
 		lua_checkmodel(L, 2)
@@ -132,7 +132,7 @@ static int model_define(lua_State *L) {
 	return 1;
 }
 
-static int model_freeid(lua_State *L) {
+static int model_freeid(scr_Context *L) {
 	cs_int16 id = -1;
 	for(cs_byte i = 0; i < CPE_MAX_MODELS; i++) {
 		if(!CPE_IsModelDefined(i)) {
@@ -153,7 +153,7 @@ static const luaL_Reg modellib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_model(lua_State *L) {
+int luaopen_model(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MMODEL, modelmeta);
 	luaL_newlib(L, modellib);
 	return 1;

@@ -5,11 +5,9 @@
 #	define LUA_LIB
 #endif
 #include <core.h>
-#include <lauxlib.h>
-#include <lua.h>
-#include <lualib.h>
 #include <platform.h>
 #include <log.h>
+#include "scripting.h"
 
 typedef struct LuaScript {
 	cs_uint32 id, version;
@@ -17,7 +15,7 @@ typedef struct LuaScript {
 	cs_bool unloaded;
 	cs_bool infoupd;
 	cs_str name, path, home;
-	lua_State *L;
+	scr_Context *L;
 	Mutex *lock;
 
 #	ifdef CSLUA_PROFILE_MEMORY
@@ -72,9 +70,9 @@ typedef struct LuaScript {
 	lua_createtable(L, 0, sizeof(l)/sizeof((l)[0]) - 1)
 #	define luaL_newlib(L, l)	(luaL_newlibtable(L, l), luaL_setfuncs(L, l, 0))
 
-	void  luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup);
-	void *luaL_testudata(lua_State *L, int ud, const char *tname);
-	void  luaL_setmetatable(lua_State *L, const char *tname);
+	void  luaL_setfuncs(scr_Context *L, const luaL_Reg *l, int nup);
+	void *luaL_testudata(scr_Context *L, int ud, const char *tname);
+	void  luaL_setmetatable(scr_Context *L, const char *tname);
 #else // Судя по всему, мы компилимся под JITом
 #	include "luajit.h"
 #	define CSLUA_HAS_JIT
@@ -123,10 +121,10 @@ typedef struct LuaScript {
 #define LuaScript_Unlock(p) Mutex_Unlock((p)->lock)
 #define LuaScript_PrintError(p) Log_Error("Script \"%s\" got an error: %s", (p)->name, lua_tostring((p)->L, -1))
 
-int lua_checktabfield(lua_State *L, int idx, const char *fname, int ftype);
-int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta);
-void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths);
-LuaScript *lua_getscript(lua_State *L);
+int lua_checktabfield(scr_Context *L, int idx, const char *fname, int ftype);
+int lua_checktabfieldud(scr_Context *L, int idx, const char *fname, const char *meta);
+void lua_indexedmeta(scr_Context *L, const char *meta, const luaL_Reg *meths);
+LuaScript *lua_getscript(scr_Context *L);
 
 LuaScript *LuaScript_Open(cs_str name, cs_uint32 id);
 cs_bool LuaScript_DoMainFile(LuaScript *script);

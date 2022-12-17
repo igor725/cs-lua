@@ -1,11 +1,11 @@
 #ifndef CSLUAWORLD_H
 #define CSLUAWORLD_H
 #include <types/world.h>
-#include <lua.h>
+#include "scripting.h"
 
-World *lua_checkworld(lua_State *L, int idx);
-World *lua_toworld(lua_State *L, int idx);
-void lua_pushworld(lua_State *L, World *world);
-void lua_clearworld(lua_State *L, World *world);
-int luaopen_world(lua_State *L);
+World *lua_checkworld(scr_Context *L, int idx);
+World *lua_toworld(scr_Context *L, int idx);
+void lua_pushworld(scr_Context *L, World *world);
+void lua_clearworld(scr_Context *L, World *world);
+int luaopen_world(scr_Context *L);
 #endif

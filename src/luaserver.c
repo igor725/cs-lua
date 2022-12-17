@@ -4,18 +4,18 @@
 #include "luascript.h"
 #include "luaconfig.h"
 
-static int server_uptime(lua_State *L) {
+static int server_uptime(scr_Context *L) {
 	lua_pushinteger(L, Time_GetMSec() - Server_StartTime);
 	return 1;
 }
 
-static int server_stop(lua_State *L) {
+static int server_stop(scr_Context *L) {
 	(void)L;
 	Server_Active = false;
 	return 0;
 }
 
-static int server_info(lua_State *L) {
+static int server_info(scr_Context *L) {
 	ServerInfo si;
 	if(Server_GetInfo(&si, sizeof(si))) {
 		lua_createtable(L, 0, 3);
@@ -39,7 +39,7 @@ static const luaL_Reg serverlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_server(lua_State *L) {
+int luaopen_server(scr_Context *L) {
 	lua_addintconst(L, SERVERINFO_FLAG_DEBUG);
 	lua_addintconst(L, SERVERINFO_FLAG_WININET);
 	lua_addintconst(L, SERVERINFO_FLAG_LIBCURL);

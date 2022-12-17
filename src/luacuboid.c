@@ -13,12 +13,12 @@ typedef struct _LuaCuboid {
 	CPECuboid *cub;
 } LuaCuboid;
 
-static void setcube(lua_State *L, LuaCuboid *luacub) {
+static void setcube(scr_Context *L, LuaCuboid *luacub) {
 	lua_pushvalue(L, -4);
 	lua_rawseti(L, -2, Cuboid_GetID(luacub->cub));
 }
 
-void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
+void lua_newcubref(scr_Context *L, Client *client, CPECuboid *cub) {
 	if(cub == NULL) {
 		lua_pushnil(L);
 		return;
@@ -53,7 +53,7 @@ void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub) {
 	lua_pop(L, 3); // Убираем из стека лишнего клиента и таблицы
 }
 
-void lua_clearcuboids(lua_State *L, Client *client) {
+void lua_clearcuboids(scr_Context *L, Client *client) {
 	lua_pushclient(L, client); // Не хочу два раза вызвывать эту довольно жирную функцию
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 	lua_pushvalue(L, -2);
@@ -86,19 +86,19 @@ void lua_clearcuboids(lua_State *L, Client *client) {
 	lua_pop(L, 3); // Выкидываем из стека клиента и две таблицы
 }
 
-static LuaCuboid *lua_checkcuboid(lua_State *L, int idx) {
+static LuaCuboid *lua_checkcuboid(scr_Context *L, int idx) {
 	LuaCuboid *luacub = luaL_checkudata(L, idx, CSLUA_MCUBOID);
 	luaL_argcheck(L, !luacub->released, 1, "Cuboid removed");
 	return luacub;
 }
 
-static LuaCuboid *lua_tocuboid(lua_State *L, int idx) {
+static LuaCuboid *lua_tocuboid(scr_Context *L, int idx) {
 	LuaCuboid *luacub = luaL_testudata(L, idx, CSLUA_MCUBOID);
 	if(luacub && luacub->released) luacub = NULL;
 	return luacub;
 }
 
-static int meta_setpoints(lua_State *L) {
+static int meta_setpoints(scr_Context *L) {
 	Cuboid_SetPositions(
 		lua_checkcuboid(L, 1)->cub,
 		*lua_checkshortvector(L, 2),
@@ -107,7 +107,7 @@ static int meta_setpoints(lua_State *L) {
 	return 0;
 }
 
-static int meta_setcolor(lua_State *L) {
+static int meta_setcolor(scr_Context *L) {
 	Cuboid_SetColor(
 		lua_checkcuboid(L, 1)->cub,
 		*lua_checkcolor4(L, 2)
@@ -115,14 +115,14 @@ static int meta_setcolor(lua_State *L) {
 	return 0;
 }
 
-static int meta_getsize(lua_State *L) {
+static int meta_getsize(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Cuboid_GetSize(
 		lua_checkcuboid(L, 1)->cub
 	));
 	return 1;
 }
 
-static int meta_getpoints(lua_State *L) {
+static int meta_getpoints(scr_Context *L) {
 	CPECuboid *cub = lua_checkcuboid(L, 1)->cub;
 	SVec *vs = lua_toshortvector(L, 2);
 	SVec *ve = lua_toshortvector(L, 3);
@@ -143,13 +143,13 @@ static int meta_getpoints(lua_State *L) {
 	return 2;
 }
 
-static int meta_update(lua_State *L) {
+static int meta_update(scr_Context *L) {
 	LuaCuboid *luacub = lua_checkcuboid(L, 1);
 	Client_UpdateSelection(luacub->client, luacub->cub);
 	return 0;
 }
 
-static int meta_remove(lua_State *L) {
+static int meta_remove(scr_Context *L) {
 	LuaCuboid *luacub = lua_tocuboid(L, 1);
 
 	if(luacub) {
@@ -182,7 +182,7 @@ static const luaL_Reg cuboidmeta[] = {
 	{NULL, NULL}
 };
 
-void luainit_cuboid(lua_State *L) {
+void luainit_cuboid(scr_Context *L) {
 	lua_createtable(L, 0, MAX_CLIENTS);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCUBOIDS);
 	lua_indexedmeta(L, CSLUA_MCUBOID, cuboidmeta);

@@ -4,11 +4,11 @@
 #include "luascript.h"
 #include "luacolor.h"
 
-cs_bool lua_iscolor(lua_State *L, int idx) {
+cs_bool lua_iscolor(scr_Context *L, int idx) {
 	return luaL_testudata(L, idx, CSLUA_MCOLOR) != NULL;
 }
 
-LuaColor *lua_newcolor(lua_State *L) {
+LuaColor *lua_newcolor(scr_Context *L) {
 	LuaColor *col = lua_newuserdata(L, sizeof(LuaColor));
 	Memory_Zero(&col->value, sizeof(col->value));
 	luaL_setmetatable(L, CSLUA_MCOLOR);
@@ -16,37 +16,37 @@ LuaColor *lua_newcolor(lua_State *L) {
 	return col;
 }
 
-LuaColor *lua_tocolor(lua_State *L, int idx) {
+LuaColor *lua_tocolor(scr_Context *L, int idx) {
 	return luaL_testudata(L, idx, CSLUA_MCOLOR);
 }
 
-LuaColor *lua_checkcolor(lua_State *L, int idx) {
+LuaColor *lua_checkcolor(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MCOLOR);
 }
 
-Color3 *lua_tocolor3(lua_State *L, int idx) {
+Color3 *lua_tocolor3(scr_Context *L, int idx) {
 	LuaColor *col = lua_tocolor(L, idx);
 	return col ? &col->value.c3 : NULL;
 }
 
-Color3 *lua_checkcolor3(lua_State *L, int idx) {
+Color3 *lua_checkcolor3(scr_Context *L, int idx) {
 	LuaColor *col = lua_checkcolor(L, idx);
 	luaL_argcheck(L, !col->hasAlpha, idx, "'Color3' expected");
 	return &col->value.c3;
 }
 
-Color4 *lua_tocolor4(lua_State *L, int idx) {
+Color4 *lua_tocolor4(scr_Context *L, int idx) {
 	LuaColor *col = lua_tocolor(L, idx);
 	return col ? &col->value.c4 : NULL;
 }
 
-Color4 *lua_checkcolor4(lua_State *L, int idx) {
+Color4 *lua_checkcolor4(scr_Context *L, int idx) {
 	LuaColor *col = lua_checkcolor(L, idx);
 	luaL_argcheck(L, col->hasAlpha, idx, "'Color4' expected");
 	return &col->value.c4;
 }
 
-static int col_setvalue(lua_State *L) {
+static int col_setvalue(scr_Context *L) {
 	LuaColor *col = lua_checkcolor(L, 1);
 
 	col->value.c3.r = (cs_int16)luaL_checkinteger(L, 2);
@@ -57,7 +57,7 @@ static int col_setvalue(lua_State *L) {
 	return 0;
 }
 
-static int col_getvalue(lua_State *L) {
+static int col_getvalue(scr_Context *L) {
 	LuaColor *col = lua_checkcolor(L, 1);
 
 	lua_pushinteger(L, (lua_Integer)col->value.c3.r);
@@ -89,7 +89,7 @@ static cs_bool getclr(cs_str str, cs_char *cl) {
 	return true;
 }
 
-static int meta_index(lua_State *L) {
+static int meta_index(scr_Context *L) {
 	LuaColor *col = lua_checkcolor(L, 1);
 	cs_str field = luaL_checkstring(L, 2);
 
@@ -115,7 +115,7 @@ static int meta_index(lua_State *L) {
 	return 1;
 }
 
-static int meta_newindex(lua_State *L) {
+static int meta_newindex(scr_Context *L) {
 	LuaColor *col = lua_checkcolor(L, 1);
 	cs_str field = luaL_checkstring(L, 2);
 
@@ -144,7 +144,7 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
-static int meta_tostring(lua_State *L) {
+static int meta_tostring(scr_Context *L) {
 	LuaColor *col = lua_checkcolor(L, 1);
 	lua_pushfstring(L, "Color(%d, %d, %d, %d)",
 		col->value.c4.r, col->value.c4.g,
@@ -153,7 +153,7 @@ static int meta_tostring(lua_State *L) {
 	return 1;
 }
 
-static int meta_eq(lua_State *L) {
+static int meta_eq(scr_Context *L) {
 	LuaColor *col1 = lua_checkcolor(L, 1);
 	LuaColor *col2 = lua_checkcolor(L, 2);
 	lua_pushboolean(L,
@@ -177,7 +177,7 @@ static const luaL_Reg colormeta[] = {
 	{NULL, NULL}
 };
 
-static int col_c3(lua_State *L) {
+static int col_c3(scr_Context *L) {
 	LuaColor *col = lua_newcolor(L);
 	col->hasAlpha = false;
 
@@ -193,7 +193,7 @@ static int col_c3(lua_State *L) {
 	return 1;
 }
 
-static int col_c4(lua_State *L) {
+static int col_c4(scr_Context *L) {
 	LuaColor *col = lua_newcolor(L);
 	col->hasAlpha = true;
 
@@ -217,7 +217,7 @@ static const luaL_Reg colorlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_color(lua_State *L) {
+int luaopen_color(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MCOLOR, colormeta);
 	luaL_newlib(L, colorlib);
 	return 1;

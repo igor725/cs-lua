@@ -11,18 +11,18 @@
 #include "luacolor.h"
 #include "luaclient.h"
 
-World *lua_checkworld(lua_State *L, int idx) {
+World *lua_checkworld(scr_Context *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, CSLUA_MWORLD);
 	luaL_argcheck(L, *ud != NULL, idx, "Invalid world");
 	return (World *)*ud;
 }
 
-World *lua_toworld(lua_State *L, int idx) {
+World *lua_toworld(scr_Context *L, int idx) {
 	void **ud = luaL_testudata(L, idx, CSLUA_MWORLD);
 	return ud ? *ud : NULL;
 }
 
-void lua_pushworld(lua_State *L, World *world) {
+void lua_pushworld(scr_Context *L, World *world) {
 	if(!world) {
 		lua_pushnil(L);
 		return;
@@ -44,7 +44,7 @@ void lua_pushworld(lua_State *L, World *world) {
 	*ud = world;
 }
 
-void lua_clearworld(lua_State *L, World *world) {
+void lua_clearworld(scr_Context *L, World *world) {
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 	lua_getfield(L, -1, World_GetName(world));
 
@@ -60,14 +60,14 @@ void lua_clearworld(lua_State *L, World *world) {
 	*ud = NULL;
 }
 
-static int meta_getname(lua_State *L) {
+static int meta_getname(scr_Context *L) {
 	lua_pushstring(L, World_GetName(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getspawn(lua_State *L) {
+static int meta_getspawn(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	Vec *svec = lua_tofloatvector(L, 2);
 	Ang *sang = lua_toangle(L, 3);
@@ -85,7 +85,7 @@ static int meta_getspawn(lua_State *L) {
 	return 2;
 }
 
-static int meta_getoffset(lua_State *L) {
+static int meta_getoffset(scr_Context *L) {
 	cs_uint32 offset = World_GetOffset(
 		lua_checkworld(L, 1),
 		lua_checkshortvector(L, 2)
@@ -96,7 +96,7 @@ static int meta_getoffset(lua_State *L) {
 	return 1;
 }
 
-static int meta_getdimensions(lua_State *L) {
+static int meta_getdimensions(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	SVec *dvec = lua_toshortvector(L, 2);
 
@@ -110,7 +110,7 @@ static int meta_getdimensions(lua_State *L) {
 	return 1;
 }
 
-static int meta_getblock(lua_State *L) {
+static int meta_getblock(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	lua_pushinteger(L, World_GetBlock(world,
 		lua_checkshortvector(L, 2)
@@ -118,7 +118,7 @@ static int meta_getblock(lua_State *L) {
 	return 1;
 }
 
-static int meta_getenvcolor(lua_State *L) {
+static int meta_getenvcolor(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	EColor ctype = (EColor)luaL_checkinteger(L, 2);
 	Color3 *col = lua_tocolor3(L, 3);
@@ -135,7 +135,7 @@ static int meta_getenvcolor(lua_State *L) {
 	return 1;
 }
 
-static int meta_getenvprop(lua_State *L) {
+static int meta_getenvprop(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)World_GetEnvProp(
 		lua_checkworld(L, 1),
 		(EProp)luaL_checkinteger(L, 2)
@@ -143,21 +143,21 @@ static int meta_getenvprop(lua_State *L) {
 	return 1;
 }
 
-static int meta_getweather(lua_State *L) {
+static int meta_getweather(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)World_GetWeather(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_gettexpack(lua_State *L) {
+static int meta_gettexpack(scr_Context *L) {
 	lua_pushstring(L, World_GetTexturePack(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getaddr(lua_State *L) {
+static int meta_getaddr(scr_Context *L) {
 	cs_uint32 size;
 	lua_pushlightuserdata(L, World_GetBlockArray(
 		lua_checkworld(L, 1), &size
@@ -166,35 +166,35 @@ static int meta_getaddr(lua_State *L) {
 	return 2;
 }
 
-static int meta_getseed(lua_State *L) {
+static int meta_getseed(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)World_GetSeed(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getplayercount(lua_State *L) {
+static int meta_getplayercount(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)World_CountPlayers(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isinmemory(lua_State *L) {
+static int meta_isinmemory(scr_Context *L) {
 	lua_pushboolean(L, World_IsInMemory(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_ismodified(lua_State *L) {
+static int meta_ismodified(scr_Context *L) {
 	lua_pushboolean(L, World_IsModified(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_setspawn(lua_State *L) {
+static int meta_setspawn(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	Vec *svec = NULL; Ang *sang = NULL;
 	if(!lua_isnil(L, 2)) svec = lua_checkfloatvector(L, 2);
@@ -203,7 +203,7 @@ static int meta_setspawn(lua_State *L) {
 	return 0;
 }
 
-static int meta_setblock(lua_State *L) {
+static int meta_setblock(scr_Context *L) {
 	lua_pushboolean(L, World_SetBlock(
 		lua_checkworld(L, 1),
 		lua_checkshortvector(L, 2),
@@ -212,7 +212,7 @@ static int meta_setblock(lua_State *L) {
 	return 1;
 }
 
-static int meta_setblocknat(lua_State *L) {
+static int meta_setblocknat(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	SVec *pos = lua_checkshortvector(L, 2);
 	BlockID id = (BlockID)luaL_checkinteger(L, 3);
@@ -228,7 +228,7 @@ static int meta_setblocknat(lua_State *L) {
 	return 1;
 }
 
-static int meta_setenvcolor(lua_State *L) {
+static int meta_setenvcolor(scr_Context *L) {
 	lua_pushboolean(L, World_SetEnvColor(
 		lua_checkworld(L, 1),
 		(EColor)luaL_checkinteger(L, 2),
@@ -237,7 +237,7 @@ static int meta_setenvcolor(lua_State *L) {
 	return 1;
 }
 
-static int meta_setenvprop(lua_State *L) {
+static int meta_setenvprop(scr_Context *L) {
 	lua_pushboolean(L, World_SetEnvProp(
 		lua_checkworld(L, 1),
 		(EProp)luaL_checkinteger(L, 2),
@@ -246,7 +246,7 @@ static int meta_setenvprop(lua_State *L) {
 	return 1;
 }
 
-static int meta_setweather(lua_State *L) {
+static int meta_setweather(scr_Context *L) {
 	lua_pushboolean(L, World_SetWeather(
 		lua_checkworld(L, 1),
 		(cs_int32)luaL_checkinteger(L, 2)
@@ -254,7 +254,7 @@ static int meta_setweather(lua_State *L) {
 	return 1;
 }
 
-static int meta_settexpack(lua_State *L) {
+static int meta_settexpack(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	cs_str texpack = (cs_str)luaL_checkstring(L, 2);
 	luaL_argcheck(L, String_Length(texpack) < 64, 2, "URL too long");
@@ -262,7 +262,7 @@ static int meta_settexpack(lua_State *L) {
 	return 1;
 }
 
-static int meta_setinmemory(lua_State *L) {
+static int meta_setinmemory(scr_Context *L) {
 	World_SetInMemory(
 		lua_checkworld(L, 1),
 		(cs_bool)lua_toboolean(L, 2)
@@ -270,7 +270,7 @@ static int meta_setinmemory(lua_State *L) {
 	return 0;
 }
 
-static int meta_setignoremod(lua_State *L) {
+static int meta_setignoremod(scr_Context *L) {
 	World_SetIgnoreModifications(
 		lua_checkworld(L, 1),
 		(cs_bool)lua_toboolean(L, 2)
@@ -278,21 +278,21 @@ static int meta_setignoremod(lua_State *L) {
 	return 0;
 }
 
-static int meta_isready(lua_State *L) {
+static int meta_isready(scr_Context *L) {
 	lua_pushboolean(L, World_IsReadyToPlay(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_haserror(lua_State *L) {
+static int meta_haserror(scr_Context *L) {
 	lua_pushboolean(L, World_HasError(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_poperror(lua_State *L) {
+static int meta_poperror(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	EWorldExtra extra = WORLD_EXTRA_NOINFO;
 	EWorldError err = World_PopError(world, &extra);
@@ -301,14 +301,14 @@ static int meta_poperror(lua_State *L) {
 	return 2;
 }
 
-static int meta_update(lua_State *L) {
+static int meta_update(scr_Context *L) {
 	lua_pushboolean(L, World_FinishEnvUpdate(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_generate(lua_State *L) {
+static int meta_generate(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	cs_str gname = luaL_checkstring(L, 2);
 	cs_int32 seed = (cs_int32)luaL_optinteger(L, 3, GENERATOR_SEED_FROM_TIME);
@@ -332,7 +332,7 @@ static int meta_generate(lua_State *L) {
 	return 2;
 }
 
-static int meta_iterplayers(lua_State *L) {
+static int meta_iterplayers(scr_Context *L) {
 	World *world = lua_checkworld(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
@@ -352,35 +352,35 @@ static int meta_iterplayers(lua_State *L) {
 	return 0;
 }
 
-static int meta_remove(lua_State *L) {
+static int meta_remove(scr_Context *L) {
 	lua_pushboolean(L, World_Remove(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_unload(lua_State *L) {
+static int meta_unload(scr_Context *L) {
 	World_Unload(
 		lua_checkworld(L, 1)
 	);
 	return 0;
 }
 
-static int meta_save(lua_State *L) {
+static int meta_save(scr_Context *L) {
 	lua_pushboolean(L, World_Save(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_load(lua_State *L) {
+static int meta_load(scr_Context *L) {
 	lua_pushboolean(L, World_Load(
 		lua_checkworld(L, 1)
 	));
 	return 1;
 }
 
-static int meta_lock(lua_State *L) {
+static int meta_lock(scr_Context *L) {
 	lua_pushboolean(L, World_Lock(
 		lua_checkworld(L, 1),
 		(cs_ulong)luaL_optinteger(L, 2, 0)
@@ -388,7 +388,7 @@ static int meta_lock(lua_State *L) {
 	return 1;
 }
 
-static int meta_unlock(lua_State *L) {
+static int meta_unlock(scr_Context *L) {
 	World_Unlock(
 		lua_checkworld(L, 1)
 	);
@@ -441,7 +441,7 @@ static const luaL_Reg worldmeta[] = {
 	{NULL, NULL}
 };
 
-static int world_create(lua_State *L) {
+static int world_create(scr_Context *L) {
 	cs_str wname = luaL_checkstring(L, 1);
 	SVec *dims = lua_checkshortvector(L, 2);
 	luaL_argcheck(L,
@@ -463,14 +463,14 @@ static int world_create(lua_State *L) {
 	return 1;
 }
 
-static int world_getname(lua_State *L) {
+static int world_getname(scr_Context *L) {
 	lua_pushworld(L, World_GetByName(
 		luaL_checkstring(L, 1)
 	));
 	return 1;
 }
 
-static int world_iterall(lua_State *L) {
+static int world_iterall(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	AListField *tmp;
@@ -487,12 +487,12 @@ static int world_iterall(lua_State *L) {
 	return 0;
 }
 
-static int world_getmain(lua_State *L) {
+static int world_getmain(scr_Context *L) {
 	lua_pushworld(L, World_Main);
 	return 1;
 }
 
-static int world_setmain(lua_State *L) {
+static int world_setmain(scr_Context *L) {
 	World_Main = lua_checkworld(L, 1);
 	return 0;
 }
@@ -507,7 +507,7 @@ static const luaL_Reg worldlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_world(lua_State *L) {
+int luaopen_world(scr_Context *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RWORLDS);
 	lua_indexedmeta(L, CSLUA_MWORLD, worldmeta);

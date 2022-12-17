@@ -26,7 +26,7 @@
 
 // Слой совместимости для чистой версии Lua 5.1
 #ifdef CSLUA_NONJIT_51
-void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup) {
+void luaL_setfuncs(scr_Context *L, const luaL_Reg *l, int nup) {
 	for(; l->name != NULL; l++) {
 		int i;
 		for(i = 0; i < nup; i++)
@@ -37,12 +37,12 @@ void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup) {
 	lua_pop(L, nup);
 }
 
-void luaL_setmetatable(lua_State *L, const char *tname) {
+void luaL_setmetatable(scr_Context *L, const char *tname) {
 	luaL_getmetatable(L, tname);
 	lua_setmetatable(L, -2);
 }
 
-void *luaL_testudata (lua_State *L, int ud, const char *tname) {
+void *luaL_testudata (scr_Context *L, int ud, const char *tname) {
 	void *p = lua_touserdata(L, ud);
 	if(p != NULL) {
 		if(lua_getmetatable(L, ud)) {
@@ -57,7 +57,7 @@ void *luaL_testudata (lua_State *L, int ud, const char *tname) {
 }
 #endif
 
-int lua_checktabfield(lua_State *L, int idx, cs_str fname, int ftype) {
+int lua_checktabfield(scr_Context *L, int idx, cs_str fname, int ftype) {
 	lua_getfield(L, idx, fname);
 	if(lua_type(L, -1) != ftype) {
 		luaL_error(L, "Field '%s' must be a %s", fname, lua_typename(L, ftype));
@@ -67,7 +67,7 @@ int lua_checktabfield(lua_State *L, int idx, cs_str fname, int ftype) {
 	return true;
 }
 
-int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta) {
+int lua_checktabfieldud(scr_Context *L, int idx, const char *fname, const char *meta) {
 	lua_getfield(L, idx, fname);
 	if(!luaL_testudata(L, -1, meta)) {
 		luaL_error(L, "Field '%s' must be a %s", fname, meta);
@@ -77,7 +77,7 @@ int lua_checktabfieldud(lua_State *L, int idx, const char *fname, const char *me
 	return true;
 }
 
-static int generic_tostring(lua_State *L) {
+static int generic_tostring(scr_Context *L) {
 	cs_str typename = NULL;
 	if(luaL_getmetafield(L, 1, "__name") && lua_isstring(L, -1))
 		typename = lua_tostring(L, -1);
@@ -87,7 +87,7 @@ static int generic_tostring(lua_State *L) {
 	return 1;
 }
 
-void lua_indexedmeta(lua_State *L, const char *meta, const luaL_Reg *meths) {
+void lua_indexedmeta(scr_Context *L, const char *meta, const luaL_Reg *meths) {
 	if(!luaL_newmetatable(L, meta)) luaL_error(L, "Failed to create metatable");
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
@@ -124,7 +124,7 @@ static const luaL_Reg serverlibs[] = {
 	{NULL, NULL}
 };
 
-LuaScript *lua_getscript(lua_State *L) {
+LuaScript *lua_getscript(scr_Context *L) {
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RSCPTR);
 	LuaScript *ud = (LuaScript *)lua_touserdata(L, -1);
 	lua_pop(L, 1);
@@ -181,14 +181,14 @@ cs_bool LuaScript_Call(LuaScript *script, int args, int ret) {
 	return true;
 }
 
-static int allowhotreload(lua_State *L) {
+static int allowhotreload(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TBOOLEAN);
 	LuaScript *script = lua_getscript(L);
 	script->hotreload = (cs_bool)lua_toboolean(L, 1);
 	return 0;
 }
 
-static int setinfo(lua_State *L) {
+static int setinfo(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	LuaScript *script = lua_getscript(L);
 	lua_getfield(L, 1, "home");
@@ -209,25 +209,25 @@ static int setinfo(lua_State *L) {
 	return 0;
 }
 
-static int mstime(lua_State *L) {
+static int mstime(scr_Context *L) {
 	lua_pushnumber(L, Time_GetMSecD());
 	return 1;
 }
 
-static int ioensure(lua_State *L) {
+static int ioensure(scr_Context *L) {
 	cs_str path = luaL_checkstring(L, 1);
 	lua_pushboolean(L, Directory_Ensure(path));
 	return 1;
 }
 
-static int ioscrname(lua_State *L) {
+static int ioscrname(scr_Context *L) {
 	LuaScript *script = lua_getscript(L);
 	cs_str ext = String_LastChar(script->name, '.');
 	lua_pushlstring(L, script->name, ext - script->name);
 	return 1;
 }
 
-static int iodatafolder(lua_State *L) {
+static int iodatafolder(scr_Context *L) {
 	int argc = lua_gettop(L);
 	lua_pushstring(L, CSLUA_PATH_LDATA);
 	ioscrname(L);

@@ -9,7 +9,7 @@
 
 extern SurvItf *SurvInterface;
 
-static cs_bool surv_getdata(lua_State *L, int idx, SrvData **data) {
+static cs_bool surv_getdata(scr_Context *L, int idx, SrvData **data) {
 	lua_getfield(L, LUA_REGISTRYINDEX, "_srvsafe");
 	cs_bool safemode = (cs_bool)lua_toboolean(L, -1);
 	lua_pop(L, 1);
@@ -26,7 +26,7 @@ static cs_bool surv_getdata(lua_State *L, int idx, SrvData **data) {
 	return *data != NULL;
 }
 
-static int surv_isgod(lua_State *L) {
+static int surv_isgod(scr_Context *L) {
 	SrvData *data = NULL;
 	lua_pushboolean(L,
 		surv_getdata(L, 1, &data) &&
@@ -35,7 +35,7 @@ static int surv_isgod(lua_State *L) {
 	return 1;
 }
 
-static int surv_ispvp(lua_State *L) {
+static int surv_ispvp(scr_Context *L) {
 	SrvData *data = NULL;
 	lua_pushboolean(L,
 		surv_getdata(L, 1, &data) &&
@@ -44,7 +44,7 @@ static int surv_ispvp(lua_State *L) {
 	return 1;
 }
 
-static int surv_setgod(lua_State *L) {
+static int surv_setgod(scr_Context *L) {
 	SrvData *data = NULL;
 	cs_bool state = (cs_bool)lua_toboolean(L, 2);
 	if(surv_getdata(L, 1, &data))
@@ -52,7 +52,7 @@ static int surv_setgod(lua_State *L) {
 	return 0;
 }
 
-static int surv_giveblock(lua_State *L) {
+static int surv_giveblock(scr_Context *L) {
 	BlockID id = (BlockID)luaL_checkinteger(L, 2);
 	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
 	SrvData *data = NULL;
@@ -63,7 +63,7 @@ static int surv_giveblock(lua_State *L) {
 	return 1;
 }
 
-static int surv_takeblock(lua_State *L) {
+static int surv_takeblock(scr_Context *L) {
 	BlockID id = (BlockID)luaL_checkinteger(L, 2);
 	cs_uint16 ammount = (cs_uint16)luaL_checkinteger(L, 3);
 	SrvData *data = NULL;
@@ -74,7 +74,7 @@ static int surv_takeblock(lua_State *L) {
 	return 1;
 }
 
-static int surv_setpvp(lua_State *L) {
+static int surv_setpvp(scr_Context *L) {
 	SrvData *data = NULL;
 	cs_bool state = (cs_bool)lua_toboolean(L, 2);
 	if(surv_getdata(L, 1, &data))
@@ -82,7 +82,7 @@ static int surv_setpvp(lua_State *L) {
 	return 0;
 }
 
-static int surv_hurt(lua_State *L) {
+static int surv_hurt(scr_Context *L) {
 	SrvData *data = NULL;
 	cs_byte dmg = (cs_byte)luaL_checkinteger(L, 2);
 	if(surv_getdata(L, 1, &data))
@@ -90,7 +90,7 @@ static int surv_hurt(lua_State *L) {
 	return 0;
 }
 
-static int surv_heal(lua_State *L) {
+static int surv_heal(scr_Context *L) {
 	SrvData *data = NULL;
 	cs_byte dmg = (cs_byte)luaL_checkinteger(L, 2);
 	if(surv_getdata(L, 1, &data))
@@ -98,7 +98,7 @@ static int surv_heal(lua_State *L) {
 	return 0;
 }
 
-static int surv_kill(lua_State *L) {
+static int surv_kill(scr_Context *L) {
 	SrvData *data = NULL;
 	if(surv_getdata(L, 1, &data))
 		SurvInterface->kill(data);
@@ -122,13 +122,13 @@ static const luaL_Reg survivalmeta[] = {
 	{NULL, NULL}
 };
 
-INL static void surv_addfuncs(lua_State *L) {
+INL static void surv_addfuncs(scr_Context *L) {
 	luaL_getmetatable(L, CSLUA_MCLIENT);
 	luaL_setfuncs(L, survivalmeta, 0);
 	lua_pop(L, 1);
 }
 
-static int surv_init(lua_State *L) {
+static int surv_init(scr_Context *L) {
 	if(SurvInterface) {
 		surv_addfuncs(L);
 		lua_pushboolean(L, 1);
@@ -144,12 +144,12 @@ static int surv_init(lua_State *L) {
 	return 1;
 }
 
-static int surv_isready(lua_State *L) {
+static int surv_isready(scr_Context *L) {
 	lua_pushboolean(L, SurvInterface != NULL);
 	return 1;
 }
 
-static int surv_safe(lua_State *L) {
+static int surv_safe(scr_Context *L) {
 	lua_pushboolean(L, lua_toboolean(L, 1));
 	lua_setfield(L, LUA_REGISTRYINDEX, "_srvsafe");
 	return 0;
@@ -163,13 +163,13 @@ static const luaL_Reg survlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_survival(lua_State *L) {
+int luaopen_survival(scr_Context *L) {
 	luaL_newlib(L, survlib);
 	return 1;
 }
 #else
 #warning "Compiling without the survival module"
-int luaopen_survival(lua_State *L) {
+int luaopen_survival(scr_Context *L) {
 	lua_pushnil(L);
 	return 1;
 }

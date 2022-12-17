@@ -6,15 +6,15 @@
 #include "luaworld.h"
 #include "luablock.h"
 
-BlockDef *lua_checkblockdef(lua_State *L, int idx) {
+BlockDef *lua_checkblockdef(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MBLOCK);
 }
 
-BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx) {
+BulkBlockUpdate *lua_checkbulk(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MBULK);
 }
 
-static int meta_addtoworld(lua_State *L) {
+static int meta_addtoworld(scr_Context *L) {
 	lua_pushboolean(L, Block_Define(
 		lua_checkworld(L, 2),
 		(BlockID)luaL_checkinteger(L, 3),
@@ -23,7 +23,7 @@ static int meta_addtoworld(lua_State *L) {
 	return 1;
 }
 
-static int meta_undefine(lua_State *L) {
+static int meta_undefine(scr_Context *L) {
 	lua_pushboolean(L, Block_Undefine(
 		lua_checkworld(L, 2),
 		lua_checkblockdef(L, 1)
@@ -31,21 +31,21 @@ static int meta_undefine(lua_State *L) {
 	return 1;
 }
 
-static int meta_globundefine(lua_State *L) {
+static int meta_globundefine(scr_Context *L) {
 	Block_UndefineGlobal(
 		lua_checkblockdef(L, 1)
 	);
 	return 0;
 }
 
-static int meta_update(lua_State *L) {
+static int meta_update(scr_Context *L) {
 	Block_UpdateDefinition(
 		lua_checkblockdef(L, 1)
 	);
 	return 0;
 }
 
-static int meta_gc(lua_State *L) {
+static int meta_gc(scr_Context *L) {
 	BlockDef *bdef = lua_checkblockdef(L, 1);
 	Block_UndefineGlobal(bdef);
 	Block_UpdateDefinition(bdef);
@@ -63,31 +63,31 @@ static const luaL_Reg blockmeta[] = {
 	{NULL, NULL}
 };
 
-static int meta_setautosend(lua_State *L) {
+static int meta_setautosend(scr_Context *L) {
 	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
 	bbu->autosend = (cs_bool)lua_toboolean(L, 2);
 	return 0;
 }
 
-static int meta_setworld(lua_State *L) {
+static int meta_setworld(scr_Context *L) {
 	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
 	bbu->world = lua_checkworld(L, 2);
 	return 0;
 }
 
-static int meta_getworld(lua_State *L) {
+static int meta_getworld(scr_Context *L) {
 	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
 	lua_pushworld(L, bbu->world);
 	return 1;
 }
 
-static int meta_push(lua_State *L) {
+static int meta_push(scr_Context *L) {
 	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
 	lua_pushboolean(L, Block_BulkUpdateSend(bbu));
 	return 1;
 }
 
-static int meta_add(lua_State *L) {
+static int meta_add(scr_Context *L) {
 	BulkBlockUpdate *bbu = lua_checkbulk(L, 1);
 	int top;
 
@@ -151,7 +151,7 @@ static const luaL_Reg bulkmeta[] = {
 // TODO: Использовать SVec для установки минимальных и максимальных значений
 // TODO2: Использовать Color3 для установки цвета тумана
 
-static void ReadExtendedBlockTable(lua_State *L, BlockDef *bdef, int params) {
+static void ReadExtendedBlockTable(scr_Context *L, BlockDef *bdef, int params) {
 	readtabval("solidity", ext.solidity, EBlockSolidity, BDSOL_SOLID);
 	readtabval("movespeed", ext.moveSpeed, cs_byte, 128);
 	readtabval("toptex", ext.topTex, cs_byte, 0);
@@ -177,7 +177,7 @@ static void ReadExtendedBlockTable(lua_State *L, BlockDef *bdef, int params) {
 	lua_pop(L, 22);
 }
 
-static void ReadBlockTable(lua_State *L, BlockDef *bdef, int params) {
+static void ReadBlockTable(scr_Context *L, BlockDef *bdef, int params) {
 	readtabval("solidity", nonext.solidity, EBlockSolidity, BDSOL_SOLID);
 	readtabval("movespeed", nonext.moveSpeed, cs_byte, 128);
 	readtabval("toptex", nonext.topTex, cs_byte, 0);
@@ -195,7 +195,7 @@ static void ReadBlockTable(lua_State *L, BlockDef *bdef, int params) {
 	lua_pop(L, 14);
 }
 
-static int block_define(lua_State *L) {
+static int block_define(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	cs_str name = NULL;
 	if(lua_checktabfield(L, 1, "name", LUA_TSTRING))
@@ -223,7 +223,7 @@ static int block_define(lua_State *L) {
 	return 1;
 }
 
-static int block_isvalid(lua_State *L) {
+static int block_isvalid(scr_Context *L) {
 	lua_pushboolean(L, Block_IsValid(
 		lua_checkworld(L, 1),
 		(BlockID)luaL_checkinteger(L, 2)
@@ -231,7 +231,7 @@ static int block_isvalid(lua_State *L) {
 	return 1;
 }
 
-static int block_fallbackfor(lua_State *L) {
+static int block_fallbackfor(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Block_GetFallbackFor(
 		lua_checkworld(L, 1),
 		(BlockID)luaL_checkinteger(L, 2)
@@ -239,7 +239,7 @@ static int block_fallbackfor(lua_State *L) {
 	return 1;
 }
 
-static int block_bulk(lua_State *L) {
+static int block_bulk(scr_Context *L) {
 	BulkBlockUpdate *bbu = lua_newuserdata(L, sizeof(BulkBlockUpdate));
 	Memory_Fill(bbu, sizeof(BulkBlockUpdate), 0);
 	luaL_setmetatable(L, CSLUA_MBULK);
@@ -281,14 +281,14 @@ static cs_str const blocknames[] = {
 	NULL
 };
 
-static void luablock_initconts(lua_State *L) {
+static void luablock_initconts(scr_Context *L) {
 	for(int i = 0; blocknames[i]; i++) {
 		lua_pushinteger(L, i);
 		lua_setfield(L, -2, blocknames[i]);
 	}
 }
 
-int luaopen_block(lua_State *L) {
+int luaopen_block(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MBLOCK, blockmeta);
 	lua_indexedmeta(L, CSLUA_MBULK, bulkmeta);
 

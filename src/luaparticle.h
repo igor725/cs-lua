@@ -1,6 +1,6 @@
 #ifndef CSLUAPARTICLE_H
 #define CSLUAPARTICLE_H
-#include <lua.h>
+#include "scripting.h"
 
-int luaopen_particle(lua_State *L);
+int luaopen_particle(scr_Context *L);
 #endif

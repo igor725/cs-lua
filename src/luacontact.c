@@ -23,13 +23,13 @@ static struct _Contact *newcontact(cs_str name, LuaScript *LS) {
 	return NULL;
 }
 
-static struct _Contact *checkcontact(lua_State *L, int idx) {
+static struct _Contact *checkcontact(scr_Context *L, int idx) {
 	struct _Contact *cont = *(void **)luaL_checkudata(L, idx, CSLUA_MCONTACT);
 	luaL_argcheck(L, *cont->name != '\0', idx, "Contact closed");
 	return cont;
 }
 
-static struct _Contact *tocontact(lua_State *L, int idx) {
+static struct _Contact *tocontact(scr_Context *L, int idx) {
 	return *(void **)luaL_checkudata(L, idx, CSLUA_MCONTACT);
 }
 
@@ -44,7 +44,7 @@ static cs_bool addcontactscript(struct _Contact *cont, LuaScript *LS) {
 	return false;
 }
 
-static void pushcontact(lua_State *L, struct _Contact *cont) {
+static void pushcontact(scr_Context *L, struct _Contact *cont) {
 	if(!cont) {
 		lua_pushnil(L);
 		return;
@@ -55,7 +55,7 @@ static void pushcontact(lua_State *L, struct _Contact *cont) {
 	*ud = cont;
 }
 
-static int meta_pop(lua_State *L) {
+static int meta_pop(scr_Context *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, cont->name);
@@ -74,9 +74,9 @@ static int meta_pop(lua_State *L) {
 	return 1;
 }
 
-static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt);
+static void copytable(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt);
 
-static void copyudata(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
+static void copyudata(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
 	void *tmp = lua_toclient(L_from, idx);
 	if(tmp) {
 		lua_pushclient(L_to, tmp);
@@ -96,18 +96,18 @@ static void copyudata(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt)
 	return;
 }
 
-static int writer(lua_State *L, const void *b, size_t size, void *B) {
+static int writer(scr_Context *L, const void *b, size_t size, void *B) {
 	(void)L;
 	luaL_addlstring((luaL_Buffer *)B, (const char *)b, size);
 	return 0;
 }
 
-static const char *reader(lua_State *L, void *b, size_t *size) {
+static const char *reader(scr_Context *L, void *b, size_t *size) {
 	(void)b;
 	return lua_tolstring(L, -1, size);
 }
 
-static void copyfunction(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
+static void copyfunction(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
 	if(lua_iscfunction(L_from, idx)) {
 		*errt = "C function";
 		return;
@@ -139,7 +139,7 @@ static void copyfunction(lua_State *L_to, lua_State *L_from, int idx, cs_str *er
 	*errt = NULL;
 }
 
-static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
+static cs_bool copyvalue(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
 	switch(lua_type(L_from, idx)) {
 		case LUA_TNIL:
 			lua_pushnil(L_to);
@@ -180,7 +180,7 @@ static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx, cs_str *er
 	return *errt == NULL;
 }
 
-static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
+static void copytable(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
 	// Превращаем относительный индекс в абсолютный
 	if(idx < 0) idx = lua_absindex(L_from, idx);
 
@@ -204,7 +204,7 @@ static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt)
 	return;
 }
 
-static int meta_push(lua_State *L) {
+static int meta_push(scr_Context *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	cs_str errt = NULL;
 
@@ -238,7 +238,7 @@ static int meta_push(lua_State *L) {
 	return 0;
 }
 
-static int meta_bind(lua_State *L) {
+static int meta_bind(scr_Context *L) {
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
@@ -248,7 +248,7 @@ static int meta_bind(lua_State *L) {
 	return 0;
 }
 
-static int meta_avail(lua_State *L) {
+static int meta_avail(scr_Context *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, cont->name);
@@ -257,7 +257,7 @@ static int meta_avail(lua_State *L) {
 	return 1;
 }
 
-static int meta_clear(lua_State *L) {
+static int meta_clear(scr_Context *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 	lua_getfield(L, -1, cont->name);
@@ -269,7 +269,7 @@ static int meta_clear(lua_State *L) {
 	return 0;
 }
 
-static int meta_close(lua_State *L) {
+static int meta_close(scr_Context *L) {
 	struct _Contact *cont = tocontact(L, 1);
 	if(!cont || *cont->name == '\0') return 0;
 	cs_bool dirty = false;
@@ -309,7 +309,7 @@ const luaL_Reg contactmeta[] = {
 	{NULL, NULL}
 };
 
-static int cont_get(lua_State *L) {
+static int cont_get(scr_Context *L) {
 	cs_size namelen = 0;
 	cs_str name = luaL_checklstring(L, 1, &namelen);
 	luaL_argcheck(L, namelen > 0, 1, "Empty contact name");
@@ -354,7 +354,7 @@ const luaL_Reg contactlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_contact(lua_State *L) {
+int luaopen_contact(scr_Context *L) {
 	lua_createtable(L, 0, CSLUA_CONTACT_MAX);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCONTACT);
 

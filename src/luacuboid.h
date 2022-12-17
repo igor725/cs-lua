@@ -2,9 +2,9 @@
 #define CSLUASELECTION_H
 #include <types/client.h>
 #include <types/cpe.h>
-#include <lua.h>
+#include "scripting.h"
 
-void lua_newcubref(lua_State *L, Client *client, CPECuboid *cub);
-void lua_clearcuboids(lua_State *L, Client *client);
-void luainit_cuboid(lua_State *L);
+void lua_newcubref(scr_Context *L, Client *client, CPECuboid *cub);
+void lua_clearcuboids(scr_Context *L, Client *client);
+void luainit_cuboid(scr_Context *L);
 #endif

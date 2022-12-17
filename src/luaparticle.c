@@ -3,11 +3,11 @@
 #include "luascript.h"
 #include "luacolor.h"
 
-static CPEParticle *checkparticle(lua_State *L, int idx) {
+static CPEParticle *checkparticle(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MPARTICLE);
 }
 
-static int particle_undefine(lua_State *L) {
+static int particle_undefine(scr_Context *L) {
 	lua_pushboolean(L, CPE_UndefineParticlePtr(
 		checkparticle(L, 1)
 	));
@@ -20,7 +20,7 @@ static const luaL_Reg particlemeta[] = {
 	{NULL, NULL}
 };
 
-static int particle_create(lua_State *L) {
+static int particle_create(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	lua_checkstack(L, 18);
 
@@ -65,7 +65,7 @@ static int particle_create(lua_State *L) {
 	return 1;
 }
 
-static int particle_define(lua_State *L) {
+static int particle_define(scr_Context *L) {
 	lua_pushboolean(L, CPE_DefineParticle(
 		(cs_byte)luaL_checkinteger(L, 1),
 		checkparticle(L, 2)
@@ -73,7 +73,7 @@ static int particle_define(lua_State *L) {
 	return 1;
 }
 
-static int particle_freeid(lua_State *L) {
+static int particle_freeid(scr_Context *L) {
 	cs_int16 id = -1;
 	for(cs_byte i = 0; i < CPE_MAX_PARTICLES; i++) {
 		if(!CPE_IsParticleDefined(i)) {
@@ -94,7 +94,7 @@ static const luaL_Reg particlelib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_particle(lua_State *L) {
+int luaopen_particle(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MPARTICLE, particlemeta);
 	luaL_newlib(L, particlelib);
 	return 1;

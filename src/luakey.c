@@ -25,7 +25,7 @@ static cs_str const mods[5] = {
 	"MSHIFT", 0, "MALT"
 };
 
-int luaopen_key(lua_State *L) {
+int luaopen_key(scr_Context *L) {
 	lua_createtable(L, 0, 256 + 5);
 	for(int i = 0; i < 256; i++) {
 		if(keys[i]) {

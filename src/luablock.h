@@ -2,9 +2,9 @@
 #define LUABLOCK_H
 #include <types/block.h>
 #include <types/cpe.h>
-#include <lua.h>
+#include "scripting.h"
 
-BlockDef *lua_checkblockdef(lua_State *L, int idx);
-BulkBlockUpdate *lua_checkbulk(lua_State *L, int idx);
-int luaopen_block(lua_State *L);
+BlockDef *lua_checkblockdef(scr_Context *L, int idx);
+BulkBlockUpdate *lua_checkbulk(scr_Context *L, int idx);
+int luaopen_block(scr_Context *L);
 #endif

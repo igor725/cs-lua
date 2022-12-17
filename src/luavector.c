@@ -5,11 +5,11 @@
 #include "luascript.h"
 #include "luavector.h"
 
-cs_bool lua_isvector(lua_State *L, int idx) {
+cs_bool lua_isvector(scr_Context *L, int idx) {
 	return luaL_testudata(L, idx, CSLUA_MVECTOR) != NULL;
 }
 
-LuaVector *lua_newvector(lua_State *L) {
+LuaVector *lua_newvector(scr_Context *L) {
 	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value, sizeof(vec->value));
 	luaL_setmetatable(L, CSLUA_MVECTOR);
@@ -17,41 +17,41 @@ LuaVector *lua_newvector(lua_State *L) {
 	return vec;
 }
 
-LuaVector *lua_checkvector(lua_State *L, int idx) {
+LuaVector *lua_checkvector(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MVECTOR);
 }
 
-LuaVector *lua_tovector(lua_State *L, int idx) {
+LuaVector *lua_tovector(scr_Context *L, int idx) {
 	return luaL_testudata(L, idx, CSLUA_MVECTOR);
 }
 
-Vec *lua_checkfloatvector(lua_State *L, int idx) {
+Vec *lua_checkfloatvector(scr_Context *L, int idx) {
 	LuaVector *vec = lua_checkvector(L, idx);
 	luaL_argcheck(L, vec->type == LUAVECTOR_TFLOAT, idx, "'FloatVector' expected");
 	return &vec->value.f;
 }
 
-Vec *lua_tofloatvector(lua_State *L, int idx) {
+Vec *lua_tofloatvector(scr_Context *L, int idx) {
 	LuaVector *vec = lua_tovector(L, idx);
 	if(!vec || vec->type != LUAVECTOR_TFLOAT)
 		return NULL;
 	return &vec->value.f;
 }
 
-SVec *lua_checkshortvector(lua_State *L, int idx) {
+SVec *lua_checkshortvector(scr_Context *L, int idx) {
 	LuaVector *vec = lua_checkvector(L, idx);
 	luaL_argcheck(L, vec->type == LUAVECTOR_TSHORT, idx, "'ShortVector' expected");
 	return &vec->value.s;
 }
 
-SVec *lua_toshortvector(lua_State *L, int idx) {
+SVec *lua_toshortvector(scr_Context *L, int idx) {
 	LuaVector *vec = lua_tovector(L, idx);
 	if(!vec || vec->type != LUAVECTOR_TSHORT)
 		return NULL;
 	return &vec->value.s;
 }
 
-static int vec_iszero(lua_State *L) {
+static int vec_iszero(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT)
@@ -62,7 +62,7 @@ static int vec_iszero(lua_State *L) {
 	return 1;
 }
 
-static int vec_scale(lua_State *L) {
+static int vec_scale(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT) {
@@ -82,7 +82,7 @@ static INL cs_float magnitude(Vec *src) {
 	);
 }
 
-static int vec_cross(lua_State *L) {
+static int vec_cross(scr_Context *L) {
 	LuaVector *dst = lua_checkvector(L, 1);
 
 	if(dst->type == LUAVECTOR_TFLOAT) {
@@ -99,7 +99,7 @@ static int vec_cross(lua_State *L) {
 	return 1;
 }
 
-static int vec_min(lua_State *L) {
+static int vec_min(scr_Context *L) {
 	LuaVector *dst = lua_checkvector(L, 1);
 
 	if(dst->type == LUAVECTOR_TFLOAT) {
@@ -116,7 +116,7 @@ static int vec_min(lua_State *L) {
 	return 1;
 }
 
-static int vec_max(lua_State *L) {
+static int vec_max(scr_Context *L) {
 	LuaVector *dst = lua_checkvector(L, 1);
 
 	if(dst->type == LUAVECTOR_TFLOAT) {
@@ -133,7 +133,7 @@ static int vec_max(lua_State *L) {
 	return 1;
 }
 
-static int vec_toshort(lua_State *L) {
+static int vec_toshort(scr_Context *L) {
 	LuaVector *src = lua_checkvector(L, 1);
 	LuaVector *dst = lua_newvector(L);
 	dst->type = LUAVECTOR_TSHORT;
@@ -147,7 +147,7 @@ static int vec_toshort(lua_State *L) {
 	return 1;
 }
 
-static int vec_tofloat(lua_State *L) {
+static int vec_tofloat(scr_Context *L) {
 	LuaVector *src = lua_checkvector(L, 1);
 	LuaVector *dst = lua_newvector(L);
 	dst->type = LUAVECTOR_TFLOAT;
@@ -161,7 +161,7 @@ static int vec_tofloat(lua_State *L) {
 	return 1;
 }
 
-static int vec_normalized(lua_State *L) {
+static int vec_normalized(scr_Context *L) {
 	Vec *dst, *src = lua_checkfloatvector(L, 1);
 
 	if(lua_isvector(L, 2))
@@ -177,14 +177,14 @@ static int vec_normalized(lua_State *L) {
 	return 1;
 }
 
-static int vec_magnitude(lua_State *L) {
+static int vec_magnitude(scr_Context *L) {
 	lua_pushnumber(L, (lua_Number)magnitude(
 		lua_checkfloatvector(L, 1)
 	));
 	return 1;
 }
 
-static int vec_setvalue(lua_State *L) {
+static int vec_setvalue(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT) {
@@ -200,7 +200,7 @@ static int vec_setvalue(lua_State *L) {
 	return 0;
 }
 
-static int vec_getvalue(lua_State *L) {
+static int vec_getvalue(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT) {
@@ -232,7 +232,7 @@ static cs_bool getaxis(cs_str str, cs_char *ax) {
 	return true;
 }
 
-static int meta_tostring(lua_State *L) {
+static int meta_tostring(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	switch(vec->type) {
@@ -255,7 +255,7 @@ static int meta_tostring(lua_State *L) {
 	return 1;
 }
 
-static int meta_index(lua_State *L) {
+static int meta_index(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 	cs_str field = luaL_checkstring(L, 2);
 
@@ -283,7 +283,7 @@ static int meta_index(lua_State *L) {
 	return 1;
 }
 
-static int meta_newindex(lua_State *L) {
+static int meta_newindex(scr_Context *L) {
 	LuaVector *vec = lua_checkvector(L, 1);
 
 	cs_char ax = 0;
@@ -310,13 +310,13 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
-static int meta_call(lua_State *L) {
+static int meta_call(scr_Context *L) {
 	vec_setvalue(L);
 	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int meta_add(lua_State *L) {
+static int meta_add(scr_Context *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
@@ -332,7 +332,7 @@ static int meta_add(lua_State *L) {
 	return 1;
 }
 
-static int meta_sub(lua_State *L) {
+static int meta_sub(scr_Context *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 	LuaVector *src2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, src1->type == src2->type, 2, CSLUA_MVECTOR " types mismatch");
@@ -348,7 +348,7 @@ static int meta_sub(lua_State *L) {
 	return 1;
 }
 
-static int meta_mul(lua_State *L) {
+static int meta_mul(scr_Context *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 
 	if(lua_isnumber(L, 2)) {
@@ -380,7 +380,7 @@ static int meta_mul(lua_State *L) {
 	return 1;
 }
 
-static int meta_div(lua_State *L) {
+static int meta_div(scr_Context *L) {
 	LuaVector *src1 = lua_checkvector(L, 1);
 
 	if(lua_isnumber(L, 2)) {
@@ -416,7 +416,7 @@ static int meta_div(lua_State *L) {
 	return 1;
 }
 
-static int meta_lt(lua_State *L) {
+static int meta_lt(scr_Context *L) {
 	LuaVector *vec1 = lua_checkvector(L, 1);
 	LuaVector *vec2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, vec1->type == vec2->type, 2, CSLUA_MVECTOR " types mismatch");
@@ -434,7 +434,7 @@ static int meta_lt(lua_State *L) {
 	return 1;
 }
 
-static int meta_le(lua_State *L) {
+static int meta_le(scr_Context *L) {
 	LuaVector *vec1 = lua_checkvector(L, 1);
 	LuaVector *vec2 = lua_checkvector(L, 2);
 	luaL_argcheck(L, vec1->type == vec2->type, 2, CSLUA_MVECTOR " types mismatch");
@@ -452,7 +452,7 @@ static int meta_le(lua_State *L) {
 	return 1;
 }
 
-static int meta_eq(lua_State *L) {
+static int meta_eq(scr_Context *L) {
 	LuaVector *vec1 = lua_checkvector(L, 1);
 	LuaVector *vec2 = lua_checkvector(L, 2);
 
@@ -502,7 +502,7 @@ static const luaL_Reg vectormeta[] = {
 	{NULL, NULL}
 };
 
-static int vec_newfloat(lua_State *L) {
+static int vec_newfloat(scr_Context *L) {
 	LuaVector *vec = lua_newvector(L);
 	vec->type = LUAVECTOR_TFLOAT;
 
@@ -518,7 +518,7 @@ static int vec_newfloat(lua_State *L) {
 	return 1;
 }
 
-static int vec_newshort(lua_State *L) {
+static int vec_newshort(scr_Context *L) {
 	LuaVector *vec = lua_newvector(L);
 	vec->type = LUAVECTOR_TSHORT;
 
@@ -541,7 +541,7 @@ static const luaL_Reg vectorlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_vector(lua_State *L) {
+int luaopen_vector(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MVECTOR, vectormeta);
 	luaL_newlib(L, vectorlib);
 	return 1;

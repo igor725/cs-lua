@@ -2,7 +2,7 @@
 #include "lualog.h"
 #include "luascript.h"
 
-static void pushfmt(lua_State *L) {
+static void pushfmt(scr_Context *L) {
 	int count = lua_gettop(L);
 	if(count > 0) {
 		lua_getglobal(L, LUA_STRLIBNAME);
@@ -21,31 +21,31 @@ static void pushfmt(lua_State *L) {
 	} else lua_pushstring(L, "nil");
 }
 
-static int log_info(lua_State *L) {
+static int log_info(scr_Context *L) {
 	pushfmt(L);
 	Log_Info("%s", lua_tostring(L, -1));
 	return 0;
 }
 
-static int log_warn(lua_State *L) {
+static int log_warn(scr_Context *L) {
 	pushfmt(L);
 	Log_Warn("%s", lua_tostring(L, -1));
 	return 0;
 }
 
-static int log_error(lua_State *L) {
+static int log_error(scr_Context *L) {
 	pushfmt(L);
 	Log_Error("%s", lua_tostring(L, -1));
 	return 0;
 }
 
-static int log_debug(lua_State *L) {
+static int log_debug(scr_Context *L) {
 	pushfmt(L);
 	Log_Debug("%s", lua_tostring(L, -1));
 	return 0;
 }
 
-static int log_print(lua_State *L) {
+static int log_print(scr_Context *L) {
 	int count = lua_gettop(L);
 	if(count < 1) return 0;
 
@@ -79,7 +79,7 @@ static const luaL_Reg loglib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_log(lua_State *L) {
+int luaopen_log(scr_Context *L) {
 	lua_pushcfunction(L, log_print);
 	lua_setglobal(L, "print");
 

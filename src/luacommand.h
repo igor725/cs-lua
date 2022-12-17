@@ -1,6 +1,6 @@
 #ifndef CSLUACOMMAND_H
 #define CSLUACOMMAND_H
-#include <lua.h>
+#include "scripting.h"
 
-int luaopen_command(lua_State *L);
+int luaopen_command(scr_Context *L);
 #endif

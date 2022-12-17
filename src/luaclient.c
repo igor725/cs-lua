@@ -11,18 +11,18 @@
 #include "luacuboid.h"
 #include "luablock.h"
 
-Client *lua_checkclient(lua_State *L, int idx) {
+Client *lua_checkclient(scr_Context *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, CSLUA_MCLIENT);
 	luaL_argcheck(L, *ud != NULL, idx, "Invalid client");
 	return (Client *)*ud;
 }
 
-Client *lua_toclient(lua_State *L, int idx) {
+Client *lua_toclient(scr_Context *L, int idx) {
 	void **ud = luaL_testudata(L, idx, CSLUA_MCLIENT);
 	return ud ? *ud : NULL;
 }
 
-void lua_pushclient(lua_State *L, Client *client) {
+void lua_pushclient(scr_Context *L, Client *client) {
 	if(!client) {
 		lua_pushnil(L);
 		return;
@@ -47,7 +47,7 @@ void lua_pushclient(lua_State *L, Client *client) {
 	*ud = client;
 }
 
-void lua_clearclient(lua_State *L, Client *client) {
+void lua_clearclient(scr_Context *L, Client *client) {
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 	lua_pushinteger(L, Client_GetID(client));
 	lua_gettable(L, -2);
@@ -59,21 +59,21 @@ void lua_clearclient(lua_State *L, Client *client) {
 	*ud = NULL;
 }
 
-static int meta_getid(lua_State *L) {
+static int meta_getid(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetID(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getstate(lua_State *L) {
+static int meta_getstate(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetState(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getaddr(lua_State *L) {
+static int meta_getaddr(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_uint32 addr = Client_GetAddr(client);
 
@@ -89,7 +89,7 @@ static int meta_getaddr(lua_State *L) {
 	return 1;
 }
 
-static int meta_getping(lua_State *L) {
+static int meta_getping(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	if(lua_gettop(L) > 1 && lua_toboolean(L, 2))
 		lua_pushnumber(L, (lua_Number)Client_GetAvgPing(client));
@@ -98,49 +98,49 @@ static int meta_getping(lua_State *L) {
 	return 1;
 }
 
-static int meta_getname(lua_State *L) {
+static int meta_getname(scr_Context *L) {
 	lua_pushstring(L, Client_GetName(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getskin(lua_State *L) {
+static int meta_getskin(scr_Context *L) {
 	lua_pushstring(L, Client_GetSkin(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getgroup(lua_State *L) {
+static int meta_getgroup(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetGroupID(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getheldblock(lua_State *L) {
+static int meta_getheldblock(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetHeldBlock(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getdispname(lua_State *L) {
+static int meta_getdispname(scr_Context *L) {
 	lua_pushstring(L, Client_GetDisplayName(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getappname(lua_State *L) {
+static int meta_getappname(scr_Context *L) {
 	lua_pushstring(L, Client_GetAppName(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getposition(lua_State *L) {
+static int meta_getposition(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	Vec *vector = lua_tofloatvector(L, 2);
 
@@ -154,7 +154,7 @@ static int meta_getposition(lua_State *L) {
 	return 1;
 }
 
-static int meta_getrotation(lua_State *L) {
+static int meta_getrotation(scr_Context *L) {
 	Ang *angle = lua_toangle(L, 2);
 	if(!angle) angle = lua_newangle(L);
 
@@ -166,7 +166,7 @@ static int meta_getrotation(lua_State *L) {
 	return 1;
 }
 
-static int meta_getfluidlvl(lua_State *L) {
+static int meta_getfluidlvl(scr_Context *L) {
 	BlockID fluid = BLOCK_AIR;
 	lua_pushinteger(L, (lua_Integer)Client_GetFluidLevel(
 		lua_checkclient(L, 1),
@@ -176,14 +176,14 @@ static int meta_getfluidlvl(lua_State *L) {
 	return 2;
 }
 
-static int meta_getstandblock(lua_State *L) {
+static int meta_getstandblock(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetStandBlock(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getclickdist(lua_State *L) {
+static int meta_getclickdist(scr_Context *L) {
 	if(!lua_toboolean(L, 2))
 		lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(
 			lua_checkclient(L, 1)
@@ -195,21 +195,21 @@ static int meta_getclickdist(lua_State *L) {
 	return 1;
 }
 
-static int meta_getmodel(lua_State *L) {
+static int meta_getmodel(scr_Context *L) {
 	lua_pushinteger(L, (lua_Integer)Client_GetModel(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getworld(lua_State *L) {
+static int meta_getworld(scr_Context *L) {
 	lua_pushworld(L, Client_GetWorld(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_setop(lua_State *L) {
+static int meta_setop(scr_Context *L) {
 	lua_pushboolean(L, Client_SetOP(
 		lua_checkclient(L, 1),
 		(cs_bool)lua_toboolean(L, 2)
@@ -217,7 +217,7 @@ static int meta_setop(lua_State *L) {
 	return 1;
 }
 
-static int meta_setspawn(lua_State *L) {
+static int meta_setspawn(scr_Context *L) {
 	lua_pushboolean(L, Client_SetSpawn(
 		lua_checkclient(L, 1),
 		lua_checkfloatvector(L, 2),
@@ -226,7 +226,7 @@ static int meta_setspawn(lua_State *L) {
 	return 1;
 }
 
-static int meta_setgroup(lua_State *L) {
+static int meta_setgroup(scr_Context *L) {
 	lua_pushboolean(L, Client_SetGroup(
 		lua_checkclient(L, 1),
 		(cs_uintptr)luaL_checkinteger(L, 2)
@@ -234,7 +234,7 @@ static int meta_setgroup(lua_State *L) {
 	return 1;
 }
 
-static int meta_setmdlrotation(lua_State *L) {
+static int meta_setmdlrotation(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_pushboolean(L,
 		Client_SetProp(client, ENTITY_PROP_ROT_X, (cs_int32)luaL_checkinteger(L, 2)) &&
@@ -244,7 +244,7 @@ static int meta_setmdlrotation(lua_State *L) {
 	return 1;
 }
 
-static int meta_setweather(lua_State *L) {
+static int meta_setweather(scr_Context *L) {
 	lua_pushboolean(L, Client_SetWeather(
 		lua_checkclient(L, 1),
 		(EWeather)luaL_checkinteger(L, 2)
@@ -252,7 +252,7 @@ static int meta_setweather(lua_State *L) {
 	return 1;
 }
 
-static int meta_setenvprop(lua_State *L) {
+static int meta_setenvprop(scr_Context *L) {
 	lua_pushboolean(L, Client_SetEnvProperty(
 		lua_checkclient(L, 1),
 		(EProp)luaL_checkinteger(L, 2),
@@ -261,7 +261,7 @@ static int meta_setenvprop(lua_State *L) {
 	return 1;
 }
 
-static int meta_setenvcolor(lua_State *L) {
+static int meta_setenvcolor(scr_Context *L) {
 	lua_pushboolean(L, Client_SetEnvColor(
 		lua_checkclient(L, 1),
 		(EColor)luaL_checkinteger(L, 2),
@@ -270,7 +270,7 @@ static int meta_setenvcolor(lua_State *L) {
 	return 1;
 }
 
-static int meta_setclickdist(lua_State *L) {
+static int meta_setclickdist(scr_Context *L) {
 	lua_pushboolean(L, Client_SetClickDistance(
 		lua_checkclient(L, 1),
 		(cs_int16)luaL_checkinteger(L, 2)
@@ -278,7 +278,7 @@ static int meta_setclickdist(lua_State *L) {
 	return 1;
 }
 
-static int meta_setblockperm(lua_State *L) {
+static int meta_setblockperm(scr_Context *L) {
 	lua_pushboolean(L, Client_SetBlockPerm(
 		lua_checkclient(L, 1),
 		(BlockID)luaL_checkinteger(L, 2),
@@ -288,7 +288,7 @@ static int meta_setblockperm(lua_State *L) {
 	return 1;
 }
 
-static int meta_settextcolor(lua_State *L) {
+static int meta_settextcolor(scr_Context *L) {
 	lua_pushboolean(L, Client_AddTextColor(
 		lua_checkclient(L, 1),
 		lua_checkcolor4(L, 2),
@@ -297,7 +297,7 @@ static int meta_settextcolor(lua_State *L) {
 	return 1;
 }
 
-static int meta_setmotd(lua_State *L) {
+static int meta_setmotd(scr_Context *L) {
 	lua_pushboolean(L, Client_SetServerIdent(
 		lua_checkclient(L, 1),
 		luaL_checkstring(L, 2),
@@ -306,7 +306,7 @@ static int meta_setmotd(lua_State *L) {
 	return 1;
 }
 
-static int meta_sethotkey(lua_State *L) {
+static int meta_sethotkey(scr_Context *L) {
 	lua_pushboolean(L, Client_SetHotkey(
 		lua_checkclient(L, 1),
 		luaL_checkstring(L, 2),
@@ -316,7 +316,7 @@ static int meta_sethotkey(lua_State *L) {
 	return 1;
 }
 
-static int meta_setmodel(lua_State *L) {
+static int meta_setmodel(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	if(lua_isnumber(L, 2))
 		lua_pushboolean(L, Client_SetModel(client, (cs_int16)luaL_checkinteger(L, 2)));
@@ -325,7 +325,7 @@ static int meta_setmodel(lua_State *L) {
 	return 1;
 }
 
-static int meta_setdispname(lua_State *L) {
+static int meta_setdispname(scr_Context *L) {
 	lua_pushboolean(L, Client_SetDisplayName(
 		lua_checkclient(L, 1),
 		luaL_checkstring(L, 2)
@@ -333,7 +333,7 @@ static int meta_setdispname(lua_State *L) {
 	return 1;
 }
 
-static int meta_sethotbar(lua_State *L) {
+static int meta_sethotbar(scr_Context *L) {
 	lua_pushboolean(L, Client_SetHotbar(
 		lua_checkclient(L, 1),
 		(cs_byte)luaL_checkinteger(L, 2),
@@ -342,7 +342,7 @@ static int meta_sethotbar(lua_State *L) {
 	return 1;
 }
 
-static int meta_sethacks(lua_State *L) {
+static int meta_sethacks(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	luaL_checktype(L, 2, LUA_TTABLE);
 
@@ -367,7 +367,7 @@ static int meta_sethacks(lua_State *L) {
 	return 1;
 }
 
-static int meta_setheldblock(lua_State *L) {
+static int meta_setheldblock(scr_Context *L) {
 	lua_pushboolean(L, Client_SetHeldBlock(
 		lua_checkclient(L, 1),
 		(BlockID)luaL_checkinteger(L, 2),
@@ -376,7 +376,7 @@ static int meta_setheldblock(lua_State *L) {
 	return 1;
 }
 
-static int meta_setorderblock(lua_State *L) {
+static int meta_setorderblock(scr_Context *L) {
 	lua_pushboolean(L, Client_SetInvOrder(
 		lua_checkclient(L, 1),
 		(cs_byte)luaL_checkinteger(L, 2),
@@ -385,7 +385,7 @@ static int meta_setorderblock(lua_State *L) {
 	return 1;
 }
 
-static int meta_setskin(lua_State *L) {
+static int meta_setskin(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_str url = (cs_str)luaL_checkstring(L, 2);
 	luaL_argcheck(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
@@ -393,7 +393,7 @@ static int meta_setskin(lua_State *L) {
 	return 1;
 }
 
-static int meta_settexpack(lua_State *L) {
+static int meta_settexpack(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	cs_str url = (cs_str)luaL_checkstring(L, 2);
 	luaL_argcheck(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
@@ -401,7 +401,7 @@ static int meta_settexpack(lua_State *L) {
 	return 1;
 }
 
-static int meta_setvelocity(lua_State *L) {
+static int meta_setvelocity(scr_Context *L) {
 	lua_pushboolean(L, Client_SetVelocity(
 		lua_checkclient(L, 1),
 		lua_checkfloatvector(L, 2),
@@ -410,7 +410,7 @@ static int meta_setvelocity(lua_State *L) {
 	return 1;
 }
 
-static int meta_gotoworld(lua_State *L) {
+static int meta_gotoworld(scr_Context *L) {
 	lua_pushboolean(L, Client_ChangeWorld(
 		lua_checkclient(L, 1),
 		lua_checkworld(L, 2)
@@ -418,28 +418,28 @@ static int meta_gotoworld(lua_State *L) {
 	return 1;
 }
 
-static int meta_reload(lua_State *L) {
+static int meta_reload(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	World *world = Client_GetWorld(client);
 	lua_pushboolean(L, Client_ChangeWorld(client, world));
 	return 1;
 }
 
-static int meta_islocal(lua_State *L) {
+static int meta_islocal(scr_Context *L) {
 	lua_pushboolean(L, Client_IsLocal(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isspawned(lua_State *L) {
+static int meta_isspawned(scr_Context *L) {
 	lua_pushboolean(L, Client_IsSpawned(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isinsameworld(lua_State *L) {
+static int meta_isinsameworld(scr_Context *L) {
 	lua_pushboolean(L, Client_IsInSameWorld(
 		lua_checkclient(L, 1),
 		lua_checkclient(L, 2)
@@ -447,14 +447,14 @@ static int meta_isinsameworld(lua_State *L) {
 	return 1;
 }
 
-static int meta_isfirstspawn(lua_State *L) {
+static int meta_isfirstspawn(scr_Context *L) {
 	lua_pushboolean(L, Client_IsFirstSpawn(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isinstate(lua_State *L) {
+static int meta_isinstate(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	int top = lua_gettop(L);
 	for(int i = 2; i <= top; i++) {
@@ -469,35 +469,35 @@ static int meta_isinstate(lua_State *L) {
 	return 1;
 }
 
-static int meta_isbot(lua_State *L) {
+static int meta_isbot(scr_Context *L) {
 	lua_pushboolean(L, Client_IsBot(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isop(lua_State *L) {
+static int meta_isop(scr_Context *L) {
 	lua_pushboolean(L, Client_IsOP(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_spawn(lua_State *L) {
+static int meta_spawn(scr_Context *L) {
 	lua_pushboolean(L, Client_Spawn(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_despawn(lua_State *L) {
+static int meta_despawn(scr_Context *L) {
 	lua_pushboolean(L, Client_Despawn(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_sendbulk(lua_State *L) {
+static int meta_sendbulk(scr_Context *L) {
 	Client_BulkBlockUpdate(
 		lua_checkclient(L, 1),
 		lua_checkbulk(L, 2)
@@ -505,7 +505,7 @@ static int meta_sendbulk(lua_State *L) {
 	return 0;
 }
 
-static int meta_particle(lua_State *L) {
+static int meta_particle(scr_Context *L) {
 	Vec *position = lua_checkfloatvector(L, 3);
 	Vec *origin = lua_tofloatvector(L, 4);
 	if(!origin) origin = position;
@@ -517,13 +517,13 @@ static int meta_particle(lua_State *L) {
 	return 1;
 }
 
-static int meta_newcuboid(lua_State *L) {
+static int meta_newcuboid(scr_Context *L) {
 	Client *client = lua_checkclient(L, 1);
 	lua_newcubref(L, client, Client_NewSelection(client));
 	return 1;
 }
 
-static int meta_plmesg(lua_State *L) {
+static int meta_plmesg(scr_Context *L) {
 	lua_pushboolean(L, Client_SendPluginMessage(
 		lua_checkclient(L, 1),
 		(cs_byte)luaL_checkinteger(L, 2),
@@ -532,14 +532,14 @@ static int meta_plmesg(lua_State *L) {
 	return 1;
 }
 
-static int meta_update(lua_State *L) {
+static int meta_update(scr_Context *L) {
 	lua_pushboolean(L, Client_Update(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_teleport(lua_State *L) {
+static int meta_teleport(scr_Context *L) {
 	if (lua_isnumber(L, 2)) {
 		lua_pushboolean(L, Client_ExtTeleportTo(
 			lua_checkclient(L, 1),
@@ -556,14 +556,14 @@ static int meta_teleport(lua_State *L) {
 	return 1;
 }
 
-static int meta_tospawn(lua_State *L) {
+static int meta_tospawn(scr_Context *L) {
 	lua_pushboolean(L, Client_TeleportToSpawn(
 		lua_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_kick(lua_State *L) {
+static int meta_kick(scr_Context *L) {
 	Client_Kick(
 		lua_checkclient(L, 1),
 		luaL_optstring(L, 2, NULL)
@@ -571,7 +571,7 @@ static int meta_kick(lua_State *L) {
 	return 0;
 }
 
-static int meta_chat(lua_State *L) {
+static int meta_chat(scr_Context *L) {
 	Client *client = lua_toclient(L, 1);
 	EMesgType type = MESSAGE_TYPE_CHAT;
 	cs_str mesg = NULL;
@@ -653,7 +653,7 @@ static const luaL_Reg clientmeta[] = {
 	{NULL, NULL}
 };
 
-static int client_get(lua_State *L) {
+static int client_get(scr_Context *L) {
 	int count = lua_gettop(L);
 	for(int i = 1; i <= count; i++)
 		lua_pushclient(L, Client_GetByID(
@@ -662,7 +662,7 @@ static int client_get(lua_State *L) {
 	return count;
 }
 
-static int client_getname(lua_State *L) {
+static int client_getname(scr_Context *L) {
 	int count = lua_gettop(L);
 	for(int i = 1; i <= count; i++)
 		lua_pushclient(L, Client_GetByName(
@@ -671,14 +671,14 @@ static int client_getname(lua_State *L) {
 	return count;
 }
 
-static int client_getcount(lua_State *L) {
+static int client_getcount(scr_Context *L) {
 	lua_pushinteger(L, Clients_GetCount(
 		(EClientState)luaL_checkinteger(L, 1)
 	));
 	return 1;
 }
 
-static int client_iterall(lua_State *L) {
+static int client_iterall(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -696,7 +696,7 @@ static int client_iterall(lua_State *L) {
 	return 0;
 }
 
-static int client_newbot(lua_State *L) {
+static int client_newbot(scr_Context *L) {
 	lua_pushclient(L, Client_NewBot());
 	return 1;
 }
@@ -712,7 +712,7 @@ static const luaL_Reg clientlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_client(lua_State *L) {
+int luaopen_client(scr_Context *L) {
 	lua_createtable(L, MAX_CLIENTS, 0);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCLIENTS);
 	lua_indexedmeta(L, CSLUA_MCLIENT, clientmeta);

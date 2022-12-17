@@ -1,6 +1,6 @@
 #ifndef CSLUALOG_H
 #define CSLUALOG_H
-#include <lua.h>
+#include "scripting.h"
 
-int luaopen_log(lua_State *L);
+int luaopen_log(scr_Context *L);
 #endif

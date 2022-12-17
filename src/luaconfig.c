@@ -3,13 +3,13 @@
 #include "luascript.h"
 #include "luaconfig.h"
 
-CStore *lua_checkcfgstore(lua_State *L, int idx) {
+CStore *lua_checkcfgstore(scr_Context *L, int idx) {
 	void **ud = luaL_checkudata(L, idx, CSLUA_MCONFIG);
 	luaL_argcheck(L, *ud != NULL, idx, "Invalid config");
 	return (CStore *)*ud;
 }
 
-static int meta_get(lua_State *L) {
+static int meta_get(scr_Context *L) {
 	CEntry *ent = Config_GetEntry(
 		lua_checkcfgstore(L, 1),
 		luaL_checkstring(L, 2)
@@ -36,7 +36,7 @@ static int meta_get(lua_State *L) {
 	return 1;
 }
 
-static int meta_set(lua_State *L) {
+static int meta_set(scr_Context *L) {
 	CEntry *ent = Config_GetEntry(
 		lua_checkcfgstore(L, 1),
 		luaL_checkstring(L, 2)
@@ -63,14 +63,14 @@ static int meta_set(lua_State *L) {
 	return 0;
 }
 
-static int meta_load(lua_State *L) {
+static int meta_load(scr_Context *L) {
 	lua_pushboolean(L, Config_Load(
 		lua_checkcfgstore(L, 1)
 	));
 	return 1;
 }
 
-static int meta_save(lua_State *L) {
+static int meta_save(scr_Context *L) {
 	lua_pushboolean(L, Config_Save(
 		lua_checkcfgstore(L, 1),
 		(cs_bool)lua_toboolean(L, 2)
@@ -78,14 +78,14 @@ static int meta_save(lua_State *L) {
 	return 1;
 }
 
-static int meta_reset(lua_State *L) {
+static int meta_reset(scr_Context *L) {
 	Config_ResetToDefault(
 		lua_checkcfgstore(L, 1)
 	);
 	return 0;
 }
 
-static int meta_poperror(lua_State *L) {
+static int meta_poperror(scr_Context *L) {
 	ECExtra extra = CONFIG_EXTRA_NOINFO;
 	cs_int32 line = 0;
 	ECError error = Config_PopError(
@@ -98,7 +98,7 @@ static int meta_poperror(lua_State *L) {
 	return 3;
 }
 
-static int meta_destroy(lua_State *L) {
+static int meta_destroy(scr_Context *L) {
 	CStore *store = lua_checkcfgstore(L, 1);
 	*(void **)lua_touserdata(L, 1) = NULL;
 	Config_DestroyStore(store);
@@ -119,7 +119,7 @@ const luaL_Reg configmeta[] = {
 	{NULL, NULL}
 };
 
-static int config_new(lua_State *L) {
+static int config_new(scr_Context *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	lua_getfield(L, -1, "name");
 	cs_str cname = luaL_checkstring(L, -1);
@@ -181,7 +181,7 @@ static int config_new(lua_State *L) {
 	return 1;
 }
 
-static int config_error(lua_State *L) {
+static int config_error(scr_Context *L) {
 	lua_pushstring(L, Config_ErrorToString(
 		(ECError)luaL_checkinteger(L, 1)
 	));
@@ -198,7 +198,7 @@ const luaL_Reg configlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_config(lua_State *L) {
+int luaopen_config(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MCONFIG, configmeta);
 
 	lua_addintconst(L, CONFIG_ERROR_SUCCESS);

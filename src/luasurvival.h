@@ -1,6 +1,6 @@
 #ifndef CSLUASURVIVAL_H
 #define CSLUASURVIVAL_H
-#include <lua.h>
+#include "scripting.h"
 
-int luaopen_survival(lua_State *L);
+int luaopen_survival(scr_Context *L);
 #endif

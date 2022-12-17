@@ -7,7 +7,7 @@ static const char *errors[] = {
 	// Lua returns
 	"Command with the same name already exists",
 	"Command with this name is not registred",
-	"This command was not registred by this lua_State",
+	"This command was not registred by this scr_Context",
 	"Command name cannot be empty",
 	"Command description cannot be empty",
 
@@ -19,7 +19,7 @@ static const char *errors[] = {
 	"Command registration failed"
 };
 
-static Command *getstatecommand(lua_State *L, int idx) {
+static Command *getstatecommand(scr_Context *L, int idx) {
 	Command *cmd = Command_GetByName(luaL_checkstring(L, idx));
 	luaL_argcheck(L, cmd != NULL, idx, errors[1]);
 	luaL_argcheck(L, Command_GetUserData(cmd) == lua_getscript(L), idx, errors[2]);
@@ -53,7 +53,7 @@ COMMAND_FUNC(luacmd) {
 	return false;
 }
 
-static int cmd_add(lua_State *L) {
+static int cmd_add(scr_Context *L) {
 	cs_str name = luaL_checkstring(L, 1);
 	luaL_argcheck(L, String_Length(name) > 0, 1, errors[3]);
 	cs_str descr = luaL_checkstring(L, 2);
@@ -75,7 +75,7 @@ static int cmd_add(lua_State *L) {
 	return 0;
 }
 
-static int cmd_remove(lua_State *L) {
+static int cmd_remove(scr_Context *L) {
 	Command *cmd = getstatecommand(L, 1);
 	lua_getfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 	lua_pushnil(L);
@@ -84,7 +84,7 @@ static int cmd_remove(lua_State *L) {
 	return 0;
 }
 
-static int cmd_setalias(lua_State *L) {
+static int cmd_setalias(scr_Context *L) {
 	Command *cmd = getstatecommand(L, 1);
 	cs_str alias = luaL_checkstring(L, 2);
 	lua_pushboolean(L, Command_SetAlias(cmd, alias));
@@ -99,7 +99,7 @@ static const luaL_Reg cmdlib[] ={
 	{NULL, NULL}
 };
 
-int luaopen_command(lua_State *L) {
+int luaopen_command(scr_Context *L) {
 	lua_newtable(L);
 	lua_setfield(L, LUA_REGISTRYINDEX, CSLUA_RCMDS);
 

@@ -5,33 +5,33 @@
 #include "luascript.h"
 #include "luaangle.h"
 
-cs_bool lua_isangle(lua_State *L, int idx) {
+cs_bool lua_isangle(scr_Context *L, int idx) {
 	return luaL_testudata(L, idx, CSLUA_MANGLE) != NULL;
 }
 
-Ang *lua_newangle(lua_State *L) {
+Ang *lua_newangle(scr_Context *L) {
 	Ang *ang = lua_newuserdata(L, sizeof(Ang));
 	Memory_Zero(ang, sizeof(Ang));
 	luaL_setmetatable(L, CSLUA_MANGLE);
 	return ang;
 }
 
-Ang *lua_checkangle(lua_State *L, int idx) {
+Ang *lua_checkangle(scr_Context *L, int idx) {
 	return luaL_checkudata(L, idx, CSLUA_MANGLE);
 }
 
-Ang *lua_toangle(lua_State *L, int idx) {
+Ang *lua_toangle(scr_Context *L, int idx) {
 	return luaL_testudata(L, idx, CSLUA_MANGLE);
 }
 
-static int ang_setvalue(lua_State *L) {
+static int ang_setvalue(scr_Context *L) {
 	Ang *ang = lua_checkangle(L, 1);
 	ang->yaw = (cs_float)luaL_optnumber(L, 2, ang->yaw);
 	ang->pitch = (cs_float)luaL_optnumber(L, 3, ang->pitch);
 	return 0;
 }
 
-static int ang_getvalue(lua_State *L) {
+static int ang_getvalue(scr_Context *L) {
 	Ang *ang = lua_checkangle(L, 1);
 	lua_pushnumber(L, (lua_Number)ang->yaw);
 	lua_pushnumber(L, (lua_Number)ang->pitch);
@@ -50,7 +50,7 @@ static cs_bool getaxis(cs_str str, cs_char *ax) {
 	return false;
 }
 
-static int meta_index(lua_State *L) {
+static int meta_index(scr_Context *L) {
 	Ang *ang = lua_checkangle(L, 1);
 
 	cs_char axis = 0;
@@ -67,7 +67,7 @@ static int meta_index(lua_State *L) {
 	return 0;
 }
 
-static int meta_newindex(lua_State *L) {
+static int meta_newindex(scr_Context *L) {
 	Ang *ang = lua_checkangle(L, 1);
 
 	cs_char axis = 0;
@@ -84,13 +84,13 @@ static int meta_newindex(lua_State *L) {
 	return 0;
 }
 
-static int meta_call(lua_State *L) {
+static int meta_call(scr_Context *L) {
 	ang_setvalue(L);
 	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int meta_tostring(lua_State *L) {
+static int meta_tostring(scr_Context *L) {
 	Ang *ang = lua_checkangle(L, 1);
 	lua_pushfstring(L, "Angle(%f, %f)", ang->yaw, ang->pitch);
 	return 1;
@@ -108,7 +108,7 @@ static const luaL_Reg anglemeta[] = {
 	{NULL, NULL}
 };
 
-static int ang_new(lua_State *L) {
+static int ang_new(scr_Context *L) {
 	lua_newangle(L);
 
 	if(lua_gettop(L) > 1) {
@@ -122,7 +122,7 @@ static int ang_new(lua_State *L) {
 	return 1;
 }
 
-int luaopen_angle(lua_State *L) {
+int luaopen_angle(scr_Context *L) {
 	lua_indexedmeta(L, CSLUA_MANGLE, anglemeta);
 	lua_pushcfunction(L, ang_new);
 	return 1;

@@ -1,6 +1,6 @@
 #ifndef CSLUAGROUP_H
 #define CSLUAGROUP_H
-#include <lua.h>
+#include "scripting.h"
 
-int luaopen_group(lua_State *L);
+int luaopen_group(scr_Context *L);
 #endif
