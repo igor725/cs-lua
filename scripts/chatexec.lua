@@ -1,6 +1,6 @@
 setInfo {
 	version = 1,
-	hutreload = true,
+	hotreload = true,
 	home = 'https://github.com/igor725/cs-lua/blob/main/scripts/chatexec.lua'
 }
 
