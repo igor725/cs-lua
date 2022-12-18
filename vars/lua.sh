@@ -22,7 +22,7 @@ if [ $LUA_FROM_PKG -eq 1 ]; then
 			CFLAGS="$CFLAGS $($PKCFG --cflags $LNAME)"
 		else
 			echo "pkg-config: failed to find luajit >= 2.0 or lua >= 5.1"
-			exit 1
+			return 1
 		fi
 	fi
 
@@ -30,7 +30,7 @@ if [ $LUA_FROM_PKG -eq 1 ]; then
 else
 	if [ $GITOK -eq 0 ]; then
 		echo "Git: No git binary found"
-		exit 1
+		return 1
 	fi
 	if [ ! -d "../luajit"  ]; then
 		git clone https://luajit.org/git/luajit.git ../luajit
@@ -45,7 +45,7 @@ else
 		if [ $? -ne 0 ]; then
 			popd
 			echo "Failed to build LuaJIT"
-			exit 1
+			return 1
 		fi
 		popd
 	fi
@@ -69,4 +69,4 @@ if [ $PLUGIN_INSTALL -eq 1 ]; then
 	fi
 fi
 
-exit 0
+return 0

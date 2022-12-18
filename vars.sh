@@ -1,14 +1,22 @@
+CURRDIR="$ROOT"
+
+if test -n "$BASH"; then
+	CURRDIR=$(dirname ${BASH_SOURCE[0]})
+elif test -n "$ZSH_NAME"; then
+	CURRDIR=$(dirname ${(%):-%x})
+fi
+
 for a in $PLUGIN_ARGS; do
 	if [ "$a" == "lua" ]; then
-		. "$ROOT/vars/lua.sh"
-		exit $?
+		. "$CURRDIR/vars/lua.sh"
+		return $?
 	fi
 	if [ "$a" == "python" ]; then
-		. "$ROOT/vars/python.sh"
-		exit $?
+		. "$CURRDIR/vars/python.sh"
+		return $?
 	fi
 done
 
-echo "Target language is not specified, using Lua"
-. "$ROOT/vars/lua.sh"
-exit $?
+echo "Target interpreter is not specified, using Lua"
+. "$CURRDIR/vars/lua.sh"
+return $?
