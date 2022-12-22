@@ -9,7 +9,7 @@ if [ $LUA_FROM_PKG -eq 1 ]; then
 	LJNAME="luajit >= 2.0"
 	LNAME="lua >= 5.1"
 	PKCFG=$MACH-pkg-config
-	if ! command -v $PKCFG 2> /dev/null; then
+	if ! command -v $PKCFG 2>&1 > /dev/null; then
 		PKCFG=pkg-config
 	fi
 
