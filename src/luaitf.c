@@ -6,10 +6,10 @@
 #include "luascript.h"
 #include "luaitf.h"
 
-LuaEventFunc callbacks[CSLUA_MAX_CALLBACKS] = {NULL};
+LuaEventFunc callbacks[CSSCRIPTS_MAX_CALLBACKS] = {NULL};
 
 static cs_bool addcallback(LuaEventFunc func) {
-	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++) {
+	for (cs_uint32 i = 0; i < CSSCRIPTS_MAX_CALLBACKS; i++) {
 		if (!callbacks[i]) {
 			callbacks[i] = func;
 			return true;
@@ -20,7 +20,7 @@ static cs_bool addcallback(LuaEventFunc func) {
 }
 
 static cs_bool removecallback(LuaEventFunc func) {
-	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++) {
+	for (cs_uint32 i = 0; i < CSSCRIPTS_MAX_CALLBACKS; i++) {
 		if (callbacks[i] == func) {
 			callbacks[i] = NULL;
 			return true;
@@ -39,7 +39,7 @@ static void unlocklist(void) {
 }
 
 static cs_bool runcommand(ELuaCommand cmd, cs_uint32 idx) {(void)idx;
-	LuaScript *script;
+	Script *script;
 	if (idx >= MAX_SCRIPTS_COUNT || (script = scripts[idx]) == NULL)
 		return false;
 
@@ -55,7 +55,7 @@ static cs_bool runcommand(ELuaCommand cmd, cs_uint32 idx) {(void)idx;
 }
 
 static cs_uint32 reqscrinf(LuaInfo *li, cs_uint32 id) {
-	LuaScript *ptr = NULL;
+	Script *ptr = NULL;
 	while (!ptr && id < MAX_SCRIPTS_COUNT)
 		ptr = scripts[id++];
 	if (id >= MAX_SCRIPTS_COUNT) return 0;
@@ -77,7 +77,7 @@ static void disscrinf(LuaInfo *li) {
 	li->hotreload = false; li->version = 0;
 }
 
-void runcallback(ELuaEvent type, LuaScript *scr) {
+void runcallback(ELuaEvent type, Script *scr) {
 	LuaInfo li = {
 		.id = scr->id
 	};
@@ -89,7 +89,7 @@ void runcallback(ELuaEvent type, LuaScript *scr) {
 		li.version = scr->version;
 	}
 
-	for (cs_uint32 i = 0; i < CSLUA_MAX_CALLBACKS; i++)
+	for (cs_uint32 i = 0; i < CSSCRIPTS_MAX_CALLBACKS; i++)
 		if (callbacks[i]) callbacks[i](type, type == LUAEVENT_UPDATESCRIPT ? (void *)&li : (void *)&li.id);
 
 	if (type == LUAEVENT_UPDATESCRIPT) disscrinf(&li);
@@ -108,7 +108,7 @@ LuaItf litf = {
 };
 
 Plugin_DeclareInterfaces {
-	PLUGIN_IFACE_ADD(CSLUA_ITF_NAME, litf),
+	PLUGIN_IFACE_ADD(CSSCRIPTS_ITF_NAME, litf),
 
 	PLUGIN_IFACE_END
 };

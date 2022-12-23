@@ -4,33 +4,33 @@
 #include "luagroup.h"
 
 static int group_add(scr_Context *L) {
-	lua_pushinteger(L, (lua_Integer)Groups_Create(
-		luaL_checkstring(L, 1),
-		(cs_byte)luaL_checkinteger(L, 2)
+	scr_pushinteger(L, (scr_Integer)Groups_Create(
+		scr_checkstring(L, 1),
+		(cs_byte)scr_checkinteger(L, 2)
 	));
 	return 1;
 }
 
 static int group_remove(scr_Context *L) {
-	lua_pushboolean(L, Groups_Remove(
-		(cs_uintptr)luaL_checkinteger(L, 1)
+	scr_pushboolean(L, Groups_Remove(
+		(cs_uintptr)scr_checkinteger(L, 1)
 	));
 	return 1;
 }
 
 static int group_getinfo(scr_Context *L) {
-	CGroup *grp = Groups_GetByID((cs_uintptr)luaL_checkinteger(L, 1));
+	CGroup *grp = Groups_GetByID((cs_uintptr)scr_checkinteger(L, 1));
 	if(grp) {
-		lua_pushinteger(L, (lua_Integer)grp->rank);
-		lua_pushstring(L, grp->name);
+		scr_pushinteger(L, (scr_Integer)grp->rank);
+		scr_pushstring(L, grp->name);
 		return 2;
 	}
 
-	lua_pushnil(L);
+	scr_pushnull(L);
 	return 1;
 }
 
-static const luaL_Reg grouplib[] = {
+static const scr_RegFuncs grouplib[] = {
 	{"add", group_add},
 	{"remove", group_remove},
 	{"getinfo", group_getinfo},
@@ -38,9 +38,9 @@ static const luaL_Reg grouplib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_group(scr_Context *L) {
-	lua_addintconst(L, GROUPS_INVALID_ID);
+int scr_libfunc(group)(scr_Context *L) {
+	scr_addintconst(L, GROUPS_INVALID_ID);
 
-	luaL_newlib(L, grouplib);
+	scr_newlib(L, grouplib);
 	return 1;
 }

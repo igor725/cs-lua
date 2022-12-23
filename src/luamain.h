@@ -5,21 +5,21 @@
 #include "luascript.h"
 
 #define MAX_SCRIPTS_COUNT 128u
-extern LuaScript *scripts[MAX_SCRIPTS_COUNT];
+extern Script *scripts[MAX_SCRIPTS_COUNT];
 extern Mutex *listMutex;
 
-#define LuaScriptList_Iter(body) \
+#define ScriptList_Iter(body) \
 Mutex_Lock(listMutex); \
 for (cs_uint32 _si = 0; _si < MAX_SCRIPTS_COUNT; _si++) { \
-	LuaScript *script = scripts[_si]; \
+	Script *script = scripts[_si]; \
 	if (!script) { continue; } \
 	body \
 } \
 Mutex_Unlock(listMutex);
 
-#define LuaScriptList_RemoveCurrent() \
+#define ScriptList_RemoveCurrent() \
 scripts[_si] = NULL
 
-cs_bool LuaReload(LuaScript *script);
-cs_bool LuaUnload(LuaScript *script, cs_bool force);
+cs_bool LuaReload(Script *script);
+cs_bool LuaUnload(Script *script, cs_bool force);
 #endif

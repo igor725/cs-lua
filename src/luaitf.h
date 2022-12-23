@@ -3,8 +3,8 @@
 #include <core.h>
 
 #include "luascript.h"
-#define CSLUA_MAX_CALLBACKS 64u
-#define CSLUA_ITF_NAME "LuaController_v1"
+#define CSSCRIPTS_MAX_CALLBACKS 64u
+#define CSSCRIPTS_ITF_NAME "LuaController_v1"
 
 typedef struct _LuaInfo {
 	cs_uint32 id, version;
@@ -37,5 +37,5 @@ typedef struct _LuaItf {
 	void(*discardScriptInfo)(LuaInfo *li);
 } LuaItf;
 
-void runcallback(ELuaEvent type, LuaScript *scr);
+void runcallback(ELuaEvent type, Script *scr);
 #endif

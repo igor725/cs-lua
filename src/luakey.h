@@ -2,5 +2,5 @@
 #define CSLUAKEYS_H
 #include "scripting.h"
 
-int luaopen_key(scr_Context *L);
+int scr_libfunc(key)(scr_Context *L);
 #endif

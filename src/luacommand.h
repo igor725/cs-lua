@@ -2,5 +2,5 @@
 #define CSLUACOMMAND_H
 #include "scripting.h"
 
-int luaopen_command(scr_Context *L);
+int scr_libfunc(command)(scr_Context *L);
 #endif

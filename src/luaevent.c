@@ -15,105 +15,105 @@
 static void evtpoststart(void *param) {
 	(void)param;
 
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "postStart"))
-			LuaScript_Call(script, 0, 0);
-		LuaScript_Unlock(script);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "postStart"))
+			Script_Call(script, 0, 0);
+		Script_Unlock(script);
 	})
 }
 
 static void callallclient(Client *client, cs_str func) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, func)) {
-			lua_pushclient(script->L, client);
-			LuaScript_Call(script, 1, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, func)) {
+			scr_pushclient(script->L, client);
+			Script_Call(script, 1, 0);
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
 static void callallworld(World *world, cs_str func) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, func)) {
-			lua_pushworld(script->L, world);
-			LuaScript_Call(script, 1, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, func)) {
+			scr_pushworld(script->L, world);
+			Script_Call(script, 1, 0);
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
 static void evthandshake(onHandshakeDone *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onHandshake")) {
-			lua_pushclient(script->L, obj->client);
-			if(LuaScript_Call(script, 1, 1)) {
-				if(luaL_testudata(script->L, -1, CSLUA_MWORLD)) {
-					obj->world = lua_toworld(script->L, -1);
-					LuaScript_Unlock(script);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onHandshake")) {
+			scr_pushclient(script->L, obj->client);
+			if(Script_Call(script, 1, 1)) {
+				if(scr_testmemtype(script->L, -1, CSSCRIPTS_MWORLD)) {
+					obj->world = scr_toworld(script->L, -1);
+					Script_Unlock(script);
 					break;
 				}
 			}
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
 static cs_bool evtconnect(Client *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onConnect")) {
-			lua_pushclient(script->L, obj);
-			if(LuaScript_Call(script, 1, 1)) {
-				cs_bool succ = (cs_bool)lua_isnil(script->L, -1) ||
-				(cs_bool)lua_toboolean(script->L, -1);
-				lua_pop(script->L, 1);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onConnect")) {
+			scr_pushclient(script->L, obj);
+			if(Script_Call(script, 1, 1)) {
+				cs_bool succ = (cs_bool)scr_isnull(script->L, -1) ||
+				scr_toboolean(script->L, -1);
+				scr_stackpop(script->L, 1);
 				if(!succ) {
-					LuaScript_Unlock(script);
+					Script_Unlock(script);
 					return false;
 				}
 			} else {
-				LuaScript_Unlock(script);
+				Script_Unlock(script);
 				return false;
 			}
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 
 	return true;
 }
 
 static void evtdisconnect(Client *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onDisconnect")) {
-			lua_pushclient(script->L, obj);
-			lua_pushstring(script->L, Client_GetDisconnectReason(obj));
-			LuaScript_Call(script, 2, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onDisconnect")) {
+			scr_pushclient(script->L, obj);
+			scr_pushstring(script->L, Client_GetDisconnectReason(obj));
+			Script_Call(script, 2, 0);
 		}
-		lua_clearcuboids(script->L, obj);
+		scr_clearcuboids(script->L, obj);
 		/**
-		 * WARN: После вызова функции lua_clearclient
+		 * WARN: После вызова функции scr_clearclient
 		 * не должно происходить никаких вызовов
-		 * lua_pushclient для данного поинтера!
+		 * scr_pushclient для данного поинтера!
 		 * 
 		 */
-		lua_clearclient(script->L, obj);
-		LuaScript_Unlock(script);
+		scr_clearclient(script->L, obj);
+		Script_Unlock(script);
 	})
 }
 
 static void evtusertype(Client *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onUserTypeChange")) {
-			lua_pushclient(script->L, obj);
-			LuaScript_Call(script, 1, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onUserTypeChange")) {
+			scr_pushclient(script->L, obj);
+			Script_Call(script, 1, 0);
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
@@ -126,28 +126,28 @@ static void evtondespawn(Client *obj) {
 }
 
 static void evtonclick(onPlayerClick *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onPlayerClick")) {
-			lua_pushclient(script->L, obj->client);
-			lua_createtable(script->L, 0, 6);
-			lua_pushinteger(script->L, (lua_Integer)obj->button);
-			lua_setfield(script->L, -2, "button");
-			lua_pushboolean(script->L, obj->action == 0);
-			lua_setfield(script->L, -2, "action");
-			lua_pushclient(script->L, Client_GetByID(obj->tgid));
-			lua_setfield(script->L, -2, "target");
-			*lua_newangle(script->L) = obj->angle;
-			lua_setfield(script->L, -2, "angle");
-			LuaVector *vec = lua_newvector(script->L);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onPlayerClick")) {
+			scr_pushclient(script->L, obj->client);
+			scr_newntable(script->L, 0, 6);
+			scr_pushinteger(script->L, (scr_Integer)obj->button);
+			scr_settabfield(script->L, -2, "button");
+			scr_pushboolean(script->L, obj->action == 0);
+			scr_settabfield(script->L, -2, "action");
+			scr_pushclient(script->L, Client_GetByID(obj->tgid));
+			scr_settabfield(script->L, -2, "target");
+			*scr_newangle(script->L) = obj->angle;
+			scr_settabfield(script->L, -2, "angle");
+			LuaVector *vec = scr_newvector(script->L);
 			vec->type = LUAVECTOR_TSHORT;
 			vec->value.s = obj->tgpos;
-			lua_setfield(script->L, -2, "position");
-			lua_pushinteger(script->L, (lua_Integer)obj->tgface);
-			lua_setfield(script->L, -2, "face");
-			LuaScript_Call(script, 2, 0);
+			scr_settabfield(script->L, -2, "position");
+			scr_pushinteger(script->L, (scr_Integer)obj->tgface);
+			scr_settabfield(script->L, -2, "face");
+			Script_Call(script, 2, 0);
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
@@ -164,31 +164,31 @@ static cs_bool evtonblockplace(onBlockPlace *obj) {
 			return true;
 	}
 
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, func)) {
-			lua_pushclient(script->L, obj->client);
-			LuaVector *vec = lua_newvector(script->L);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, func)) {
+			scr_pushclient(script->L, obj->client);
+			LuaVector *vec = scr_newvector(script->L);
 			vec->type = LUAVECTOR_TSHORT;
 			vec->value.s = obj->pos;
-			lua_pushinteger(script->L, obj->id);
-			if(LuaScript_Call(script, 3, 1)) {
+			scr_pushinteger(script->L, obj->id);
+			if(Script_Call(script, 3, 1)) {
 				cs_bool succ = true;
-				if(lua_isnumber(script->L, -1))
-					obj->id = (BlockID)lua_tointeger(script->L, -1);
-				else if(lua_isboolean(script->L, -1))
-					succ = (cs_bool)lua_toboolean(script->L, -1);
-				lua_pop(script->L, 1);
+				if(scr_isnumber(script->L, -1))
+					obj->id = (BlockID)scr_tointeger(script->L, -1);
+				else if(scr_isboolean(script->L, -1))
+					succ = scr_toboolean(script->L, -1);
+				scr_stackpop(script->L, 1);
 				if(!succ) {
-					LuaScript_Unlock(script);
+					Script_Unlock(script);
 					return false;
 				}
 			} else {
-				LuaScript_Unlock(script);
+				Script_Unlock(script);
 				return false;
 			}
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 
 	return true;
@@ -199,14 +199,14 @@ static void evtworldadded(World *obj) {
 }
 
 static void evtworldremoved(World *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onWorldRemoved")) {
-			lua_pushworld(script->L, obj);
-			LuaScript_Call(script, 1, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onWorldRemoved")) {
+			scr_pushworld(script->L, obj);
+			Script_Call(script, 1, 0);
 		}
-		lua_clearworld(script->L, obj);
-		LuaScript_Unlock(script);
+		scr_clearworld(script->L, obj);
+		Script_Unlock(script);
 	})
 }
 
@@ -215,25 +215,25 @@ static void evtworldstatus(World *obj) {
 }
 
 static cs_bool evtpreworldenvupdate(preWorldEnvUpdate *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "preWorldEnvUpdate")) {
-			lua_pushworld(script->L, obj->world);
-			lua_pushinteger(script->L, obj->values);
-			lua_pushinteger(script->L, obj->props);
-			lua_pushinteger(script->L, obj->colors);
-			if(LuaScript_Call(script, 4, 1)) {
-				if(!lua_isnil(script->L, -1)) {
-					cs_bool ret = (cs_bool)lua_toboolean(script->L, -1);
-					lua_pop(script->L, 1);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "preWorldEnvUpdate")) {
+			scr_pushworld(script->L, obj->world);
+			scr_pushinteger(script->L, obj->values);
+			scr_pushinteger(script->L, obj->props);
+			scr_pushinteger(script->L, obj->colors);
+			if(Script_Call(script, 4, 1)) {
+				if(!scr_isnull(script->L, -1)) {
+					cs_bool ret = scr_toboolean(script->L, -1);
+					scr_stackpop(script->L, 1);
 					return ret;
 				}
 			} else {
-				LuaScript_Unlock(script);
+				Script_Unlock(script);
 				return false;
 			}
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 
 	return true;
@@ -248,39 +248,39 @@ static void evtrotate(Client *obj) {
 }
 
 static void evtheldchange(onHeldBlockChange *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onHeldBlockChange")) {
-			lua_pushclient(script->L, obj->client);
-			lua_pushinteger(script->L, obj->curr);
-			lua_pushinteger(script->L, obj->prev);
-			LuaScript_Call(script, 3, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onHeldBlockChange")) {
+			scr_pushclient(script->L, obj->client);
+			scr_pushinteger(script->L, obj->curr);
+			scr_pushinteger(script->L, obj->prev);
+			Script_Call(script, 3, 0);
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
 static cs_bool evtonmessage(onMessage *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
+	ScriptList_Iter({
+		Script_Lock(script);
 		cs_bool ret = true;
-		if(LuaScript_GlobalLookup(script, "onMessage")) {
-			lua_pushclient(script->L, obj->client);
-			lua_pushnumber(script->L, obj->type);
-			lua_pushstring(script->L, obj->message);
-			if(LuaScript_Call(script, 3, 2)) {
-				if(lua_isboolean(script->L, -2)) {
-					ret = (cs_bool)lua_toboolean(script->L, -2);
+		if(Script_GlobalLookup(script, "onMessage")) {
+			scr_pushclient(script->L, obj->client);
+			scr_pushnumber(script->L, obj->type);
+			scr_pushstring(script->L, obj->message);
+			if(Script_Call(script, 3, 2)) {
+				if(scr_isboolean(script->L, -2)) {
+					ret = scr_toboolean(script->L, -2);
 				} else {
-					if(lua_isnumber(script->L, -2))
-						obj->type = (cs_byte)lua_tointeger(script->L, -2);
-					if(lua_isstring(script->L, -1))
-						String_Copy(obj->message, sizeof(obj->message), lua_tostring(script->L, -1));
+					if(scr_isnumber(script->L, -2))
+						obj->type = (cs_byte)scr_tointeger(script->L, -2);
+					if(scr_isstring(script->L, -1))
+						String_Copy(obj->message, sizeof(obj->message), scr_tostring(script->L, -1));
 				}
-				lua_pop(script->L, 2);
+				scr_stackpop(script->L, 2);
 			} else ret = false;
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 		if(!ret) return ret;
 	})
 
@@ -288,70 +288,70 @@ static cs_bool evtonmessage(onMessage *obj) {
 }
 
 static void evttick(cs_int32 *obj) {
-	LuaScriptList_Iter({
+	ScriptList_Iter({
 		if(script->unloaded) {
-			LuaScriptList_RemoveCurrent();
-			LuaScript_Close(script);
+			ScriptList_RemoveCurrent();
+			Script_Close(script);
 			break;
 		} else {
-			LuaScript_Lock(script);
-			if(LuaScript_GlobalLookup(script, "onTick")) {
-				lua_pushinteger(script->L, (lua_Integer)*obj);
-				LuaScript_Call(script, 1, 0);
+			Script_Lock(script);
+			if(Script_GlobalLookup(script, "onTick")) {
+				scr_pushinteger(script->L, (scr_Integer)*obj);
+				Script_Call(script, 1, 0);
 			}
-			LuaScript_Unlock(script);
+			Script_Unlock(script);
 		}
 	})
 }
 
 static void evtpluginmsg(onPluginMessage *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "onPluginMessage")) {
-			lua_pushclient(script->L, obj->client);
-			lua_pushinteger(script->L, (lua_Integer)obj->channel);
-			lua_pushlstring(script->L, obj->message, 64);
-			LuaScript_Call(script, 3, 0);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "onPluginMessage")) {
+			scr_pushclient(script->L, obj->client);
+			scr_pushinteger(script->L, (scr_Integer)obj->channel);
+			scr_pushlstring(script->L, obj->message, 64);
+			Script_Call(script, 3, 0);
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
 static void evtprecommand(preCommand *obj) {
-	LuaScriptList_Iter({
+	ScriptList_Iter({
 		if(script != Command_GetUserData(obj->command)) continue;
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "preCommand")) {
-			lua_pushstring(script->L, Command_GetName(obj->command));
-			lua_pushclient(script->L, obj->caller);
-			lua_pushstring(script->L, obj->args);
-			lua_pushboolean(script->L, obj->allowed);
-			if(LuaScript_Call(script, 4, 1)) {
-				if(lua_isboolean(script->L, -1))
-					obj->allowed = (cs_bool)lua_toboolean(script->L, -1);
-				lua_pop(script->L, 1);
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "preCommand")) {
+			scr_pushstring(script->L, Command_GetName(obj->command));
+			scr_pushclient(script->L, obj->caller);
+			scr_pushstring(script->L, obj->args);
+			scr_pushboolean(script->L, obj->allowed);
+			if(Script_Call(script, 4, 1)) {
+				if(scr_isboolean(script->L, -1))
+					obj->allowed = scr_toboolean(script->L, -1);
+				scr_stackpop(script->L, 1);
 			}
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 
 static void evtprehandshakedone(preHandshakeDone *obj) {
-	LuaScriptList_Iter({
-		LuaScript_Lock(script);
-		if(LuaScript_GlobalLookup(script, "preHandshakeDone")) {
-			lua_pushclient(script->L, obj->client);
-			lua_pushstring(script->L, obj->name);
-			lua_pushstring(script->L, obj->motd);
-			if(LuaScript_Call(script, 3, 2)) {
-				if(lua_isstring(script->L, -1))
-					String_Copy(obj->motd, sizeof(obj->motd), lua_tostring(script->L, -1));
-				if(lua_isstring(script->L, -2))
-					String_Copy(obj->name, sizeof(obj->name), lua_tostring(script->L, -2));
-				lua_pop(script->L, 2);
+	ScriptList_Iter({
+		Script_Lock(script);
+		if(Script_GlobalLookup(script, "preHandshakeDone")) {
+			scr_pushclient(script->L, obj->client);
+			scr_pushstring(script->L, obj->name);
+			scr_pushstring(script->L, obj->motd);
+			if(Script_Call(script, 3, 2)) {
+				if(scr_isstring(script->L, -1))
+					String_Copy(obj->motd, sizeof(obj->motd), scr_tostring(script->L, -1));
+				if(scr_isstring(script->L, -2))
+					String_Copy(obj->name, sizeof(obj->name), scr_tostring(script->L, -2));
+				scr_stackpop(script->L, 2);
 			}
 		}
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 	})
 }
 

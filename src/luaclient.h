@@ -3,9 +3,10 @@
 #include <types/client.h>
 #include "scripting.h"
 
-Client *lua_checkclient(scr_Context *L, int idx);
-Client *lua_toclient(scr_Context *L, int idx);
-void lua_pushclient(scr_Context *L, Client *client);
-void lua_clearclient(scr_Context *L, Client *client);
-int luaopen_client(scr_Context *L);
+Client *scr_checkclient(scr_Context *L, int idx);
+Client *scr_toclient(scr_Context *L, int idx);
+void scr_pushclient(scr_Context *L, Client *client);
+void scr_clearclient(scr_Context *L, Client *client);
+
+int scr_libfunc(client)(scr_Context *L);
 #endif

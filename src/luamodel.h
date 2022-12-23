@@ -3,6 +3,7 @@
 #include <types/cpe.h>
 #include "scripting.h"
 
-CPEModel *lua_checkmodel(scr_Context *L, int idx);
-int luaopen_model(scr_Context *L);
+CPEModel *scr_checkmodel(scr_Context *L, int idx);
+
+int scr_libfunc(model)(scr_Context *L);
 #endif

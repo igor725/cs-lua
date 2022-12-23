@@ -5,7 +5,7 @@
 #include "luaconfig.h"
 
 static int server_uptime(scr_Context *L) {
-	lua_pushinteger(L, Time_GetMSec() - Server_StartTime);
+	scr_pushinteger(L, Time_GetMSec() - Server_StartTime);
 	return 1;
 }
 
@@ -18,20 +18,20 @@ static int server_stop(scr_Context *L) {
 static int server_info(scr_Context *L) {
 	ServerInfo si;
 	if(Server_GetInfo(&si, sizeof(si))) {
-		lua_createtable(L, 0, 3);
-		lua_pushinteger(L, si.coreFlags);
-		lua_setfield(L, -2, "flags");
-		lua_pushstring(L, si.coreName);
-		lua_setfield(L, -2, "software");
-		lua_pushstring(L, si.coreGitTag);
-		lua_setfield(L, -2, "tag");
+		scr_newntable(L, 0, 3);
+		scr_pushinteger(L, si.coreFlags);
+		scr_settabfield(L, -2, "flags");
+		scr_pushstring(L, si.coreName);
+		scr_settabfield(L, -2, "software");
+		scr_pushstring(L, si.coreGitTag);
+		scr_settabfield(L, -2, "tag");
 	} else
-		luaL_error(L, "Failed to fetch server info");
+		scr_fmterror(L, "Failed to fetch server info");
 
 	return 1;
 }
 
-static const luaL_Reg serverlib[] = {
+static const scr_RegFuncs serverlib[] = {
 	{"uptime", server_uptime},
 	{"stop", server_stop},
 	{"info", server_info},
@@ -39,13 +39,13 @@ static const luaL_Reg serverlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_server(scr_Context *L) {
-	lua_addintconst(L, SERVERINFO_FLAG_DEBUG);
-	lua_addintconst(L, SERVERINFO_FLAG_WININET);
-	lua_addintconst(L, SERVERINFO_FLAG_LIBCURL);
-	lua_addintconst(L, SERVERINFO_FLAG_WINCRYPT);
-	lua_addintconst(L, SERVERINFO_FLAG_LIBCRYPTO);
+int scr_libfunc(server)(scr_Context *L) {
+	scr_addintconst(L, SERVERINFO_FLAG_DEBUG);
+	scr_addintconst(L, SERVERINFO_FLAG_WININET);
+	scr_addintconst(L, SERVERINFO_FLAG_LIBCURL);
+	scr_addintconst(L, SERVERINFO_FLAG_WINCRYPT);
+	scr_addintconst(L, SERVERINFO_FLAG_LIBCRYPTO);
 
-	luaL_newlib(L, serverlib);
+	scr_newlib(L, serverlib);
 	return 1;
 }

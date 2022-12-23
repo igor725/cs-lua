@@ -2,7 +2,7 @@ LUA_FROM_PKG=0
 
 for a in $PLUGIN_ARGS; do
 	if [ "$a" == "pkg" ]; then LUA_FROM_PKG=1; fi
-	if [ "$a" == "mem" ]; then CFLAGS="$CFLAGS -DCSLUA_PROFILE_MEMORY"; fi
+	if [ "$a" == "mem" ]; then CFLAGS="$CFLAGS -DCSSCRIPTS_PROFILE_MEMORY"; fi
 done
 
 if [ $LUA_FROM_PKG -eq 1 ]; then
@@ -56,7 +56,7 @@ fi
 CFLAGS="$CFLAGS -DCSSCRIPTS_BUILD_LUA -I../"
 
 if [ -f "../cs-survival/src/survitf.h" ]; then
-	CFLAGS="$CFLAGS -DCSLUA_USE_SURVIVAL"
+	CFLAGS="$CFLAGS -DCSSCRIPTS_USE_SURVIVAL"
 fi
 
 if [ $PLUGIN_INSTALL -eq 1 ]; then

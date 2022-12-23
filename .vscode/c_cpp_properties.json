@@ -9,7 +9,7 @@
             "defines": [
                 "_DEBUG",
                 "CORE_BUILD_PLUGIN",
-                "CSLUA_USE_SURVIVAL",
+                "CSSCRIPTS_USE_SURVIVAL",
                 "CSSCRIPTS_BUILD_LUA"
             ],
             "cStandard": "c17",
@@ -27,7 +27,7 @@
             "defines": [
                 "_DEBUG",
                 "CORE_BUILD_PLUGIN",
-                "CSLUA_USE_SURVIVAL",
+                "CSSCRIPTS_USE_SURVIVAL",
                 "CSSCRIPTS_BUILD_LUA"
             ],
             "cStandard": "c17",
@@ -49,7 +49,7 @@
             "defines": [
                 "_DEBUG",
                 "CORE_BUILD_PLUGIN",
-                "CSLUA_USE_SURVIVAL",
+                "CSSCRIPTS_USE_SURVIVAL",
                 "CSSCRIPTS_BUILD_LUA"
             ],
             "compilerArgs": [],

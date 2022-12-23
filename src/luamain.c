@@ -10,7 +10,7 @@
 #include "luascript.h"
 #include "luaevent.h"
 
-LuaScript *scripts[MAX_SCRIPTS_COUNT] = {NULL};
+Script *scripts[MAX_SCRIPTS_COUNT] = {NULL};
 Mutex *listMutex = NULL;
 
 Plugin_SetVersion(1);
@@ -25,16 +25,16 @@ static cs_uint32 getfreescriptid(void) {
 	return (cs_uint32)-1;
 }
 
-static LuaScript *getscript(cs_str name) {
+static Script *getscript(cs_str name) {
 	for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
-		LuaScript *script = scripts[i];
+		Script *script = scripts[i];
 		if(script && String_CaselessCompare(script->name, name)) return script;
 	}
 
 	return NULL;
 }
 
-static LuaScript *LuaLoad(cs_str name) {
+static Script *LuaLoad(cs_str name) {
 	Mutex_Lock(listMutex);
 	cs_uint32 id = getfreescriptid();
 	if (id == (cs_uint32)-1) {
@@ -43,7 +43,7 @@ static LuaScript *LuaLoad(cs_str name) {
 		return NULL;
 	}
 
-	LuaScript *script = LuaScript_Open(name, id);
+	Script *script = Script_Open(name, id);
 	if(script) {
 		scripts[id] = script;
 		if (!script->infoupd)
@@ -57,41 +57,41 @@ static LuaScript *LuaLoad(cs_str name) {
 	return NULL;
 }
 
-cs_bool LuaReload(LuaScript *script) {
-	LuaScript_Lock(script);
+cs_bool LuaReload(Script *script) {
+	Script_Lock(script);
 	if(script->unloaded) {
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 		return false;
 	}
 
-	if(LuaScript_GlobalLookup(script, "preReload")) {
-		if(!LuaScript_Call(script, 0, 1)) {
+	if(Script_GlobalLookup(script, "preReload")) {
+		if(!Script_Call(script, 0, 1)) {
 			noreload:
-			LuaScript_Unlock(script);
+			Script_Unlock(script);
 			return false;
 		}
-		if(!lua_isnil(script->L, -1) && !lua_toboolean(script->L, -1)) {
-			lua_pop(script->L, 1);
+		if(!scr_isnull(script->L, -1) && !scr_toboolean(script->L, -1)) {
+			scr_stackpop(script->L, 1);
 			goto noreload;
 		}
 	}
 
-	LuaScript_DoMainFile(script);
-	LuaScript_Unlock(script);
+	Script_DoMainFile(script);
+	Script_Unlock(script);
 	return true;
 }
 
-cs_bool LuaUnload(LuaScript *script, cs_bool force) {
+cs_bool LuaUnload(Script *script, cs_bool force) {
 	if(script->unloaded) return false;
 
-	LuaScript_Lock(script);
-	if(LuaScript_GlobalLookup(script, "onStop")) {
-		lua_pushboolean(script->L, force);
-		if(!LuaScript_Call(script, 1, 1)) {
+	Script_Lock(script);
+	if(Script_GlobalLookup(script, "onStop")) {
+		scr_pushboolean(script->L, force);
+		if(!Script_Call(script, 1, 1)) {
 			goto unlerr;
 		} else {
-			if(!lua_isnil(script->L, -1) && !lua_toboolean(script->L, -1)) {
-				lua_pop(script->L, 1);
+			if(!scr_isnull(script->L, -1) && !scr_toboolean(script->L, -1)) {
+				scr_stackpop(script->L, 1);
 				goto unlerr;
 			}
 		}
@@ -100,14 +100,14 @@ cs_bool LuaUnload(LuaScript *script, cs_bool force) {
 
 	unlerr:
 	if(!force) {
-		LuaScript_Unlock(script);
+		Script_Unlock(script);
 		return false;
 	}
 
 	unlok:
 	script->unloaded = true;
 	runcallback(LUAEVENT_REMOVESCRIPT, script);
-	LuaScript_Unlock(script);
+	Script_Unlock(script);
 	return true;
 }
 
@@ -124,15 +124,15 @@ COMMAND_FUNC(Lua) {
 			COMMAND_APPEND("&eList of loaded Lua scripts&f:");
 
 			for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
-				LuaScript *script = scripts[i];
+				Script *script = scripts[i];
 				if (!script) continue;
 				idx += 1;
 				Pager_Step(pager);
 
-				LuaScript_Lock(script);
-				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
+				Script_Lock(script);
+				int usage = scr_contextusage(script->L);
 				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%.32s&f, &a%dKb&f used", idx, script->name, usage);
-				LuaScript_Unlock(script);
+				Script_Unlock(script);
 			}
 
 			if(Pager_IsDirty(pager))
@@ -142,7 +142,7 @@ COMMAND_FUNC(Lua) {
 
 			return true;
 		} else if(String_CaselessCompare(temparg1, "version")) {
-			COMMAND_PRINTF("Lua plugin v%03d (%s) on %s", Plugin_Version, GIT_COMMIT_TAG, CSLUA_LIBVERSION);
+			COMMAND_PRINTF("Lua plugin v%03d (%s) on %s", Plugin_Version, GIT_COMMIT_TAG, CSSCRIPTS_LIBVERSION);
 		} else {
 			if(!COMMAND_GETARG(temparg2, 64, 1))
 				COMMAND_PRINTUSAGE;
@@ -150,7 +150,7 @@ COMMAND_FUNC(Lua) {
 			if(!String_FindSubstr(temparg2, ".lua"))
 				String_Append(temparg2, 64, ".lua");
 
-			LuaScript *script = getscript(temparg2);
+			Script *script = getscript(temparg2);
 
 			if(String_CaselessCompare(temparg1, "load")) {
 				if(script)
@@ -188,7 +188,7 @@ COMMAND_FUNC(Lua) {
 	COMMAND_PRINTUSAGE;
 }
 
-#ifdef CSLUA_USE_SURVIVAL
+#ifdef CSSCRIPTS_USE_SURVIVAL
 #include "cs-survival/src/survitf.h"
 
 void *SurvInterface = NULL;
@@ -199,7 +199,7 @@ void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size) {
 			if(SurvInterface) Memory_Free(SurvInterface);
 			SurvInterface = ptr;
 		} else
-			Log_Error("LuaScript failed to bind SurvItf: Structure size mismatch");
+			Log_Error("Script failed to bind SurvItf: Structure size mismatch");
 	}
 }
 #endif
@@ -215,13 +215,13 @@ static cs_bool checkscrname(cs_str name) {
 
 cs_bool Plugin_Load(void) {
 	DirIter sIter = {0};
-	Directory_Ensure(CSLUA_PATH_LDATA); // Папка с данными для каждого скрипта
-	Directory_Ensure(CSLUA_PATH_LROOT); // Папка для библиотек, подключаемых скриптами
-	Directory_Ensure(CSLUA_PATH_CROOT); // Папка для C модулей, подключаемых скриптами
-	Directory_Ensure(CSLUA_PATH_SCRIPTS); // Сами скрипты, загружаются автоматически
+	Directory_Ensure(CSSCRIPTS_PATH_LDATA); // Папка с данными для каждого скрипта
+	Directory_Ensure(CSSCRIPTS_PATH_LROOT); // Папка для библиотек, подключаемых скриптами
+	Directory_Ensure(CSSCRIPTS_PATH_CROOT); // Папка для C модулей, подключаемых скриптами
+	Directory_Ensure(CSSCRIPTS_PATH_SCRIPTS); // Сами скрипты, загружаются автоматически
 	listMutex = Mutex_Create();
 
-	if(Iter_Init(&sIter, CSLUA_PATH_SCRIPTS, "lua")) { // Проходимся по директории зависящей от версии Lua
+	if(Iter_Init(&sIter, CSSCRIPTS_PATH_SCRIPTS, "lua")) { // Проходимся по директории зависящей от версии Lua
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
 			if(!checkscrname(sIter.cfile)) continue;
@@ -230,12 +230,12 @@ cs_bool Plugin_Load(void) {
 	}
 	Iter_Close(&sIter);
 
-	if(Iter_Init(&sIter, CSLUA_PATH_RSCRIPTS, "lua")) { // Проходимся по общей директории
+	if(Iter_Init(&sIter, CSSCRIPTS_PATH_RSCRIPTS, "lua")) { // Проходимся по общей директории
 		do {
 			if(sIter.isDir || !sIter.cfile) continue;
 			if(getscript(sIter.cfile)) {
 				Log_Warn("File %s%s was ignored: script with the same name has already been loaded",
-					CSLUA_PATH_RSCRIPTS, sIter.cfile
+					CSSCRIPTS_PATH_RSCRIPTS, sIter.cfile
 				);
 				continue;
 			}
@@ -255,19 +255,19 @@ cs_bool Plugin_Unload(cs_bool force) {
 	LuaEvent_Unregister();
 	if (listMutex) Mutex_Free(listMutex);
 
-#	ifdef CSLUA_USE_SURVIVAL
+#	ifdef CSSCRIPTS_USE_SURVIVAL
 		if(SurvInterface)
 			Memory_Free(SurvInterface);
 #	endif
 
 	for (cs_uint32 i = 0; i < MAX_SCRIPTS_COUNT; i++) {
-		LuaScript *script = scripts[i];
+		Script *script = scripts[i];
 		if (!script) continue;
-		LuaScript_Lock(script);
+		Script_Lock(script);
 		scripts[i] = NULL;
 		LuaUnload(script, true);
-		LuaScript_Unlock(script);
-		LuaScript_Close(script);
+		Script_Unlock(script);
+		Script_Close(script);
 	}
 
 	return true;

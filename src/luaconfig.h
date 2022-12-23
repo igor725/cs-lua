@@ -3,6 +3,7 @@
 #include <types/config.h>
 #include "scripting.h"
 
-CStore *lua_checkcfgstore(scr_Context *L, int idx);
-int luaopen_config(scr_Context *L);
+CStore *scr_checkcfgstore(scr_Context *L, int idx);
+
+int scr_libfunc(config)(scr_Context *L);
 #endif

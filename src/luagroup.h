@@ -2,5 +2,5 @@
 #define CSLUAGROUP_H
 #include "scripting.h"
 
-int luaopen_group(scr_Context *L);
+int scr_libfunc(group)(scr_Context *L);
 #endif

@@ -4,7 +4,8 @@
 #include <types/cpe.h>
 #include "scripting.h"
 
-BlockDef *lua_checkblockdef(scr_Context *L, int idx);
-BulkBlockUpdate *lua_checkbulk(scr_Context *L, int idx);
-int luaopen_block(scr_Context *L);
+BlockDef *scr_checkblockdef(scr_Context *L, int idx);
+BulkBlockUpdate *scr_checkbulk(scr_Context *L, int idx);
+
+int scr_libfunc(block)(scr_Context *L);
 #endif

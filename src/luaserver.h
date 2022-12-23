@@ -2,5 +2,5 @@
 #define CSLUASERVER_H
 #include "scripting.h"
 
-int luaopen_server(scr_Context *L);
+int scr_libfunc(server)(scr_Context *L);
 #endif
