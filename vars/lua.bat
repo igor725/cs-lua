@@ -86,6 +86,7 @@ GOTO :fail
 :done
 IF EXIST "..\cs-survival\src\survitf.h" (
 	SET CFLAGS=!CFLAGS! /DCSSCRIPTS_USE_SURVIVAL
+	ECHO Survival interface connected
 )
 IF "%PLUGIN_INSTALL%"=="1" (
 	IF NOT EXIST "%SERVER_OUTROOT%\scripts" (

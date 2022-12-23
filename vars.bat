@@ -8,8 +8,12 @@ IF NOT "%PLUGIN_ARGS%"=="" (
 			CALL %~dp0\vars\python.bat
 			EXIT /B !ERRORLEVEL!
 		)
+		IF "%%a"=="js" (
+			CALL %~dp0\vars\duktape.bat
+			EXIT /B !ERRORLEVEL!
+		)
 	)
 )
 
-ECHO Target language is not specified, using Lua
+ECHO Target interpreter is not specified, using Lua
 CALL %~dp0\vars\lua.bat

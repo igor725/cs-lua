@@ -15,6 +15,10 @@ for a in $PLUGIN_ARGS; do
 		. "$CURRDIR/vars/python.sh"
 		return $?
 	fi
+	if [ "$a" == "python" ]; then
+		. "$CURRDIR/vars/duktape.sh"
+		return $?
+	fi
 done
 
 echo "Target interpreter is not specified, using Lua"
