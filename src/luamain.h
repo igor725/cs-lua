@@ -17,6 +17,10 @@ for (cs_uint32 _si = 0; _si < MAX_SCRIPTS_COUNT; _si++) { \
 } \
 Mutex_Unlock(listMutex);
 
+#define ScriptList_IterRet(exp) \
+Mutex_Unlock(listMutex); \
+return exp;
+
 #define ScriptList_RemoveCurrent() \
 scripts[_si] = NULL
 

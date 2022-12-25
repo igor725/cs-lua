@@ -73,11 +73,11 @@ static cs_bool evtconnect(Client *obj) {
 				scr_stackpop(script->L, 1);
 				if(!succ) {
 					Script_Unlock(script);
-					return false;
+					ScriptList_IterRet(false);
 				}
 			} else {
 				Script_Unlock(script);
-				return false;
+				ScriptList_IterRet(false);
 			}
 		}
 		Script_Unlock(script);
@@ -181,11 +181,11 @@ static cs_bool evtonblockplace(onBlockPlace *obj) {
 				scr_stackpop(script->L, 1);
 				if(!succ) {
 					Script_Unlock(script);
-					return false;
+					ScriptList_IterRet(false);
 				}
 			} else {
 				Script_Unlock(script);
-				return false;
+				ScriptList_IterRet(false);
 			}
 		}
 		Script_Unlock(script);
@@ -226,11 +226,11 @@ static cs_bool evtpreworldenvupdate(preWorldEnvUpdate *obj) {
 				if(!scr_isnull(script->L, -1)) {
 					cs_bool ret = scr_toboolean(script->L, -1);
 					scr_stackpop(script->L, 1);
-					return ret;
+					ScriptList_IterRet(ret);
 				}
 			} else {
 				Script_Unlock(script);
-				return false;
+				ScriptList_IterRet(false);
 			}
 		}
 		Script_Unlock(script);
@@ -261,9 +261,9 @@ static void evtheldchange(onHeldBlockChange *obj) {
 }
 
 static cs_bool evtonmessage(onMessage *obj) {
+	cs_bool ret = true;
 	ScriptList_Iter({
 		Script_Lock(script);
-		cs_bool ret = true;
 		if(Script_GlobalLookup(script, "onMessage")) {
 			scr_pushclient(script->L, obj->client);
 			scr_pushnumber(script->L, obj->type);
@@ -281,10 +281,10 @@ static cs_bool evtonmessage(onMessage *obj) {
 			} else ret = false;
 		}
 		Script_Unlock(script);
-		if(!ret) return ret;
+		if(!ret) break;
 	})
 
-	return true;
+	return ret;
 }
 
 static void evttick(cs_int32 *obj) {
