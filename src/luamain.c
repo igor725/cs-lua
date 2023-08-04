@@ -112,7 +112,7 @@ cs_bool LuaUnload(Script *script, cs_bool force) {
 }
 
 COMMAND_FUNC(Lua) {
-	COMMAND_SETUSAGE("/lua <list/load/unload/reload> [scriptname]");
+	COMMAND_SETUSAGE("/lua <list/load/unload/reload/version> [scriptname]");
 
 	cs_char temparg1[64], temparg2[64];
 	if(COMMAND_GETARG(temparg1, 64, 0)) {
