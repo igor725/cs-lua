@@ -41,6 +41,7 @@ else
 				return 1
 			fi
 			popd
+			echo "Please note that the cs-lua plugin may not load properly until you install LuaJIT system-wide!"
 		fi
 
 		LIBS="$LIBS -L../luajit/src/ -lluajit"
