@@ -99,7 +99,6 @@ static void evtdisconnect(Client *obj) {
 		 * WARN: После вызова функции scr_clearclient
 		 * не должно происходить никаких вызовов
 		 * scr_pushclient для данного поинтера!
-		 * 
 		 */
 		scr_clearclient(script->L, obj);
 		Script_Unlock(script);
