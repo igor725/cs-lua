@@ -410,6 +410,15 @@ static int meta_setvelocity(scr_Context *L) {
 	return 1;
 }
 
+static int meta_setlighting(scr_Context *L) {
+	scr_pushboolean(L, Client_SetLighting(
+		scr_checkclient(L, 1),
+		(ELightMode)scr_checkinteger(L, 2),
+		(cs_bool)scr_toboolean(L, 3)
+	));
+	return 1;
+}
+
 static int meta_gotoworld(scr_Context *L) {
 	scr_pushboolean(L, Client_ChangeWorld(
 		scr_checkclient(L, 1),
@@ -627,6 +636,7 @@ static const scr_RegFuncs clientmeta[] = {
 	{"setskin", meta_setskin},
 	{"settexpack", meta_settexpack},
 	{"setvelocity", meta_setvelocity},
+	{"setlighting", meta_setlighting},
 
 	{"islocal", meta_islocal},
 	{"isspawned", meta_isspawned},
