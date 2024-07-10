@@ -2,5 +2,5 @@
 #define CSLUASURVIVAL_H
 #include "scripting.h"
 
-int scr_libfunc(survival)(scr_Context *L);
+int scr_libfunc(survival)(lua_State *L);
 #endif

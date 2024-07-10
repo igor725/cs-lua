@@ -4,8 +4,8 @@
 #include <types/cpe.h>
 #include "scripting.h"
 
-BlockDef *scr_checkblockdef(scr_Context *L, int idx);
-BulkBlockUpdate *scr_checkbulk(scr_Context *L, int idx);
+BlockDef *scr_checkblockdef(lua_State *L, int idx);
+BulkBlockUpdate *scr_checkbulk(lua_State *L, int idx);
 
-int scr_libfunc(block)(scr_Context *L);
+int scr_libfunc(block)(lua_State *L);
 #endif

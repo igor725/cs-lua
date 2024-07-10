@@ -24,27 +24,27 @@
 #include "luaserver.h"
 #include "luaitf.h"
 
-int scr_checktabfield(scr_Context *L, int idx, cs_str fname, int ftype) {
-	scr_gettabfield(L, idx, fname);
+int scr_checktabfield(lua_State *L, int idx, cs_str fname, int ftype) {
+	lua_getfield(L, idx, fname);
 	if(!scr_istype(L, -1, ftype)) {
-		scr_fmterror(L, "Field '%s' must be a %s", fname, scr_typename(L, ftype));
+		luaL_error(L, "Field '%s' must be a %s", fname, lua_typename(L, ftype));
 		return false;
 	}
 
 	return true;
 }
 
-int scr_checktabfieldud(scr_Context *L, int idx, const char *fname, const char *meta) {
-	scr_gettabfield(L, idx, fname);
-	if(!scr_testmemtype(L, -1, meta)) {
-		scr_fmterror(L, "Field '%s' must be a %s", fname, meta);
+int scr_checktabfieldud(lua_State *L, int idx, const char *fname, const char *meta) {
+	lua_getfield(L, idx, fname);
+	if(!luaL_testudata(L, -1, meta)) {
+		luaL_error(L, "Field '%s' must be a %s", fname, meta);
 		return false;
 	}
 
 	return true;
 }
 
-static const scr_RegFuncs serverlibs[] = {
+static const luaL_Reg serverlibs[] = {
 	{"log", luaopen_log},
 	{"key", luaopen_key},
 	{"block", luaopen_block},
@@ -65,10 +65,10 @@ static const scr_RegFuncs serverlibs[] = {
 	{NULL, NULL}
 };
 
-Script *Script_GetHandle(scr_Context *L) {
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RSCPTR);
-	Script *ud = (Script *)scr_getmem(L, -1);
-	scr_stackpop(L, 1);
+Script *Script_GetHandle(lua_State *L) {
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RSCPTR);
+	Script *ud = (Script *)lua_touserdata(L, -1);
+	lua_pop(L, 1);
 	return ud;
 }
 
@@ -90,8 +90,8 @@ cs_bool Script_GlobalLookup(Script *script, cs_str key) {
 	if(script->unloaded) return false;
 
 	lua_getglobal(script->L, key);
-	if(scr_isnull(script->L, -1)) {
-		scr_stackpop(script->L, 1);
+	if(lua_isnil(script->L, -1)) {
+		lua_pop(script->L, 1);
 		return false;
 	}
 
@@ -101,10 +101,10 @@ cs_bool Script_GlobalLookup(Script *script, cs_str key) {
 cs_bool Script_RegistryLookup(Script *script, cs_str regtab, cs_str key) {
 	if(script->unloaded) return false;
 
-	scr_gettabfield(script->L, LUA_REGISTRYINDEX, regtab);
-	scr_gettabfield(script->L, -1, key);
-	if(scr_isnull(script->L, -1)) {
-		scr_stackpop(script->L, 1);
+	lua_getfield(script->L, LUA_REGISTRYINDEX, regtab);
+	lua_getfield(script->L, -1, key);
+	if(lua_isnil(script->L, -1)) {
+		lua_pop(script->L, 1);
 		return false;
 	}
 
@@ -114,7 +114,7 @@ cs_bool Script_RegistryLookup(Script *script, cs_str regtab, cs_str key) {
 cs_bool Script_Call(Script *script, int args, int ret) {
 	if(script->unloaded) return false;
 
-	if(scr_protectedcall(script->L, args, ret, 0) != 0) {
+	if(lua_pcall(script->L, args, ret, 0) != 0) {
 		Script_PrintError(script);
 		return false;
 	}
@@ -122,14 +122,14 @@ cs_bool Script_Call(Script *script, int args, int ret) {
 	return true;
 }
 
-static int allowhotreload(scr_Context *L) {
+static int allowhotreload(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TBOOLEAN);
 	Script *script = Script_GetHandle(L);
 	script->hotreload = scr_toboolean(L, 1);
 	return 0;
 }
 
-static int setinfo(scr_Context *L) {
+static int setinfo(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	Script *script = Script_GetHandle(L);
 	scr_checktabfield(L, 1, "home", LUA_TSTRING);
@@ -137,38 +137,38 @@ static int setinfo(scr_Context *L) {
 	scr_checktabfield(L, 1, "hotreload", LUA_TBOOLEAN);
 	if(script->home) Memory_Free((void *)script->home);
 	script->hotreload = scr_toboolean(L, -1);
-	script->version = (cs_uint32)scr_tointeger(L, -2);
-	script->home = String_AllocCopy(scr_tostring(L, -3));
+	script->version = (cs_uint32)lua_tointeger(L, -2);
+	script->home = String_AllocCopy(lua_tostring(L, -3));
 	runcallback(LUAEVENT_UPDATESCRIPT, script);
 	script->infoupd = true;
 	return 0;
 }
 
-static int mstime(scr_Context *L) {
-	scr_pushnumber(L, Time_GetMSecD());
+static int mstime(lua_State *L) {
+	lua_pushnumber(L, Time_GetMSecD());
 	return 1;
 }
 
-static int ioensure(scr_Context *L) {
-	cs_str path = scr_checkstring(L, 1);
-	scr_pushboolean(L, Directory_Ensure(path));
+static int ioensure(lua_State *L) {
+	cs_str path = luaL_checkstring(L, 1);
+	lua_pushboolean(L, Directory_Ensure(path));
 	return 1;
 }
 
-static int ioscrname(scr_Context *L) {
+static int ioscrname(lua_State *L) {
 	Script *script = Script_GetHandle(L);
 	cs_str ext = String_LastChar(script->name, '.');
-	scr_pushlstring(L, script->name, ext - script->name);
+	lua_pushlstring(L, script->name, ext - script->name);
 	return 1;
 }
 
-static int iodatafolder(scr_Context *L) {
-	int argc = scr_stacktop(L);
-	scr_pushstring(L, CSSCRIPTS_PATH_LDATA);
+static int iodatafolder(lua_State *L) {
+	int argc = lua_gettop(L);
+	lua_pushstring(L, CSSCRIPTS_PATH_LDATA);
 	ioscrname(L);
-	if(argc > 0 && scr_isstring(L, 1)) {
-		scr_pushstring(L, PATH_DELIM);
-		scr_stackpush(L, 1);
+	if(argc > 0 && lua_isstring(L, 1)) {
+		lua_pushstring(L, PATH_DELIM);
+		lua_pushvalue(L, 1);
 		lua_concat(L, 4);
 	} else
 		lua_concat(L, 2);
@@ -186,7 +186,7 @@ static cs_str const osdel[] = {
 	"exit", "getenv", NULL
 };
 
-static const scr_RegFuncs iofuncs[] = {
+static const luaL_Reg iofuncs[] = {
 	{"ensure", ioensure},
 	{"datafolder", iodatafolder},
 	{"scrname", ioscrname},
@@ -232,7 +232,7 @@ Script *Script_Open(cs_str name, cs_uint32 id) {
 		script->path = String_AllocCopy(path);
 		script->name = script->path + offset;
 		script->lock = Mutex_Create();
-		script->L = scr_contextcreate();
+		script->L = luaL_newstate();
 		script->version = 1;
 		if(!script->L) {
 			Script_Close(script);
@@ -244,28 +244,28 @@ Script *Script_Open(cs_str name, cs_uint32 id) {
 			lua_setallocf(script->L, l_alloc, script);
 #		endif
 
-		scr_pushptr(script->L, script);
-		scr_settabfield(script->L, LUA_REGISTRYINDEX, CSSCRIPTS_RSCPTR);
+		lua_pushlightuserdata(script->L, script);
+		lua_setfield(script->L, LUA_REGISTRYINDEX, CSSCRIPTS_RSCPTR);
 
-		scr_pushnativefunc(script->L, allowhotreload);
+		lua_pushcfunction(script->L, allowhotreload);
 		lua_setglobal(script->L, "allowHotReload");
 
-		scr_pushnativefunc(script->L, setinfo);
+		lua_pushcfunction(script->L, setinfo);
 		lua_setglobal(script->L, "setInfo");
 
-		scr_pushnativefunc(script->L, mstime);
+		lua_pushcfunction(script->L, mstime);
 		lua_setglobal(script->L, "msTime");
 
 		luaL_openlibs(script->L);
-		for(const scr_RegFuncs *lib = serverlibs; lib->func; lib++) {
+		for(const luaL_Reg *lib = serverlibs; lib->func; lib++) {
 #			if LUA_VERSION_NUM < 502
-				scr_pushnativefunc(script->L, lib->func);
-				scr_pushstring(script->L, lib->name);
-				scr_unprotectedcall(script->L, 1, 1);
+				lua_pushcfunction(script->L, lib->func);
+				lua_pushstring(script->L, lib->name);
+				lua_call(script->L, 1, 1);
 				lua_setglobal(script->L, lib->name);
 #			else
 				luaL_requiref(script->L, lib->name, lib->func, 1);
-				scr_stackpop(script->L, 1);
+				lua_pop(script->L, 1);
 #			endif
 		}
 
@@ -273,27 +273,27 @@ Script *Script_Open(cs_str name, cs_uint32 id) {
 
 		if(Script_GlobalLookup(script, LUA_IOLIBNAME)) {
 			for(cs_int32 i = 0; iodel[i]; i++) {
-				scr_pushnull(script->L);
-				scr_settabfield(script->L, -2, iodel[i]);
+				lua_pushnil(script->L);
+				lua_setfield(script->L, -2, iodel[i]);
 			}
 			luaL_setfuncs(script->L, iofuncs, 0);
-			scr_stackpop(script->L, 1);
+			lua_pop(script->L, 1);
 		}
 
 		if(Script_GlobalLookup(script, LUA_OSLIBNAME)) {
 			for(cs_int32 i = 0; osdel[i]; i++) {
-				scr_pushnull(script->L);
-				scr_settabfield(script->L, -2, osdel[i]);
+				lua_pushnil(script->L);
+				lua_setfield(script->L, -2, osdel[i]);
 			}
-			scr_stackpop(script->L, 1);
+			lua_pop(script->L, 1);
 		}
 
 		lua_getglobal(script->L, "package");
-		scr_pushstring(script->L, CSSCRIPTS_PATH);
-		scr_settabfield(script->L, -2, "path");
-		scr_pushstring(script->L, CSSCRIPTS_CPATH);
-		scr_settabfield(script->L, -2, "cpath");
-		scr_stackpop(script->L, 1);
+		lua_pushstring(script->L, CSSCRIPTS_PATH);
+		lua_setfield(script->L, -2, "path");
+		lua_pushstring(script->L, CSSCRIPTS_CPATH);
+		lua_setfield(script->L, -2, "cpath");
+		lua_pop(script->L, 1);
 
 		if(!Script_DoMainFile(script)) {
 			Script_Close(script);
@@ -307,7 +307,7 @@ Script *Script_Open(cs_str name, cs_uint32 id) {
 }
 
 cs_bool Script_Close(Script *script) {
-	if(script->L) scr_contextclose(script->L);
+	if(script->L) lua_close(script->L);
 #	ifdef CSSCRIPTS_PROFILE_MEMORY
 		Log_Info("%s made %u allocs, %u reallocs, %u frees",
 			script->name, script->nallocs,

@@ -9,8 +9,7 @@
             "defines": [
                 "_DEBUG",
                 "CORE_BUILD_PLUGIN",
-                "CSSCRIPTS_USE_SURVIVAL",
-                "CSSCRIPTS_BUILD_LUA"
+                "CSSCRIPTS_USE_SURVIVAL"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",
@@ -21,14 +20,13 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../core/src",
-                "${workspaceFolder}/../Lua/LuaJIT/src",
+                "${workspaceFolder}/../LuaJIT/src",
                 "${workspaceFolder}/../**"
             ],
             "defines": [
                 "_DEBUG",
                 "CORE_BUILD_PLUGIN",
-                "CSSCRIPTS_USE_SURVIVAL",
-                "CSSCRIPTS_BUILD_LUA"
+                "CSSCRIPTS_USE_SURVIVAL"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",
@@ -49,8 +47,7 @@
             "defines": [
                 "_DEBUG",
                 "CORE_BUILD_PLUGIN",
-                "CSSCRIPTS_USE_SURVIVAL",
-                "CSSCRIPTS_BUILD_LUA"
+                "CSSCRIPTS_USE_SURVIVAL"
             ],
             "compilerArgs": [],
             "mergeConfigurations": false,

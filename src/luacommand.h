@@ -2,5 +2,5 @@
 #define CSLUACOMMAND_H
 #include "scripting.h"
 
-int scr_libfunc(command)(scr_Context *L);
+int scr_libfunc(command)(lua_State *L);
 #endif

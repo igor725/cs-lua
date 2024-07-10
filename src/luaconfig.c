@@ -3,109 +3,109 @@
 #include "luascript.h"
 #include "luaconfig.h"
 
-CStore *scr_checkcfgstore(scr_Context *L, int idx) {
-	void **ud = scr_checkmemtype(L, idx, CSSCRIPTS_MCONFIG);
-	scr_argassert(L, *ud != NULL, idx, "Invalid config");
+CStore *scr_checkcfgstore(lua_State *L, int idx) {
+	void **ud = luaL_checkudata(L, idx, CSSCRIPTS_MCONFIG);
+	luaL_argcheck(L, *ud != NULL, idx, "Invalid config");
 	return (CStore *)*ud;
 }
 
-static int meta_get(scr_Context *L) {
+static int meta_get(lua_State *L) {
 	CEntry *ent = Config_GetEntry(
 		scr_checkcfgstore(L, 1),
-		scr_checkstring(L, 2)
+		luaL_checkstring(L, 2)
 	);
-	scr_argassert(L, ent != NULL, 2, "Config entry not found");
+	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
 	switch (ent->type) {
 		case CONFIG_TYPE_BOOL:
-			scr_pushboolean(L, (cs_bool)Config_GetBool(ent));
+			lua_pushboolean(L, (cs_bool)Config_GetBool(ent));
 			break;
 		case CONFIG_TYPE_INT:
-			scr_pushinteger(L, (scr_Integer)Config_GetInt(ent));
+			lua_pushinteger(L, (lua_Integer)Config_GetInt(ent));
 			break;
 		case CONFIG_TYPE_STR:
-			scr_pushstring(L, Config_GetStr(ent));
+			lua_pushstring(L, Config_GetStr(ent));
 			break;
 
 		case CONFIG_MAX_TYPE:
 		default:
-			scr_pushstring(L, "Internal error");
-			scr_error(L);
+			lua_pushstring(L, "Internal error");
+			lua_error(L);
 			return 0;
 	}
 
 	return 1;
 }
 
-static int meta_set(scr_Context *L) {
+static int meta_set(lua_State *L) {
 	CEntry *ent = Config_GetEntry(
 		scr_checkcfgstore(L, 1),
-		scr_checkstring(L, 2)
+		luaL_checkstring(L, 2)
 	);
-	scr_argassert(L, ent != NULL, 2, "Config entry not found");
+	luaL_argcheck(L, ent != NULL, 2, "Config entry not found");
 	switch (ent->type) {
 		case CONFIG_TYPE_BOOL:
 			Config_SetBool(ent, scr_toboolean(L, 3));
 			break;
 		case CONFIG_TYPE_INT:
-			Config_SetInt(ent, (cs_int32)scr_tointeger(L, 3));
+			Config_SetInt(ent, (cs_int32)lua_tointeger(L, 3));
 			break;
 		case CONFIG_TYPE_STR:
-			Config_SetStr(ent, scr_checkstring(L, 3));
+			Config_SetStr(ent, luaL_checkstring(L, 3));
 			break;
 
 		case CONFIG_MAX_TYPE:
 		default:
-			scr_pushstring(L, "Internal error");
-			scr_error(L);
+			lua_pushstring(L, "Internal error");
+			lua_error(L);
 			break;
 	}
 
 	return 0;
 }
 
-static int meta_load(scr_Context *L) {
-	scr_pushboolean(L, Config_Load(
+static int meta_load(lua_State *L) {
+	lua_pushboolean(L, Config_Load(
 		scr_checkcfgstore(L, 1)
 	));
 	return 1;
 }
 
-static int meta_save(scr_Context *L) {
-	scr_pushboolean(L, Config_Save(
+static int meta_save(lua_State *L) {
+	lua_pushboolean(L, Config_Save(
 		scr_checkcfgstore(L, 1),
 		scr_toboolean(L, 2)
 	));
 	return 1;
 }
 
-static int meta_reset(scr_Context *L) {
+static int meta_reset(lua_State *L) {
 	Config_ResetToDefault(
 		scr_checkcfgstore(L, 1)
 	);
 	return 0;
 }
 
-static int meta_poperror(scr_Context *L) {
+static int meta_poperror(lua_State *L) {
 	ECExtra extra = CONFIG_EXTRA_NOINFO;
 	cs_int32 line = 0;
 	ECError error = Config_PopError(
 		scr_checkcfgstore(L, 1),
 		&extra, &line
 	);
-	scr_pushinteger(L, (scr_Integer)error);
-	scr_pushinteger(L, (scr_Integer)extra);
-	scr_pushinteger(L, (scr_Integer)line);
+	lua_pushinteger(L, (lua_Integer)error);
+	lua_pushinteger(L, (lua_Integer)extra);
+	lua_pushinteger(L, (lua_Integer)line);
 	return 3;
 }
 
-static int meta_destroy(scr_Context *L) {
+static int meta_destroy(lua_State *L) {
 	CStore *store = scr_checkcfgstore(L, 1);
-	*(void **)scr_getmem(L, 1) = NULL;
+	*(void **)lua_touserdata(L, 1) = NULL;
 	Config_DestroyStore(store);
 	return 0;
 }
 
-const scr_RegFuncs configmeta[] = {
+const luaL_Reg configmeta[] = {
 	{"get", meta_get},
 	{"set", meta_set},
 
@@ -119,86 +119,86 @@ const scr_RegFuncs configmeta[] = {
 	{NULL, NULL}
 };
 
-static int config_new(scr_Context *L) {
+static int config_new(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
-	scr_gettabfield(L, -1, "name");
-	cs_str cname = scr_checkstring(L, -1);
-	scr_gettabfield(L, -2, "items");
+	lua_getfield(L, -1, "name");
+	cs_str cname = luaL_checkstring(L, -1);
+	lua_getfield(L, -2, "items");
 	luaL_checktype(L, -1, LUA_TTABLE);
 	CStore *store = Config_NewStore(cname);
-	size_t itemcnt = scr_gettablen(L, -1);
+	size_t itemcnt = lua_objlen(L, -1);
 	if(itemcnt < 1) {
 		Config_DestroyStore(store);
 		return 0;
 	}
 
-	scr_stackcheck(L, 5);
+	lua_checkstack(L, 5);
 	for(size_t i = 1; i <= itemcnt; i++) {
-		scr_rawgeti(L, -1, (int)i);
-		scr_gettabfield(L, -1, "name");
-		scr_gettabfield(L, -2, "type");
-		scr_gettabfield(L, -3, "comment");
-		scr_gettabfield(L, -4, "default");
-		ECTypes type = scr_tointeger(L, -3);
-		if(!scr_isstring(L, -4) || !scr_isnumber(L, -3)
+		lua_rawgeti(L, -1, (int)i);
+		lua_getfield(L, -1, "name");
+		lua_getfield(L, -2, "type");
+		lua_getfield(L, -3, "comment");
+		lua_getfield(L, -4, "default");
+		ECTypes type = lua_tointeger(L, -3);
+		if(!lua_isstring(L, -4) || !lua_isnumber(L, -3)
 		|| type >= CONFIG_MAX_TYPE) {
 			Config_DestroyStore(store);
-			scr_fmterror(L, "Invalid store entry #%d", i);
+			luaL_error(L, "Invalid store entry #%d", i);
 			return 0;
 		}
-		cs_str key = scr_tostring(L, -4);
+		cs_str key = lua_tostring(L, -4);
 		CEntry *ent = Config_NewEntry(store, key, type);
-		if(scr_isstring(L, -2))
-			Config_SetComment(ent, scr_tostring(L, -2));
-		if(!scr_isnull(L, -1)) {
+		if(lua_isstring(L, -2))
+			Config_SetComment(ent, lua_tostring(L, -2));
+		if(!lua_isnil(L, -1)) {
 			switch(type) {
 				case CONFIG_TYPE_BOOL:
 					Config_SetDefaultBool(ent, scr_toboolean(L, -1));
 					break;
 				case CONFIG_TYPE_INT:
-					Config_SetDefaultInt(ent, (cs_int32)scr_tointeger(L, -1));
+					Config_SetDefaultInt(ent, (cs_int32)lua_tointeger(L, -1));
 					break;
 				case CONFIG_TYPE_STR:
 					Config_SetDefaultStr(ent,
-						scr_isstring(L, -1) ? scr_tostring(L, -1) : ""
+						lua_isstring(L, -1) ? lua_tostring(L, -1) : ""
 					);
 					break;
 
 				case CONFIG_MAX_TYPE:
 				default:
 					Config_DestroyStore(store);
-					scr_pushstring(L, "Internal error");
-					scr_error(L);
+					lua_pushstring(L, "Internal error");
+					lua_error(L);
 					break;
 			}
 		}
-		scr_stackpop(L, 5);
+		lua_pop(L, 5);
 	}
-	scr_stackpop(L, 2);
-	CStore **ud = scr_allocmem(L, sizeof(CStore *));
-	scr_setmemtype(L, CSSCRIPTS_MCONFIG);
+	lua_pop(L, 2);
+	CStore **ud = lua_newuserdata(L, sizeof(CStore *));
+	luaL_setmetatable(L, CSSCRIPTS_MCONFIG);
 	*ud = store;
 	return 1;
 }
 
-static int config_error(scr_Context *L) {
-	scr_pushstring(L, Config_ErrorToString(
-		(ECError)scr_checkinteger(L, 1)
+static int config_error(lua_State *L) {
+	lua_pushstring(L, Config_ErrorToString(
+		(ECError)luaL_checkinteger(L, 1)
 	));
-	scr_pushstring(L, Config_ExtraToString(
-		(ECExtra)scr_checkinteger(L, 2)
+	lua_pushstring(L, Config_ExtraToString(
+		(ECExtra)luaL_checkinteger(L, 2)
 	));
 	return 2;
 }
 
-const scr_RegFuncs configlib[] = {
+const luaL_Reg configlib[] = {
 	{"new", config_new},
 	{"error", config_error},
 
 	{NULL, NULL}
 };
 
-int scr_libfunc(config)(scr_Context *L) {
+int scr_libfunc(config)(lua_State *L) {
 	scr_createtype(L, CSSCRIPTS_MCONFIG, configmeta);
 
 	scr_addintconst(L, CONFIG_ERROR_SUCCESS);
@@ -217,6 +217,6 @@ int scr_libfunc(config)(scr_Context *L) {
 	scr_addintconst(L, CONFIG_TYPE_INT);
 	scr_addintconst(L, CONFIG_TYPE_STR);
 
-	scr_newlib(L, configlib);
+	luaL_newlib(L, configlib);
 	return 1;
 }

@@ -6,5 +6,5 @@
 #define CSSCRIPTS_CONTACT_MAXSCRIPTS 16
 #define CSSCRIPTS_CONTACT_MAX       128
 
-int scr_libfunc(contact)(scr_Context *L);
+int scr_libfunc(contact)(lua_State *L);
 #endif

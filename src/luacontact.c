@@ -23,14 +23,14 @@ static struct _Contact *newcontact(cs_str name, Script *LS) {
 	return NULL;
 }
 
-static struct _Contact *checkcontact(scr_Context *L, int idx) {
-	struct _Contact *cont = *(void **)scr_checkmemtype(L, idx, CSSCRIPTS_MCONTACT);
-	scr_argassert(L, *cont->name != '\0', idx, "Contact closed");
+static struct _Contact *checkcontact(lua_State *L, int idx) {
+	struct _Contact *cont = *(void **)luaL_checkudata(L, idx, CSSCRIPTS_MCONTACT);
+	luaL_argcheck(L, *cont->name != '\0', idx, "Contact closed");
 	return cont;
 }
 
-static struct _Contact *tocontact(scr_Context *L, int idx) {
-	return *(void **)scr_checkmemtype(L, idx, CSSCRIPTS_MCONTACT);
+static struct _Contact *tocontact(lua_State *L, int idx) {
+	return *(void **)luaL_checkudata(L, idx, CSSCRIPTS_MCONTACT);
 }
 
 static cs_bool addcontactscript(struct _Contact *cont, Script *LS) {
@@ -44,39 +44,39 @@ static cs_bool addcontactscript(struct _Contact *cont, Script *LS) {
 	return false;
 }
 
-static void pushcontact(scr_Context *L, struct _Contact *cont) {
+static void pushcontact(lua_State *L, struct _Contact *cont) {
 	if(!cont) {
-		scr_pushnull(L);
+		lua_pushnil(L);
 		return;
 	}
 
-	void **ud = scr_allocmem(L, sizeof(cont));
-	scr_setmemtype(L, CSSCRIPTS_MCONTACT);
+	void **ud = lua_newuserdata(L, sizeof(cont));
+	luaL_setmetatable(L, CSSCRIPTS_MCONTACT);
 	*ud = cont;
 }
 
-static int meta_pop(scr_Context *L) {
+static int meta_pop(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-	scr_gettabfield(L, -1, cont->name);
-	scr_rawgeti(L, -1, 0);
-	int tablen = (int)scr_gettablen(L, -1);
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+	lua_getfield(L, -1, cont->name);
+	lua_rawgeti(L, -1, 0);
+	int tablen = (int)lua_objlen(L, -1);
 	if(tablen > 0) {
-		scr_rawgeti(L, -1, 1);
+		lua_rawgeti(L, -1, 1);
 		for(int pos = 1; pos <= tablen; pos++) {
-			scr_rawgeti(L, -2, pos + 1);
-			scr_rawseti(L, -3, pos);
+			lua_rawgeti(L, -2, pos + 1);
+			lua_rawseti(L, -3, pos);
 		}
 		return 1;
 	}
 
-	scr_pushnull(L);
+	lua_pushnil(L);
 	return 1;
 }
 
-static void copytable(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt);
+static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt);
 
-static void copyudata(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
+static void copyudata(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	void *tmp = scr_toclient(L_from, idx);
 	if(tmp) {
 		scr_pushclient(L_to, tmp);
@@ -88,35 +88,35 @@ static void copyudata(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *e
 		return;
 	}
 
-	if(scr_getmetafield(L_from, idx, "__name"))
-		*errt = scr_tostring(L_from, -1);
+	if(luaL_getmetafield(L_from, idx, "__name"))
+		*errt = lua_tostring(L_from, -1);
 	else
 		*errt = luaL_typename(L_from, idx);
 
 	return;
 }
 
-static int writer(scr_Context *L, const void *b, size_t size, void *B) {
+static int writer(lua_State *L, const void *b, size_t size, void *B) {
 	(void)L;
 	luaL_addlstring((luaL_Buffer *)B, (const char *)b, size);
 	return 0;
 }
 
-static const char *reader(scr_Context *L, void *b, size_t *size) {
+static const char *reader(lua_State *L, void *b, size_t *size) {
 	(void)b;
 	return lua_tolstring(L, -1, size);
 }
 
-static void copyfunction(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
-	if(scr_isnativefunc(L_from, idx)) {
+static void copyfunction(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
+	if(lua_iscfunction(L_from, idx)) {
 		*errt = "C function";
 		return;
 	} else
-		*errt = scr_typename(L_from, idx);
+		*errt = lua_typename(L_from, idx);
 
 	luaL_Buffer b;
 	luaL_buffinit(L_to, &b);
-	scr_stackpush(L_from, idx);
+	lua_pushvalue(L_from, idx);
 #	if LUA_VERSION_NUM > 502
 		if(lua_dump(L_from, writer, &b, 0) != 0)
 			return;
@@ -135,30 +135,30 @@ static void copyfunction(scr_Context *L_to, scr_Context *L_from, int idx, cs_str
 			return;
 #	endif
 
-	scr_stackrem(L_to, -2);
+	lua_remove(L_to, -2);
 	*errt = NULL;
 }
 
-static cs_bool copyvalue(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
+static cs_bool copyvalue(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	switch(lua_type(L_from, idx)) {
 		case LUA_TNIL:
-			scr_pushnull(L_to);
+			lua_pushnil(L_to);
 			break;
 
 		case LUA_TBOOLEAN:
-			scr_pushboolean(L_to, scr_toboolean(L_from, idx));
+			lua_pushboolean(L_to, scr_toboolean(L_from, idx));
 			break;
 
 		case LUA_TLIGHTUSERDATA:
-			scr_pushptr(L_to, scr_getmem(L_from, idx));
+			lua_pushlightuserdata(L_to, lua_touserdata(L_from, idx));
 			break;
 
 		case LUA_TNUMBER:
-			scr_pushnumber(L_to, scr_tonumber(L_from, idx));
+			lua_pushnumber(L_to, lua_tonumber(L_from, idx));
 			break;
 
 		case LUA_TSTRING:
-			scr_pushstring(L_to, scr_tostring(L_from, idx));
+			lua_pushstring(L_to, lua_tostring(L_from, idx));
 			break;
 
 		case LUA_TTABLE:
@@ -180,31 +180,31 @@ static cs_bool copyvalue(scr_Context *L_to, scr_Context *L_from, int idx, cs_str
 	return *errt == NULL;
 }
 
-static void copytable(scr_Context *L_to, scr_Context *L_from, int idx, cs_str *errt) {
+static void copytable(lua_State *L_to, lua_State *L_from, int idx, cs_str *errt) {
 	// Превращаем относительный индекс в абсолютный
 	if(idx < 0) idx = lua_absindex(L_from, idx);
 
-	scr_pushnull(L_from);
-	scr_newtable(L_to);
+	lua_pushnil(L_from);
+	lua_newtable(L_to);
 	while(lua_next(L_from, idx) != 0) {
-		if(scr_raweq(L_from, idx, -2)) // Если ключ сама же эта таблица, то её и пушим
-			scr_stackpush(L_to, -1);
+		if(lua_rawequal(L_from, idx, -2)) // Если ключ сама же эта таблица, то её и пушим
+			lua_pushvalue(L_to, -1);
 		else if(!copyvalue(L_to, L_from, -2, errt))
 			return;
 
-		if(scr_raweq(L_from, idx, -1))
-			scr_stackpush(L_to, -2);
+		if(lua_rawequal(L_from, idx, -1))
+			lua_pushvalue(L_to, -2);
 		else if(!copyvalue(L_to, L_from, -1, errt))
 			return;
 
-		scr_rawset(L_to, -3);
-		scr_stackpop(L_from, 1);
+		lua_rawset(L_to, -3);
+		lua_pop(L_from, 1);
 	}
 
 	return;
 }
 
-static int meta_push(scr_Context *L) {
+static int meta_push(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
 	cs_str errt = NULL;
 
@@ -214,23 +214,23 @@ static int meta_push(scr_Context *L) {
 
 		if(_LS->L != L) {
 			Script_Lock(_LS);
-			int tstart = scr_stacktop(_LS->L);
-			scr_gettabfield(_LS->L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-			scr_gettabfield(_LS->L, -1, cont->name);
-			scr_rawgeti(_LS->L, -1, 0);
+			int tstart = lua_gettop(_LS->L);
+			lua_getfield(_LS->L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+			lua_getfield(_LS->L, -1, cont->name);
+			lua_rawgeti(_LS->L, -1, 0);
 			if(!copyvalue(_LS->L, L, 2, &errt)) {
-				scr_stackset(_LS->L, tstart);
+				lua_settop(_LS->L, tstart);
 				Script_Unlock(_LS);
-				scr_fmterror(L, "Attempt to push an unsupported value: %s", errt);
+				luaL_error(L, "Attempt to push an unsupported value: %s", errt);
 				return 0;
 			}
-			scr_rawseti(_LS->L, -2, (int)scr_gettablen(_LS->L, -2) + 1);
-			scr_rawgeti(_LS->L, -2, 2);
-			if(scr_isfunc(_LS->L, -1)) {
-				scr_rawgeti(_LS->L, -3, 1);
+			lua_rawseti(_LS->L, -2, (int)lua_objlen(_LS->L, -2) + 1);
+			lua_rawgeti(_LS->L, -2, 2);
+			if(lua_isfunction(_LS->L, -1)) {
+				lua_rawgeti(_LS->L, -3, 1);
 				(void)Script_Call(_LS, 1, 0);
 			}
-			scr_stackset(_LS->L, tstart);
+			lua_settop(_LS->L, tstart);
 			Script_Unlock(_LS);
 		}
 	}
@@ -238,38 +238,38 @@ static int meta_push(scr_Context *L) {
 	return 0;
 }
 
-static int meta_bind(scr_Context *L) {
+static int meta_bind(lua_State *L) {
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 	struct _Contact *cont = checkcontact(L, 1);
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-	scr_gettabfield(L, -1, cont->name);
-	scr_stackpush(L, 2);
-	scr_rawseti(L, -2, 2); // cscontact[name][2] = <2>
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+	lua_getfield(L, -1, cont->name);
+	lua_pushvalue(L, 2);
+	lua_rawseti(L, -2, 2); // cscontact[name][2] = <2>
 	return 0;
 }
 
-static int meta_avail(scr_Context *L) {
+static int meta_avail(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-	scr_gettabfield(L, -1, cont->name);
-	scr_rawgeti(L, -1, 0);
-	scr_pushinteger(L, scr_gettablen(L, -1));
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+	lua_getfield(L, -1, cont->name);
+	lua_rawgeti(L, -1, 0);
+	lua_pushinteger(L, lua_objlen(L, -1));
 	return 1;
 }
 
-static int meta_clear(scr_Context *L) {
+static int meta_clear(lua_State *L) {
 	struct _Contact *cont = checkcontact(L, 1);
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-	scr_gettabfield(L, -1, cont->name);
-	scr_rawgeti(L, -1, 0);
-	for(int i = (int)scr_gettablen(L, -1); i > 0; i--) {
-		scr_pushnull(L);
-		scr_rawseti(L, -2, i);
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+	lua_getfield(L, -1, cont->name);
+	lua_rawgeti(L, -1, 0);
+	for(int i = (int)lua_objlen(L, -1); i > 0; i--) {
+		lua_pushnil(L);
+		lua_rawseti(L, -2, i);
 	}
 	return 0;
 }
 
-static int meta_close(scr_Context *L) {
+static int meta_close(lua_State *L) {
 	struct _Contact *cont = tocontact(L, 1);
 	if(!cont || *cont->name == '\0') return 0;
 	cs_bool dirty = false;
@@ -285,9 +285,9 @@ static int meta_close(scr_Context *L) {
 		}
 	}
 
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-	scr_pushnull(L);
-	scr_settabfield(L, -2, cont->name);
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+	lua_pushnil(L);
+	lua_setfield(L, -2, cont->name);
 
 	if(!dirty)
 		*cont->name = '\0';
@@ -295,7 +295,7 @@ static int meta_close(scr_Context *L) {
 	return 0;
 }
 
-const scr_RegFuncs contactmeta[] = {
+const luaL_Reg contactmeta[] = {
 	{"pop", meta_pop},
 	{"push", meta_push},
 	{"bind", meta_bind},
@@ -309,17 +309,17 @@ const scr_RegFuncs contactmeta[] = {
 	{NULL, NULL}
 };
 
-static int cont_get(scr_Context *L) {
+static int cont_get(lua_State *L) {
 	cs_size namelen = 0;
 	cs_str name = luaL_checklstring(L, 1, &namelen);
-	scr_argassert(L, namelen > 0, 1, "Empty contact name");
-	scr_argassert(L, namelen < CSSCRIPTS_CONTACT_NAMELEN, 1, "Too long contact name");
+	luaL_argcheck(L, namelen > 0, 1, "Empty contact name");
+	luaL_argcheck(L, namelen < CSSCRIPTS_CONTACT_NAMELEN, 1, "Too long contact name");
 	Script *LS = Script_GetHandle(L);
 
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
-	scr_gettabfield(L, -1, name); // cscontact[name]
-	if(scr_isnull(L, -1)) {
-		scr_stackpop(L, 1);
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+	lua_getfield(L, -1, name); // cscontact[name]
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1);
 		for(int i = 0; i < CSSCRIPTS_CONTACT_MAX; i++) {
 			struct _Contact *cont = &contacts[i];
 			if(String_Compare(cont->name, name)) {
@@ -327,7 +327,7 @@ static int cont_get(scr_Context *L) {
 					pushcontact(L, cont);
 					goto cfinish;
 				} else
-					scr_fmterror(L, "Failed to connect to specified contact");
+					luaL_error(L, "Failed to connect to specified contact");
 				return 1;
 			}
 		}
@@ -335,30 +335,30 @@ static int cont_get(scr_Context *L) {
 		pushcontact(L, newcontact(name, LS));
 
 		cfinish:
-		scr_newtable(L);
-		scr_newtable(L);
-		scr_rawseti(L, -2, 0);
-		scr_stackpush(L, -2); // Contact
-		scr_rawseti(L, -2, 1);
-		scr_settabfield(L, -3, name);
+		lua_newtable(L);
+		lua_newtable(L);
+		lua_rawseti(L, -2, 0);
+		lua_pushvalue(L, -2); // Contact
+		lua_rawseti(L, -2, 1);
+		lua_setfield(L, -3, name);
 		return 1;
 	}
 
-	scr_rawgeti(L, -1, 1);
+	lua_rawgeti(L, -1, 1);
 	return 1;
 }
 
-const scr_RegFuncs contactlib[] = {
+const luaL_Reg contactlib[] = {
 	{"get", cont_get},
 
 	{NULL, NULL}
 };
 
-int scr_libfunc(contact)(scr_Context *L) {
-	scr_newntable(L, 0, CSSCRIPTS_CONTACT_MAX);
-	scr_settabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
+int scr_libfunc(contact)(lua_State *L) {
+	lua_createtable(L, 0, CSSCRIPTS_CONTACT_MAX);
+	lua_setfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCONTACT);
 
 	scr_createtype(L, CSSCRIPTS_MCONTACT, contactmeta);
-	scr_newlib(L, contactlib);
+	luaL_newlib(L, contactlib);
 	return 1;
 }

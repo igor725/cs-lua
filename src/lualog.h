@@ -2,5 +2,5 @@
 #define CSLUALOG_H
 #include "scripting.h"
 
-int scr_libfunc(log)(scr_Context *L);
+int scr_libfunc(log)(lua_State *L);
 #endif

@@ -3,7 +3,7 @@
 #include <types/config.h>
 #include "scripting.h"
 
-CStore *scr_checkcfgstore(scr_Context *L, int idx);
+CStore *scr_checkcfgstore(lua_State *L, int idx);
 
-int scr_libfunc(config)(scr_Context *L);
+int scr_libfunc(config)(lua_State *L);
 #endif

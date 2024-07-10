@@ -25,16 +25,16 @@ static cs_str const mods[5] = {
 	"MSHIFT", 0, "MALT"
 };
 
-int scr_libfunc(key)(scr_Context *L) {
-	scr_newntable(L, 0, 256 + 5);
+int scr_libfunc(key)(lua_State *L) {
+	lua_createtable(L, 0, 256 + 5);
 	for(int i = 0; i < 256; i++) {
 		if(keys[i]) {
-			scr_pushinteger(L, i);
-			scr_settabfield(L, -2, keys[i]);
+			lua_pushinteger(L, i);
+			lua_setfield(L, -2, keys[i]);
 		}
 		if(i < 5 && mods[i]) {
-			scr_pushinteger(L, i);
-			scr_settabfield(L, -2, mods[i]);
+			lua_pushinteger(L, i);
+			lua_setfield(L, -2, mods[i]);
 		}
 	}
 	return 1;

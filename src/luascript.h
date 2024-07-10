@@ -11,7 +11,7 @@ typedef struct _Script {
 	cs_bool unloaded;
 	cs_bool infoupd;
 	cs_str name, path, home;
-	scr_Context *L;
+	lua_State *L;
 	Mutex *lock;
 
 #	ifdef CSSCRIPTS_PROFILE_MEMORY
@@ -47,9 +47,9 @@ typedef struct _Script {
 
 #define Script_Lock(p) Mutex_Lock((p)->lock)
 #define Script_Unlock(p) Mutex_Unlock((p)->lock)
-#define Script_PrintError(p) Log_Error("Script \"%s\" got an error: %s", (p)->name, scr_tostring((p)->L, -1))
+#define Script_PrintError(p) Log_Error("Script \"%s\" got an error: %s", (p)->name, lua_tostring((p)->L, -1))
 
-Script *Script_GetHandle(scr_Context *L);
+Script *Script_GetHandle(lua_State *L);
 Script *Script_Open(cs_str name, cs_uint32 id);
 cs_bool Script_DoMainFile(Script *script);
 cs_bool Script_GlobalLookup(Script *plugin, cs_str key);

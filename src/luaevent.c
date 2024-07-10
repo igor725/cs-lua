@@ -51,7 +51,7 @@ static void evthandshake(onHandshakeDone *obj) {
 		if(Script_GlobalLookup(script, "onHandshake")) {
 			scr_pushclient(script->L, obj->client);
 			if(Script_Call(script, 1, 1)) {
-				if(scr_testmemtype(script->L, -1, CSSCRIPTS_MWORLD)) {
+				if(luaL_testudata(script->L, -1, CSSCRIPTS_MWORLD)) {
 					obj->world = scr_toworld(script->L, -1);
 					Script_Unlock(script);
 					break;
@@ -68,9 +68,9 @@ static cs_bool evtconnect(Client *obj) {
 		if(Script_GlobalLookup(script, "onConnect")) {
 			scr_pushclient(script->L, obj);
 			if(Script_Call(script, 1, 1)) {
-				cs_bool succ = (cs_bool)scr_isnull(script->L, -1) ||
+				cs_bool succ = (cs_bool)lua_isnil(script->L, -1) ||
 				scr_toboolean(script->L, -1);
-				scr_stackpop(script->L, 1);
+				lua_pop(script->L, 1);
 				if(!succ) {
 					Script_Unlock(script);
 					ScriptList_IterRet(false);
@@ -91,7 +91,7 @@ static void evtdisconnect(Client *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "onDisconnect")) {
 			scr_pushclient(script->L, obj);
-			scr_pushstring(script->L, Client_GetDisconnectReason(obj));
+			lua_pushstring(script->L, Client_GetDisconnectReason(obj));
 			Script_Call(script, 2, 0);
 		}
 		scr_clearcuboids(script->L, obj);
@@ -129,21 +129,21 @@ static void evtonclick(onPlayerClick *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "onPlayerClick")) {
 			scr_pushclient(script->L, obj->client);
-			scr_newntable(script->L, 0, 6);
-			scr_pushinteger(script->L, (scr_Integer)obj->button);
-			scr_settabfield(script->L, -2, "button");
-			scr_pushboolean(script->L, obj->action == 0);
-			scr_settabfield(script->L, -2, "action");
+			lua_createtable(script->L, 0, 6);
+			lua_pushinteger(script->L, (lua_Integer)obj->button);
+			lua_setfield(script->L, -2, "button");
+			lua_pushboolean(script->L, obj->action == 0);
+			lua_setfield(script->L, -2, "action");
 			scr_pushclient(script->L, Client_GetByID(obj->tgid));
-			scr_settabfield(script->L, -2, "target");
+			lua_setfield(script->L, -2, "target");
 			*scr_newangle(script->L) = obj->angle;
-			scr_settabfield(script->L, -2, "angle");
+			lua_setfield(script->L, -2, "angle");
 			LuaVector *vec = scr_newvector(script->L);
 			vec->type = LUAVECTOR_TSHORT;
 			vec->value.s = obj->tgpos;
-			scr_settabfield(script->L, -2, "position");
-			scr_pushinteger(script->L, (scr_Integer)obj->tgface);
-			scr_settabfield(script->L, -2, "face");
+			lua_setfield(script->L, -2, "position");
+			lua_pushinteger(script->L, (lua_Integer)obj->tgface);
+			lua_setfield(script->L, -2, "face");
 			Script_Call(script, 2, 0);
 		}
 		Script_Unlock(script);
@@ -170,14 +170,14 @@ static cs_bool evtonblockplace(onBlockPlace *obj) {
 			LuaVector *vec = scr_newvector(script->L);
 			vec->type = LUAVECTOR_TSHORT;
 			vec->value.s = obj->pos;
-			scr_pushinteger(script->L, obj->id);
+			lua_pushinteger(script->L, obj->id);
 			if(Script_Call(script, 3, 1)) {
 				cs_bool succ = true;
-				if(scr_isnumber(script->L, -1))
-					obj->id = (BlockID)scr_tointeger(script->L, -1);
-				else if(scr_isboolean(script->L, -1))
+				if(lua_isnumber(script->L, -1))
+					obj->id = (BlockID)lua_tointeger(script->L, -1);
+				else if(lua_isboolean(script->L, -1))
 					succ = scr_toboolean(script->L, -1);
-				scr_stackpop(script->L, 1);
+				lua_pop(script->L, 1);
 				if(!succ) {
 					Script_Unlock(script);
 					ScriptList_IterRet(false);
@@ -218,13 +218,13 @@ static cs_bool evtpreworldenvupdate(preWorldEnvUpdate *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "preWorldEnvUpdate")) {
 			scr_pushworld(script->L, obj->world);
-			scr_pushinteger(script->L, obj->values);
-			scr_pushinteger(script->L, obj->props);
-			scr_pushinteger(script->L, obj->colors);
+			lua_pushinteger(script->L, obj->values);
+			lua_pushinteger(script->L, obj->props);
+			lua_pushinteger(script->L, obj->colors);
 			if(Script_Call(script, 4, 1)) {
-				if(!scr_isnull(script->L, -1)) {
+				if(!lua_isnil(script->L, -1)) {
 					cs_bool ret = scr_toboolean(script->L, -1);
-					scr_stackpop(script->L, 1);
+					lua_pop(script->L, 1);
 					ScriptList_IterRet(ret);
 				}
 			} else {
@@ -251,8 +251,8 @@ static void evtheldchange(onHeldBlockChange *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "onHeldBlockChange")) {
 			scr_pushclient(script->L, obj->client);
-			scr_pushinteger(script->L, obj->curr);
-			scr_pushinteger(script->L, obj->prev);
+			lua_pushinteger(script->L, obj->curr);
+			lua_pushinteger(script->L, obj->prev);
 			Script_Call(script, 3, 0);
 		}
 		Script_Unlock(script);
@@ -265,18 +265,18 @@ static cs_bool evtonmessage(onMessage *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "onMessage")) {
 			scr_pushclient(script->L, obj->client);
-			scr_pushnumber(script->L, obj->type);
-			scr_pushstring(script->L, obj->message);
+			lua_pushnumber(script->L, obj->type);
+			lua_pushstring(script->L, obj->message);
 			if(Script_Call(script, 3, 2)) {
-				if(scr_isboolean(script->L, -2)) {
+				if(lua_isboolean(script->L, -2)) {
 					ret = scr_toboolean(script->L, -2);
 				} else {
-					if(scr_isnumber(script->L, -2))
-						obj->type = (cs_byte)scr_tointeger(script->L, -2);
-					if(scr_isstring(script->L, -1))
-						String_Copy(obj->message, sizeof(obj->message), scr_tostring(script->L, -1));
+					if(lua_isnumber(script->L, -2))
+						obj->type = (cs_byte)lua_tointeger(script->L, -2);
+					if(lua_isstring(script->L, -1))
+						String_Copy(obj->message, sizeof(obj->message), lua_tostring(script->L, -1));
 				}
-				scr_stackpop(script->L, 2);
+				lua_pop(script->L, 2);
 			} else ret = false;
 		}
 		Script_Unlock(script);
@@ -295,7 +295,7 @@ static void evttick(cs_int32 *obj) {
 		} else {
 			Script_Lock(script);
 			if(Script_GlobalLookup(script, "onTick")) {
-				scr_pushinteger(script->L, (scr_Integer)*obj);
+				lua_pushinteger(script->L, (lua_Integer)*obj);
 				Script_Call(script, 1, 0);
 			}
 			Script_Unlock(script);
@@ -308,8 +308,8 @@ static void evtpluginmsg(onPluginMessage *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "onPluginMessage")) {
 			scr_pushclient(script->L, obj->client);
-			scr_pushinteger(script->L, (scr_Integer)obj->channel);
-			scr_pushlstring(script->L, obj->message, 64);
+			lua_pushinteger(script->L, (lua_Integer)obj->channel);
+			lua_pushlstring(script->L, obj->message, 64);
 			Script_Call(script, 3, 0);
 		}
 		Script_Unlock(script);
@@ -321,14 +321,14 @@ static void evtprecommand(preCommand *obj) {
 		if(script != Command_GetUserData(obj->command)) continue;
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "preCommand")) {
-			scr_pushstring(script->L, Command_GetName(obj->command));
+			lua_pushstring(script->L, Command_GetName(obj->command));
 			scr_pushclient(script->L, obj->caller);
-			scr_pushstring(script->L, obj->args);
-			scr_pushboolean(script->L, obj->allowed);
+			lua_pushstring(script->L, obj->args);
+			lua_pushboolean(script->L, obj->allowed);
 			if(Script_Call(script, 4, 1)) {
-				if(scr_isboolean(script->L, -1))
+				if(lua_isboolean(script->L, -1))
 					obj->allowed = scr_toboolean(script->L, -1);
-				scr_stackpop(script->L, 1);
+				lua_pop(script->L, 1);
 			}
 		}
 		Script_Unlock(script);
@@ -340,14 +340,14 @@ static void evtprehandshakedone(preHandshakeDone *obj) {
 		Script_Lock(script);
 		if(Script_GlobalLookup(script, "preHandshakeDone")) {
 			scr_pushclient(script->L, obj->client);
-			scr_pushstring(script->L, obj->name);
-			scr_pushstring(script->L, obj->motd);
+			lua_pushstring(script->L, obj->name);
+			lua_pushstring(script->L, obj->motd);
 			if(Script_Call(script, 3, 2)) {
-				if(scr_isstring(script->L, -1))
-					String_Copy(obj->motd, sizeof(obj->motd), scr_tostring(script->L, -1));
-				if(scr_isstring(script->L, -2))
-					String_Copy(obj->name, sizeof(obj->name), scr_tostring(script->L, -2));
-				scr_stackpop(script->L, 2);
+				if(lua_isstring(script->L, -1))
+					String_Copy(obj->motd, sizeof(obj->motd), lua_tostring(script->L, -1));
+				if(lua_isstring(script->L, -2))
+					String_Copy(obj->name, sizeof(obj->name), lua_tostring(script->L, -2));
+				lua_pop(script->L, 2);
 			}
 		}
 		Script_Unlock(script);

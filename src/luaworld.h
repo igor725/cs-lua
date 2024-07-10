@@ -3,10 +3,10 @@
 #include <types/world.h>
 #include "scripting.h"
 
-World *scr_checkworld(scr_Context *L, int idx);
-World *scr_toworld(scr_Context *L, int idx);
-void scr_pushworld(scr_Context *L, World *world);
-void scr_clearworld(scr_Context *L, World *world);
+World *scr_checkworld(lua_State *L, int idx);
+World *scr_toworld(lua_State *L, int idx);
+void scr_pushworld(lua_State *L, World *world);
+void scr_clearworld(lua_State *L, World *world);
 
-int scr_libfunc(world)(scr_Context *L);
+int scr_libfunc(world)(lua_State *L);
 #endif

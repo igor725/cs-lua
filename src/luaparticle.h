@@ -2,5 +2,5 @@
 #define CSLUAPARTICLE_H
 #include "scripting.h"
 
-int scr_libfunc(particle)(scr_Context *L);
+int scr_libfunc(particle)(lua_State *L);
 #endif

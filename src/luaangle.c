@@ -5,36 +5,36 @@
 #include "luascript.h"
 #include "luaangle.h"
 
-cs_bool scr_isangle(scr_Context *L, int idx) {
-	return scr_testmemtype(L, idx, CSSCRIPTS_MANGLE) != NULL;
+cs_bool scr_isangle(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSSCRIPTS_MANGLE) != NULL;
 }
 
-Ang *scr_newangle(scr_Context *L) {
-	Ang *ang = scr_allocmem(L, sizeof(Ang));
+Ang *scr_newangle(lua_State *L) {
+	Ang *ang = lua_newuserdata(L, sizeof(Ang));
 	Memory_Zero(ang, sizeof(Ang));
-	scr_setmemtype(L, CSSCRIPTS_MANGLE);
+	luaL_setmetatable(L, CSSCRIPTS_MANGLE);
 	return ang;
 }
 
-Ang *scr_checkangle(scr_Context *L, int idx) {
-	return scr_checkmemtype(L, idx, CSSCRIPTS_MANGLE);
+Ang *scr_checkangle(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, CSSCRIPTS_MANGLE);
 }
 
-Ang *scr_toangle(scr_Context *L, int idx) {
-	return scr_testmemtype(L, idx, CSSCRIPTS_MANGLE);
+Ang *scr_toangle(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSSCRIPTS_MANGLE);
 }
 
-static int ang_setvalue(scr_Context *L) {
+static int ang_setvalue(lua_State *L) {
 	Ang *ang = scr_checkangle(L, 1);
-	ang->yaw = (cs_float)scr_optnumber(L, 2, ang->yaw);
-	ang->pitch = (cs_float)scr_optnumber(L, 3, ang->pitch);
+	ang->yaw = (cs_float)luaL_optnumber(L, 2, ang->yaw);
+	ang->pitch = (cs_float)luaL_optnumber(L, 3, ang->pitch);
 	return 0;
 }
 
-static int ang_getvalue(scr_Context *L) {
+static int ang_getvalue(lua_State *L) {
 	Ang *ang = scr_checkangle(L, 1);
-	scr_pushnumber(L, (scr_Number)ang->yaw);
-	scr_pushnumber(L, (scr_Number)ang->pitch);
+	lua_pushnumber(L, (lua_Number)ang->yaw);
+	lua_pushnumber(L, (lua_Number)ang->pitch);
 	return 2;
 }
 
@@ -50,53 +50,53 @@ static cs_bool getaxis(cs_str str, cs_char *ax) {
 	return false;
 }
 
-static int meta_index(scr_Context *L) {
+static int meta_index(lua_State *L) {
 	Ang *ang = scr_checkangle(L, 1);
 
 	cs_char axis = 0;
-	if(getaxis(scr_checkstring(L, 2), &axis)) {
+	if(getaxis(luaL_checkstring(L, 2), &axis)) {
 		switch(axis) {
-			case 'y': scr_pushnumber(L, (scr_Number)ang->yaw); break;
-			case 'p': scr_pushnumber(L, (scr_Number)ang->pitch); break;
+			case 'y': lua_pushnumber(L, (lua_Number)ang->yaw); break;
+			case 'p': lua_pushnumber(L, (lua_Number)ang->pitch); break;
 		}
 
 		return 1;
 	}
 
-	scr_argerror(L, 2, CSSCRIPTS_MANGLE " axis expected");
+	luaL_argerror(L, 2, CSSCRIPTS_MANGLE " axis expected");
 	return 0;
 }
 
-static int meta_newindex(scr_Context *L) {
+static int meta_newindex(lua_State *L) {
 	Ang *ang = scr_checkangle(L, 1);
 
 	cs_char axis = 0;
-	if(getaxis(scr_checkstring(L, 2), &axis)) {
+	if(getaxis(luaL_checkstring(L, 2), &axis)) {
 		switch(axis) {
-			case 'y': ang->yaw = (cs_float)scr_checknumber(L, 3); break;
-			case 'p': ang->pitch = (cs_float)scr_checknumber(L, 3); break;
+			case 'y': ang->yaw = (cs_float)luaL_checknumber(L, 3); break;
+			case 'p': ang->pitch = (cs_float)luaL_checknumber(L, 3); break;
 		}
 
 		return 0;
 	}
 
-	scr_argerror(L, 2, CSSCRIPTS_MANGLE " axis expected");
+	luaL_argerror(L, 2, CSSCRIPTS_MANGLE " axis expected");
 	return 0;
 }
 
-static int meta_call(scr_Context *L) {
+static int meta_call(lua_State *L) {
 	ang_setvalue(L);
-	scr_stackpop(L, scr_stacktop(L) - 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int meta_tostring(scr_Context *L) {
+static int meta_tostring(lua_State *L) {
 	Ang *ang = scr_checkangle(L, 1);
-	scr_pushformatstring(L, "Angle(%f, %f)", ang->yaw, ang->pitch);
+	lua_pushfstring(L, "Angle(%f, %f)", ang->yaw, ang->pitch);
 	return 1;
 }
 
-static const scr_RegFuncs anglemeta[] = {
+static const luaL_Reg anglemeta[] = {
 	{"set", ang_setvalue},
 	{"get", ang_getvalue},
 
@@ -108,22 +108,22 @@ static const scr_RegFuncs anglemeta[] = {
 	{NULL, NULL}
 };
 
-static int ang_new(scr_Context *L) {
+static int ang_new(lua_State *L) {
 	scr_newangle(L);
 
-	if(scr_stacktop(L) > 1) {
-		scr_getmetafield(L, -1, "set");
-		scr_stackpush(L, -2);
-		scr_stackpush(L, 1);
-		scr_stackpush(L, 2);
-		scr_unprotectedcall(L, 3, 0);
+	if(lua_gettop(L) > 1) {
+		luaL_getmetafield(L, -1, "set");
+		lua_pushvalue(L, -2);
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+		lua_call(L, 3, 0);
 	}
 
 	return 1;
 }
 
-int scr_libfunc(angle)(scr_Context *L) {
+int scr_libfunc(angle)(lua_State *L) {
 	scr_createtype(L, CSSCRIPTS_MANGLE, anglemeta);
-	scr_pushnativefunc(L, ang_new);
+	lua_pushcfunction(L, ang_new);
 	return 1;
 }

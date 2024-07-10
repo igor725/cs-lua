@@ -6,53 +6,53 @@
 #include "luaworld.h"
 #include "luablock.h"
 
-BlockDef *scr_checkblockdef(scr_Context *L, int idx) {
-	return scr_checkmemtype(L, idx, CSSCRIPTS_MBLOCK);
+BlockDef *scr_checkblockdef(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, CSSCRIPTS_MBLOCK);
 }
 
-BulkBlockUpdate *scr_checkbulk(scr_Context *L, int idx) {
-	return scr_checkmemtype(L, idx, CSSCRIPTS_MBULK);
+BulkBlockUpdate *scr_checkbulk(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, CSSCRIPTS_MBULK);
 }
 
-static int meta_addtoworld(scr_Context *L) {
-	scr_pushboolean(L, Block_Define(
+static int meta_addtoworld(lua_State *L) {
+	lua_pushboolean(L, Block_Define(
 		scr_checkworld(L, 2),
-		(BlockID)scr_checkinteger(L, 3),
+		(BlockID)luaL_checkinteger(L, 3),
 		scr_checkblockdef(L, 1)
 	));
 	return 1;
 }
 
-static int meta_undefine(scr_Context *L) {
-	scr_pushboolean(L, Block_Undefine(
+static int meta_undefine(lua_State *L) {
+	lua_pushboolean(L, Block_Undefine(
 		scr_checkworld(L, 2),
 		scr_checkblockdef(L, 1)
 	));
 	return 1;
 }
 
-static int meta_globundefine(scr_Context *L) {
+static int meta_globundefine(lua_State *L) {
 	Block_UndefineGlobal(
 		scr_checkblockdef(L, 1)
 	);
 	return 0;
 }
 
-static int meta_update(scr_Context *L) {
+static int meta_update(lua_State *L) {
 	Block_UpdateDefinition(
 		scr_checkblockdef(L, 1)
 	);
 	return 0;
 }
 
-static int meta_gc(scr_Context *L) {
+static int meta_gc(lua_State *L) {
 	BlockDef *bdef = scr_checkblockdef(L, 1);
 	Block_UndefineGlobal(bdef);
 	Block_UpdateDefinition(bdef);
 	return 0;
 }
 
-static const scr_RegFuncs blockmeta[] = {
+static const luaL_Reg blockmeta[] = {
 	{"addtoworld", meta_addtoworld},
 	{"undefine", meta_undefine},
 	{"globundefine", meta_globundefine},
@@ -63,74 +63,74 @@ static const scr_RegFuncs blockmeta[] = {
 	{NULL, NULL}
 };
 
-static int meta_setautosend(scr_Context *L) {
+static int meta_setautosend(lua_State *L) {
 	BulkBlockUpdate *bbu = scr_checkbulk(L, 1);
 	bbu->autosend = scr_toboolean(L, 2);
 	return 0;
 }
 
-static int meta_setworld(scr_Context *L) {
+static int meta_setworld(lua_State *L) {
 	BulkBlockUpdate *bbu = scr_checkbulk(L, 1);
 	bbu->world = scr_checkworld(L, 2);
 	return 0;
 }
 
-static int meta_getworld(scr_Context *L) {
+static int meta_getworld(lua_State *L) {
 	BulkBlockUpdate *bbu = scr_checkbulk(L, 1);
 	scr_pushworld(L, bbu->world);
 	return 1;
 }
 
-static int meta_push(scr_Context *L) {
+static int meta_push(lua_State *L) {
 	BulkBlockUpdate *bbu = scr_checkbulk(L, 1);
-	scr_pushboolean(L, Block_BulkUpdateSend(bbu));
+	lua_pushboolean(L, Block_BulkUpdateSend(bbu));
 	return 1;
 }
 
-static int meta_add(scr_Context *L) {
+static int meta_add(lua_State *L) {
 	BulkBlockUpdate *bbu = scr_checkbulk(L, 1);
 	int top;
 
-	if(scr_istable(L, 2)) {
-		top = (int)scr_gettablen(L, 2);
+	if(lua_istable(L, 2)) {
+		top = (int)lua_objlen(L, 2);
 		if(top == 0 || (top % 2 != 0))
-			scr_fmterror(L, "Invalid table size");
+			luaL_error(L, "Invalid table size");
 		top /= 2;
 		for(int i = 0; i < top; i++) {
-			scr_pushinteger(L, (i * 2) + 2);
-			scr_getfromtable(L, 2);
-			scr_pushinteger(L, (i * 2) + 1);
-			scr_getfromtable(L, 2);
-			cs_uint32 offset = (cs_uint32)scr_checkinteger(L, -1);
-			BlockID block = (BlockID)scr_checkinteger(L, -2);
-			scr_stackpop(L, 2);
+			lua_pushinteger(L, (i * 2) + 2);
+			lua_gettable(L, 2);
+			lua_pushinteger(L, (i * 2) + 1);
+			lua_gettable(L, 2);
+			cs_uint32 offset = (cs_uint32)luaL_checkinteger(L, -1);
+			BlockID block = (BlockID)luaL_checkinteger(L, -2);
+			lua_pop(L, 2);
 			if(!Block_BulkUpdateAdd(bbu, offset, block)) {
-				scr_pushboolean(L, 0);
-				scr_pushinteger(L, i);
+				lua_pushboolean(L, 0);
+				lua_pushinteger(L, i);
 				return 2;
 			}
 		}
 	} else {
-		top = scr_stacktop(L) - 1;
+		top = lua_gettop(L) - 1;
 		if(top == 0 || top % 2 != 0)
-			scr_fmterror(L, "Invalid number of arguments");
+			luaL_error(L, "Invalid number of arguments");
 		top /= 2;
 		for(int i = 0; i < top; i++) {
-			cs_uint32 offset = (cs_uint32)scr_checkinteger(L, (i * 2) + 2);
-			BlockID block = (BlockID)scr_checkinteger(L, (i * 2) + 3);
+			cs_uint32 offset = (cs_uint32)luaL_checkinteger(L, (i * 2) + 2);
+			BlockID block = (BlockID)luaL_checkinteger(L, (i * 2) + 3);
 			if(!Block_BulkUpdateAdd(bbu, offset, block)) {
-				scr_pushboolean(L, 0);
-				scr_pushinteger(L, i);
+				lua_pushboolean(L, 0);
+				lua_pushinteger(L, i);
 				return 2;
 			}
 		}
 	}
 
-	scr_pushboolean(L, 1);
+	lua_pushboolean(L, 1);
 	return 1;
 }
 
-static const scr_RegFuncs bulkmeta[] = {
+static const luaL_Reg bulkmeta[] = {
 	{"setautosend", meta_setautosend},
 	{"setworld", meta_setworld},
 
@@ -143,15 +143,15 @@ static const scr_RegFuncs bulkmeta[] = {
 };
 
 #define readtabval(K, S, T, D) \
-(scr_gettabfield(L, params, K), bdef->params.S = (T)scr_optinteger(L, -1, D))
+(lua_getfield(L, params, K), bdef->params.S = (T)luaL_optinteger(L, -1, D))
 
 #define readtabbool(K, S) \
-(scr_gettabfield(L, params, K), bdef->params.S = scr_toboolean(L, -1))
+(lua_getfield(L, params, K), bdef->params.S = scr_toboolean(L, -1))
 
 // TODO: Использовать SVec для установки минимальных и максимальных значений
 // TODO2: Использовать Color3 для установки цвета тумана
 
-static void ReadExtendedBlockTable(scr_Context *L, BlockDef *bdef, int params) {
+static void ReadExtendedBlockTable(lua_State *L, BlockDef *bdef, int params) {
 	readtabval("solidity", ext.solidity, EBlockSolidity, BDSOL_SOLID);
 	readtabval("movespeed", ext.moveSpeed, cs_byte, 128);
 	readtabval("toptex", ext.topTex, cs_byte, 0);
@@ -174,10 +174,10 @@ static void ReadExtendedBlockTable(scr_Context *L, BlockDef *bdef, int params) {
 	readtabval("fogr", ext.fogR, cs_byte, 0);
 	readtabval("fogg", ext.fogG, cs_byte, 0);
 	readtabval("fogb", ext.fogB, cs_byte, 0);
-	scr_stackpop(L, 22);
+	lua_pop(L, 22);
 }
 
-static void ReadBlockTable(scr_Context *L, BlockDef *bdef, int params) {
+static void ReadBlockTable(lua_State *L, BlockDef *bdef, int params) {
 	readtabval("solidity", nonext.solidity, EBlockSolidity, BDSOL_SOLID);
 	readtabval("movespeed", nonext.moveSpeed, cs_byte, 128);
 	readtabval("toptex", nonext.topTex, cs_byte, 0);
@@ -192,23 +192,23 @@ static void ReadBlockTable(scr_Context *L, BlockDef *bdef, int params) {
 	readtabval("fogr", nonext.fogR, cs_byte, 0);
 	readtabval("fogg", nonext.fogG, cs_byte, 0);
 	readtabval("fogb", nonext.fogB, cs_byte, 0);
-	scr_stackpop(L, 14);
+	lua_pop(L, 14);
 }
 
-static int block_define(scr_Context *L) {
+static int block_define(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TTABLE);
 	cs_str name = NULL;
 	if(scr_checktabfield(L, 1, "name", LUA_TSTRING))
-		name = scr_tostring(L, -1);
-	scr_gettabfield(L, 1, "extended");
+		name = lua_tostring(L, -1);
+	lua_getfield(L, 1, "extended");
 	BlockID fallback = 0;
 	if(scr_checktabfield(L, 1, "fallback", LUA_TNUMBER))
-		fallback = (BlockID)scr_tointeger(L, -1);
+		fallback = (BlockID)lua_tointeger(L, -1);
 	scr_checktabfield(L, 1, "params", LUA_TTABLE);
 	int params = lua_absindex(L, -1);
 
-	BlockDef *bdef = scr_allocmem(L, sizeof(BlockDef));
-	scr_setmemtype(L, CSSCRIPTS_MBLOCK);
+	BlockDef *bdef = lua_newuserdata(L, sizeof(BlockDef));
+	luaL_setmetatable(L, CSSCRIPTS_MBLOCK);
 	String_Copy(bdef->name, MAX_STR_LEN, name);
 	bdef->fallback = fallback;
 
@@ -223,32 +223,32 @@ static int block_define(scr_Context *L) {
 	return 1;
 }
 
-static int block_isvalid(scr_Context *L) {
-	scr_pushboolean(L, Block_IsValid(
+static int block_isvalid(lua_State *L) {
+	lua_pushboolean(L, Block_IsValid(
 		scr_checkworld(L, 1),
-		(BlockID)scr_checkinteger(L, 2)
+		(BlockID)luaL_checkinteger(L, 2)
 	));
 	return 1;
 }
 
-static int block_fallbackfor(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Block_GetFallbackFor(
+static int block_fallbackfor(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Block_GetFallbackFor(
 		scr_checkworld(L, 1),
-		(BlockID)scr_checkinteger(L, 2)
+		(BlockID)luaL_checkinteger(L, 2)
 	));
 	return 1;
 }
 
-static int block_bulk(scr_Context *L) {
-	BulkBlockUpdate *bbu = scr_allocmem(L, sizeof(BulkBlockUpdate));
+static int block_bulk(lua_State *L) {
+	BulkBlockUpdate *bbu = lua_newuserdata(L, sizeof(BulkBlockUpdate));
 	Memory_Fill(bbu, sizeof(BulkBlockUpdate), 0);
-	scr_setmemtype(L, CSSCRIPTS_MBULK);
+	luaL_setmetatable(L, CSSCRIPTS_MBULK);
 	bbu->world = scr_toworld(L, 1);
 	bbu->autosend = scr_toboolean(L, 2);
 	return 1;
 }
 
-static const scr_RegFuncs blocklib[] = {
+static const luaL_Reg blocklib[] = {
 	{"define", block_define},
 	{"isvalid", block_isvalid},
 	{"fallbackfor", block_fallbackfor},
@@ -281,14 +281,14 @@ static cs_str const blocknames[] = {
 	NULL
 };
 
-static void initconts(scr_Context *L) {
+static void initconts(lua_State *L) {
 	for(int i = 0; blocknames[i]; i++) {
-		scr_pushinteger(L, i);
-		scr_settabfield(L, -2, blocknames[i]);
+		lua_pushinteger(L, i);
+		lua_setfield(L, -2, blocknames[i]);
 	}
 }
 
-int scr_libfunc(block)(scr_Context *L) {
+int scr_libfunc(block)(lua_State *L) {
 	scr_createtype(L, CSSCRIPTS_MBLOCK, blockmeta);
 	scr_createtype(L, CSSCRIPTS_MBULK, bulkmeta);
 
@@ -313,7 +313,7 @@ int scr_libfunc(block)(scr_Context *L) {
 	scr_addintconst(L, BDDRW_TRANSLUCENT);
 	scr_addintconst(L, BDDRW_GAS);
 
-	scr_newlib(L, blocklib);
+	luaL_newlib(L, blocklib);
 	initconts(L);
 	return 1;
 }

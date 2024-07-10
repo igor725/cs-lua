@@ -5,70 +5,70 @@
 #include "luascript.h"
 #include "luavector.h"
 
-cs_bool scr_isvector(scr_Context *L, int idx) {
-	return scr_testmemtype(L, idx, CSSCRIPTS_MVECTOR) != NULL;
+cs_bool scr_isvector(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSSCRIPTS_MVECTOR) != NULL;
 }
 
-LuaVector *scr_newvector(scr_Context *L) {
-	LuaVector *vec = scr_allocmem(L, sizeof(LuaVector));
+LuaVector *scr_newvector(lua_State *L) {
+	LuaVector *vec = lua_newuserdata(L, sizeof(LuaVector));
 	Memory_Zero(&vec->value, sizeof(vec->value));
-	scr_setmemtype(L, CSSCRIPTS_MVECTOR);
+	luaL_setmetatable(L, CSSCRIPTS_MVECTOR);
 	vec->type = LUAVECTOR_TFLOAT;
 	return vec;
 }
 
-LuaVector *scr_checkvector(scr_Context *L, int idx) {
-	return scr_checkmemtype(L, idx, CSSCRIPTS_MVECTOR);
+LuaVector *scr_checkvector(lua_State *L, int idx) {
+	return luaL_checkudata(L, idx, CSSCRIPTS_MVECTOR);
 }
 
-LuaVector *scr_tovector(scr_Context *L, int idx) {
-	return scr_testmemtype(L, idx, CSSCRIPTS_MVECTOR);
+LuaVector *scr_tovector(lua_State *L, int idx) {
+	return luaL_testudata(L, idx, CSSCRIPTS_MVECTOR);
 }
 
-Vec *scr_checkfloatvector(scr_Context *L, int idx) {
+Vec *scr_checkfloatvector(lua_State *L, int idx) {
 	LuaVector *vec = scr_checkvector(L, idx);
-	scr_argassert(L, vec->type == LUAVECTOR_TFLOAT, idx, "'FloatVector' expected");
+	luaL_argcheck(L, vec->type == LUAVECTOR_TFLOAT, idx, "'FloatVector' expected");
 	return &vec->value.f;
 }
 
-Vec *scr_tofloatvector(scr_Context *L, int idx) {
+Vec *scr_tofloatvector(lua_State *L, int idx) {
 	LuaVector *vec = scr_tovector(L, idx);
 	if(!vec || vec->type != LUAVECTOR_TFLOAT)
 		return NULL;
 	return &vec->value.f;
 }
 
-SVec *scr_checkshortvector(scr_Context *L, int idx) {
+SVec *scr_checkshortvector(lua_State *L, int idx) {
 	LuaVector *vec = scr_checkvector(L, idx);
-	scr_argassert(L, vec->type == LUAVECTOR_TSHORT, idx, "'ShortVector' expected");
+	luaL_argcheck(L, vec->type == LUAVECTOR_TSHORT, idx, "'ShortVector' expected");
 	return &vec->value.s;
 }
 
-SVec *scr_toshortvector(scr_Context *L, int idx) {
+SVec *scr_toshortvector(lua_State *L, int idx) {
 	LuaVector *vec = scr_tovector(L, idx);
 	if(!vec || vec->type != LUAVECTOR_TSHORT)
 		return NULL;
 	return &vec->value.s;
 }
 
-static int vec_iszero(scr_Context *L) {
+static int vec_iszero(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT)
-		scr_pushboolean(L, Vec_IsZero(vec->value.f));
+		lua_pushboolean(L, Vec_IsZero(vec->value.f));
 	else if(vec->type == LUAVECTOR_TSHORT)
-		scr_pushboolean(L, Vec_IsZero(vec->value.s));
+		lua_pushboolean(L, Vec_IsZero(vec->value.s));
 
 	return 1;
 }
 
-static int vec_scale(scr_Context *L) {
+static int vec_scale(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT) {
-		Vec_Scale(vec->value.f, (cs_float)scr_checknumber(L, 2));
+		Vec_Scale(vec->value.f, (cs_float)luaL_checknumber(L, 2));
 	} else if(vec->type == LUAVECTOR_TSHORT) {
-		Vec_Scale(vec->value.s, (cs_int16)scr_checkinteger(L, 2));
+		Vec_Scale(vec->value.s, (cs_int16)luaL_checkinteger(L, 2));
 	}
 
 	return 0;
@@ -82,7 +82,7 @@ static INL cs_float magnitude(Vec *src) {
 	);
 }
 
-static int vec_cross(scr_Context *L) {
+static int vec_cross(lua_State *L) {
 	LuaVector *dst = scr_checkvector(L, 1);
 
 	if(dst->type == LUAVECTOR_TFLOAT) {
@@ -95,11 +95,11 @@ static int vec_cross(scr_Context *L) {
 		Vec_Cross(dst->value.s, *src1, *src2);
 	}
 
-	scr_stackpop(L, scr_stacktop(L) - 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int vec_min(scr_Context *L) {
+static int vec_min(lua_State *L) {
 	LuaVector *dst = scr_checkvector(L, 1);
 
 	if(dst->type == LUAVECTOR_TFLOAT) {
@@ -112,11 +112,11 @@ static int vec_min(scr_Context *L) {
 		Vec_Min(dst->value.s, *v1, *v2);
 	}
 
-	scr_stackpop(L, scr_stacktop(L) - 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int vec_max(scr_Context *L) {
+static int vec_max(lua_State *L) {
 	LuaVector *dst = scr_checkvector(L, 1);
 
 	if(dst->type == LUAVECTOR_TFLOAT) {
@@ -129,11 +129,11 @@ static int vec_max(scr_Context *L) {
 		Vec_Max(dst->value.s, *v1, *v2);
 	}
 
-	scr_stackpop(L, scr_stacktop(L) - 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int vec_toshort(scr_Context *L) {
+static int vec_toshort(lua_State *L) {
 	LuaVector *src = scr_checkvector(L, 1);
 	LuaVector *dst = scr_newvector(L);
 	dst->type = LUAVECTOR_TSHORT;
@@ -147,7 +147,7 @@ static int vec_toshort(scr_Context *L) {
 	return 1;
 }
 
-static int vec_tofloat(scr_Context *L) {
+static int vec_tofloat(lua_State *L) {
 	LuaVector *src = scr_checkvector(L, 1);
 	LuaVector *dst = scr_newvector(L);
 	dst->type = LUAVECTOR_TFLOAT;
@@ -161,7 +161,7 @@ static int vec_tofloat(scr_Context *L) {
 	return 1;
 }
 
-static int vec_normalized(scr_Context *L) {
+static int vec_normalized(lua_State *L) {
 	Vec *dst, *src = scr_checkfloatvector(L, 1);
 
 	if(scr_isvector(L, 2))
@@ -177,40 +177,40 @@ static int vec_normalized(scr_Context *L) {
 	return 1;
 }
 
-static int vec_magnitude(scr_Context *L) {
-	scr_pushnumber(L, (scr_Number)magnitude(
+static int vec_magnitude(lua_State *L) {
+	lua_pushnumber(L, (lua_Number)magnitude(
 		scr_checkfloatvector(L, 1)
 	));
 	return 1;
 }
 
-static int vec_setvalue(scr_Context *L) {
+static int vec_setvalue(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT) {
-		vec->value.f.x = (cs_float)scr_optnumber(L, 2, vec->value.f.x);
-		vec->value.f.y = (cs_float)scr_optnumber(L, 3, vec->value.f.y);
-		vec->value.f.z = (cs_float)scr_optnumber(L, 4, vec->value.f.z);
+		vec->value.f.x = (cs_float)luaL_optnumber(L, 2, vec->value.f.x);
+		vec->value.f.y = (cs_float)luaL_optnumber(L, 3, vec->value.f.y);
+		vec->value.f.z = (cs_float)luaL_optnumber(L, 4, vec->value.f.z);
 	} else if(vec->type == LUAVECTOR_TSHORT) {
-		vec->value.s.x = (cs_int16)scr_optinteger(L, 2, vec->value.s.x);
-		vec->value.s.y = (cs_int16)scr_optinteger(L, 3, vec->value.s.y);
-		vec->value.s.z = (cs_int16)scr_optinteger(L, 4, vec->value.s.z);
+		vec->value.s.x = (cs_int16)luaL_optinteger(L, 2, vec->value.s.x);
+		vec->value.s.y = (cs_int16)luaL_optinteger(L, 3, vec->value.s.y);
+		vec->value.s.z = (cs_int16)luaL_optinteger(L, 4, vec->value.s.z);
 	}
 
 	return 0;
 }
 
-static int vec_getvalue(scr_Context *L) {
+static int vec_getvalue(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
 
 	if(vec->type == LUAVECTOR_TFLOAT) {
-		scr_pushnumber(L, (scr_Number)vec->value.f.x);
-		scr_pushnumber(L, (scr_Number)vec->value.f.y);
-		scr_pushnumber(L, (scr_Number)vec->value.f.z);
+		lua_pushnumber(L, (lua_Number)vec->value.f.x);
+		lua_pushnumber(L, (lua_Number)vec->value.f.y);
+		lua_pushnumber(L, (lua_Number)vec->value.f.z);
 	} else if(vec->type == LUAVECTOR_TSHORT) {
-		scr_pushinteger(L, (scr_Integer)vec->value.s.x);
-		scr_pushinteger(L, (scr_Integer)vec->value.s.y);
-		scr_pushinteger(L, (scr_Integer)vec->value.s.z);
+		lua_pushinteger(L, (lua_Integer)vec->value.s.x);
+		lua_pushinteger(L, (lua_Integer)vec->value.s.y);
+		lua_pushinteger(L, (lua_Integer)vec->value.s.z);
 	} else return 0;
 
 	return 3;
@@ -232,94 +232,94 @@ static cs_bool getaxis(cs_str str, cs_char *ax) {
 	return true;
 }
 
-static int meta_tostring(scr_Context *L) {
+static int meta_tostring(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
 
 	switch(vec->type) {
 		case LUAVECTOR_TFLOAT:
-			scr_pushformatstring(L, "FloatVector(%f, %f, %f)",
+			lua_pushfstring(L, "FloatVector(%f, %f, %f)",
 				vec->value.f.x, vec->value.f.y, vec->value.f.z
 			);
 			break;
 		case LUAVECTOR_TSHORT:
-			scr_pushformatstring(L, "ShortVector(%d, %d, %d)",
+			lua_pushfstring(L, "ShortVector(%d, %d, %d)",
 				vec->value.s.x, vec->value.s.y, vec->value.s.z
 			);
 			break;
 
 		default:
-			scr_pushformatstring(L, "UnknownVector(%p)", vec);
+			lua_pushfstring(L, "UnknownVector(%p)", vec);
 			break;
 	}
 
 	return 1;
 }
 
-static int meta_index(scr_Context *L) {
+static int meta_index(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
-	cs_str field = scr_checkstring(L, 2);
+	cs_str field = luaL_checkstring(L, 2);
 
 	cs_char ax = 0;
 	if(getaxis(field, &ax)) {
 		switch(ax) {
 			case 'x':
-				if(vec->type == 0) scr_pushnumber(L, (scr_Number)vec->value.f.x);
-				else scr_pushinteger(L, (scr_Integer)vec->value.s.x);
+				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.x);
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.x);
 				break;
 			case 'y':
-				if(vec->type == 0) scr_pushnumber(L, (scr_Number)vec->value.f.y);
-				else scr_pushinteger(L, (scr_Integer)vec->value.s.y);
+				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.y);
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.y);
 				break;
 			case 'z':
-				if(vec->type == 0) scr_pushnumber(L, (scr_Number)vec->value.f.z);
-				else scr_pushinteger(L, (scr_Integer)vec->value.s.z);
+				if(vec->type == 0) lua_pushnumber(L, (lua_Number)vec->value.f.z);
+				else lua_pushinteger(L, (lua_Integer)vec->value.s.z);
 				break;
 		}
 
 		return 1;
 	}
 
-	scr_getmetafield(L, 1, field);
+	luaL_getmetafield(L, 1, field);
 	return 1;
 }
 
-static int meta_newindex(scr_Context *L) {
+static int meta_newindex(lua_State *L) {
 	LuaVector *vec = scr_checkvector(L, 1);
 
 	cs_char ax = 0;
-	if(getaxis(scr_checkstring(L, 2), &ax)) {
+	if(getaxis(luaL_checkstring(L, 2), &ax)) {
 		switch(ax) {
 			case 'x':
-				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.x = (cs_float)scr_checknumber(L, 3);
-				else vec->value.s.x = (cs_int16)scr_checkinteger(L, 3);
+				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.x = (cs_float)luaL_checknumber(L, 3);
+				else vec->value.s.x = (cs_int16)luaL_checkinteger(L, 3);
 				break;
 			case 'y':
-				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.y = (cs_float)scr_checknumber(L, 3);
-				else vec->value.s.y = (cs_int16)scr_checkinteger(L, 3);
+				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.y = (cs_float)luaL_checknumber(L, 3);
+				else vec->value.s.y = (cs_int16)luaL_checkinteger(L, 3);
 				break;
 			case 'z':
-				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.z = (cs_float)scr_checknumber(L, 3);
-				else vec->value.s.z = (cs_int16)scr_checkinteger(L, 3);
+				if(vec->type == LUAVECTOR_TFLOAT) vec->value.f.z = (cs_float)luaL_checknumber(L, 3);
+				else vec->value.s.z = (cs_int16)luaL_checkinteger(L, 3);
 				break;
 		}
 
 		return 0;
 	}
 
-	scr_argerror(L, 2, CSSCRIPTS_MVECTOR " axis expected");
+	luaL_argerror(L, 2, CSSCRIPTS_MVECTOR " axis expected");
 	return 0;
 }
 
-static int meta_call(scr_Context *L) {
+static int meta_call(lua_State *L) {
 	vec_setvalue(L);
-	scr_stackpop(L, scr_stacktop(L) - 1);
+	lua_pop(L, lua_gettop(L) - 1);
 	return 1;
 }
 
-static int meta_add(scr_Context *L) {
+static int meta_add(lua_State *L) {
 	LuaVector *src1 = scr_checkvector(L, 1);
 	LuaVector *src2 = scr_checkvector(L, 2);
-	scr_argassert(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
 
 	LuaVector *dst = scr_newvector(L);
 	dst->type = src1->type;
@@ -332,10 +332,10 @@ static int meta_add(scr_Context *L) {
 	return 1;
 }
 
-static int meta_sub(scr_Context *L) {
+static int meta_sub(lua_State *L) {
 	LuaVector *src1 = scr_checkvector(L, 1);
 	LuaVector *src2 = scr_checkvector(L, 2);
-	scr_argassert(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
 
 	LuaVector *dst = scr_newvector(L);
 	dst->type = src1->type;
@@ -348,26 +348,26 @@ static int meta_sub(scr_Context *L) {
 	return 1;
 }
 
-static int meta_mul(scr_Context *L) {
+static int meta_mul(lua_State *L) {
 	LuaVector *src1 = scr_checkvector(L, 1);
 
-	if(scr_isnumber(L, 2)) {
+	if(lua_isnumber(L, 2)) {
 		LuaVector *dst = scr_newvector(L);
 		dst->type = src1->type;
 
 		if(dst->type == LUAVECTOR_TFLOAT) {
 			dst->value.f = src1->value.f;
-			Vec_Scale(dst->value.f, (cs_float)scr_checknumber(L, 2));
+			Vec_Scale(dst->value.f, (cs_float)luaL_checknumber(L, 2));
 		} else if(dst->type == LUAVECTOR_TSHORT) {
 			dst->value.s = src1->value.s;
-			Vec_Scale(dst->value.s, (cs_int16)scr_checkinteger(L, 2));
+			Vec_Scale(dst->value.s, (cs_int16)luaL_checkinteger(L, 2));
 		}
 
 		return 1;
 	}
 
 	LuaVector *src2 = scr_checkvector(L, 2);
-	scr_argassert(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
 
 	LuaVector *dst = scr_newvector(L);
 	dst->type = src1->type;
@@ -380,19 +380,19 @@ static int meta_mul(scr_Context *L) {
 	return 1;
 }
 
-static int meta_div(scr_Context *L) {
+static int meta_div(lua_State *L) {
 	LuaVector *src1 = scr_checkvector(L, 1);
 
-	if(scr_isnumber(L, 2)) {
+	if(lua_isnumber(L, 2)) {
 		LuaVector *dst = scr_newvector(L);
 		dst->type = src1->type;
 
 		if(dst->type == LUAVECTOR_TFLOAT) {
 			dst->value.f = src1->value.f;
-			Vec_DivN(dst->value.f, (cs_float)scr_tonumber(L, 2));
+			Vec_DivN(dst->value.f, (cs_float)lua_tonumber(L, 2));
 		} else if(dst->type == LUAVECTOR_TSHORT) {
-			cs_int16 id = (cs_int16)scr_tointeger(L, 2);
-			scr_argassert(L, id != 0, 2, "Integer division by zero");
+			cs_int16 id = (cs_int16)lua_tointeger(L, 2);
+			luaL_argcheck(L, id != 0, 2, "Integer division by zero");
 			dst->value.s = src1->value.s;
 			Vec_DivN(dst->value.s, id);
 		}
@@ -401,7 +401,7 @@ static int meta_div(scr_Context *L) {
 	}
 
 	LuaVector *src2 = scr_checkvector(L, 2);
-	scr_argassert(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
+	luaL_argcheck(L, src1->type == src2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
 
 	LuaVector *dst = scr_newvector(L);
 	dst->type = src1->type;
@@ -409,24 +409,24 @@ static int meta_div(scr_Context *L) {
 	if(dst->type == LUAVECTOR_TFLOAT)
 		Vec_Div(dst->value.f, src1->value.f, src2->value.f);
 	else if(dst->type == LUAVECTOR_TSHORT) {
-		scr_argassert(L, !Vec_HaveZero(src2->value.s), 2, "Integer division by zero");
+		luaL_argcheck(L, !Vec_HaveZero(src2->value.s), 2, "Integer division by zero");
 		Vec_Div(dst->value.s, src1->value.s, src2->value.s);
 	}
 
 	return 1;
 }
 
-static int meta_lt(scr_Context *L) {
+static int meta_lt(lua_State *L) {
 	LuaVector *vec1 = scr_checkvector(L, 1);
 	LuaVector *vec2 = scr_checkvector(L, 2);
-	scr_argassert(L, vec1->type == vec2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
+	luaL_argcheck(L, vec1->type == vec2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
 	if(vec1->type == LUAVECTOR_TFLOAT)
-		scr_pushboolean(L, vec1->value.f.x < vec2->value.f.x &&
+		lua_pushboolean(L, vec1->value.f.x < vec2->value.f.x &&
 			vec1->value.f.y < vec2->value.f.y &&
 			vec1->value.f.z < vec2->value.f.z
 		);
 	else if(vec1->type == LUAVECTOR_TSHORT)
-		scr_pushboolean(L, vec1->value.s.x < vec2->value.s.x &&
+		lua_pushboolean(L, vec1->value.s.x < vec2->value.s.x &&
 			vec1->value.s.y < vec2->value.s.y &&
 			vec1->value.s.z < vec2->value.s.z
 		);
@@ -434,17 +434,17 @@ static int meta_lt(scr_Context *L) {
 	return 1;
 }
 
-static int meta_le(scr_Context *L) {
+static int meta_le(lua_State *L) {
 	LuaVector *vec1 = scr_checkvector(L, 1);
 	LuaVector *vec2 = scr_checkvector(L, 2);
-	scr_argassert(L, vec1->type == vec2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
+	luaL_argcheck(L, vec1->type == vec2->type, 2, CSSCRIPTS_MVECTOR " types mismatch");
 	if(vec1->type == LUAVECTOR_TFLOAT)
-		scr_pushboolean(L, vec1->value.f.x <= vec2->value.f.x &&
+		lua_pushboolean(L, vec1->value.f.x <= vec2->value.f.x &&
 			vec1->value.f.y <= vec2->value.f.y &&
 			vec1->value.f.z <= vec2->value.f.z
 		);
 	else if(vec1->type == LUAVECTOR_TSHORT)
-		scr_pushboolean(L, vec1->value.s.x <= vec2->value.s.x &&
+		lua_pushboolean(L, vec1->value.s.x <= vec2->value.s.x &&
 			vec1->value.s.y <= vec2->value.s.y &&
 			vec1->value.s.z <= vec2->value.s.z
 		);
@@ -452,26 +452,26 @@ static int meta_le(scr_Context *L) {
 	return 1;
 }
 
-static int meta_eq(scr_Context *L) {
+static int meta_eq(lua_State *L) {
 	LuaVector *vec1 = scr_checkvector(L, 1);
 	LuaVector *vec2 = scr_checkvector(L, 2);
 
 	if(vec1->type == vec2->type) {
 		if(vec1->type == LUAVECTOR_TSHORT)
-			scr_pushboolean(L, SVec_Compare(&vec1->value.s, &vec2->value.s));
+			lua_pushboolean(L, SVec_Compare(&vec1->value.s, &vec2->value.s));
 		else if(vec1->type == LUAVECTOR_TFLOAT)
-			scr_pushboolean(L, Vec_Compare(&vec1->value.f, &vec2->value.f));
+			lua_pushboolean(L, Vec_Compare(&vec1->value.f, &vec2->value.f));
 		else
-			scr_pushboolean(L, 0);
+			lua_pushboolean(L, 0);
 
 		return 1;
 	}
 
-	scr_pushboolean(L, 0);
+	lua_pushboolean(L, 0);
 	return 1;
 }
 
-static const scr_RegFuncs vectormeta[] = {
+static const luaL_Reg vectormeta[] = {
 	{"iszero", vec_iszero},
 	{"scale", vec_scale},
 	{"normalized", vec_normalized},
@@ -502,47 +502,47 @@ static const scr_RegFuncs vectormeta[] = {
 	{NULL, NULL}
 };
 
-static int vec_newfloat(scr_Context *L) {
+static int vec_newfloat(lua_State *L) {
 	LuaVector *vec = scr_newvector(L);
 	vec->type = LUAVECTOR_TFLOAT;
 
-	if(scr_stacktop(L) > 2) {
-		scr_getmetafield(L, -1, "set");
-		scr_stackpush(L, -2);
-		scr_stackpush(L, 1);
-		scr_stackpush(L, 2);
-		scr_stackpush(L, 3);
-		scr_unprotectedcall(L, 4, 0);
+	if(lua_gettop(L) > 2) {
+		luaL_getmetafield(L, -1, "set");
+		lua_pushvalue(L, -2);
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+		lua_pushvalue(L, 3);
+		lua_call(L, 4, 0);
 	}
 
 	return 1;
 }
 
-static int vec_newshort(scr_Context *L) {
+static int vec_newshort(lua_State *L) {
 	LuaVector *vec = scr_newvector(L);
 	vec->type = LUAVECTOR_TSHORT;
 
-	if(scr_stacktop(L) > 2) {
-		scr_getmetafield(L, -1, "set");
-		scr_stackpush(L, -2);
-		scr_stackpush(L, 1);
-		scr_stackpush(L, 2);
-		scr_stackpush(L, 3);
-		scr_unprotectedcall(L, 4, 0);
+	if(lua_gettop(L) > 2) {
+		luaL_getmetafield(L, -1, "set");
+		lua_pushvalue(L, -2);
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 2);
+		lua_pushvalue(L, 3);
+		lua_call(L, 4, 0);
 	}
 
 	return 1;
 }
 
-static const scr_RegFuncs vectorlib[] = {
+static const luaL_Reg vectorlib[] = {
 	{"float", vec_newfloat},
 	{"short", vec_newshort},
 
 	{NULL, NULL}
 };
 
-int scr_libfunc(vector)(scr_Context *L) {
+int scr_libfunc(vector)(lua_State *L) {
 	scr_createtype(L, CSSCRIPTS_MVECTOR, vectormeta);
-	scr_newlib(L, vectorlib);
+	luaL_newlib(L, vectorlib);
 	return 1;
 }

@@ -11,76 +11,76 @@
 #include "luacuboid.h"
 #include "luablock.h"
 
-Client *scr_checkclient(scr_Context *L, int idx) {
-	void **ud = scr_checkmemtype(L, idx, CSSCRIPTS_MCLIENT);
-	scr_argassert(L, *ud != NULL, idx, "Invalid client");
+Client *scr_checkclient(lua_State *L, int idx) {
+	void **ud = luaL_checkudata(L, idx, CSSCRIPTS_MCLIENT);
+	luaL_argcheck(L, *ud != NULL, idx, "Invalid client");
 	return (Client *)*ud;
 }
 
-Client *scr_toclient(scr_Context *L, int idx) {
-	void **ud = scr_testmemtype(L, idx, CSSCRIPTS_MCLIENT);
+Client *scr_toclient(lua_State *L, int idx) {
+	void **ud = luaL_testudata(L, idx, CSSCRIPTS_MCLIENT);
 	return ud ? *ud : NULL;
 }
 
-void scr_pushclient(scr_Context *L, Client *client) {
+void scr_pushclient(lua_State *L, Client *client) {
 	if(!client) {
-		scr_pushnull(L);
+		lua_pushnil(L);
 		return;
 	}
 
 	ClientID id = Client_GetID(client);
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCLIENTS);
-	scr_pushnumber(L, id);
-	scr_getfromtable(L, -2);
-	if(scr_isnull(L, -1)) {
-		scr_stackpop(L, 1);
-		scr_pushnumber(L, id);
-		scr_allocmem(L, sizeof(Client *));
-		scr_setmemtype(L, CSSCRIPTS_MCLIENT);
-		scr_settotable(L, -3);
-		scr_pushnumber(L, id);
-		scr_getfromtable(L, -2);
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCLIENTS);
+	lua_pushnumber(L, id);
+	lua_gettable(L, -2);
+	if(lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		lua_pushnumber(L, id);
+		lua_newuserdata(L, sizeof(Client *));
+		luaL_setmetatable(L, CSSCRIPTS_MCLIENT);
+		lua_settable(L, -3);
+		lua_pushnumber(L, id);
+		lua_gettable(L, -2);
 	}
 
-	scr_stackrem(L, -2);
-	void **ud = scr_getmem(L, -1);
+	lua_remove(L, -2);
+	void **ud = lua_touserdata(L, -1);
 	*ud = client;
 }
 
-void scr_clearclient(scr_Context *L, Client *client) {
-	scr_gettabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCLIENTS);
-	scr_pushinteger(L, Client_GetID(client));
-	scr_getfromtable(L, -2);
-	if(!scr_ismem(L, -1)) {
-		scr_stackpop(L, 1);
+void scr_clearclient(lua_State *L, Client *client) {
+	lua_getfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCLIENTS);
+	lua_pushinteger(L, Client_GetID(client));
+	lua_gettable(L, -2);
+	if(!lua_isuserdata(L, -1)) {
+		lua_pop(L, 1);
 		return;
 	}
-	void **ud = scr_getmem(L, -1);
+	void **ud = lua_touserdata(L, -1);
 	*ud = NULL;
 }
 
-static int meta_getid(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Client_GetID(
+static int meta_getid(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetID(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getstate(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Client_GetState(
+static int meta_getstate(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetState(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getaddr(scr_Context *L) {
+static int meta_getaddr(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
 	cs_uint32 addr = Client_GetAddr(client);
 
-	if(scr_stacktop(L) > 1 && scr_toboolean(L, 2))
-		scr_pushinteger(L, (scr_Integer)Client_GetAddr(client));
+	if(lua_gettop(L) > 1 && scr_toboolean(L, 2))
+		lua_pushinteger(L, (lua_Integer)Client_GetAddr(client));
 	else
-		scr_pushformatstring(L, "%d.%d.%d.%d",
+		lua_pushfstring(L, "%d.%d.%d.%d",
 			(addr & 0xFF),
 			(addr >> 8) & 0xFF,
 			(addr >> 16) & 0xFF,
@@ -89,58 +89,58 @@ static int meta_getaddr(scr_Context *L) {
 	return 1;
 }
 
-static int meta_getping(scr_Context *L) {
+static int meta_getping(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
-	if(scr_stacktop(L) > 1 && scr_toboolean(L, 2))
-		scr_pushnumber(L, (scr_Number)Client_GetAvgPing(client));
+	if(lua_gettop(L) > 1 && scr_toboolean(L, 2))
+		lua_pushnumber(L, (lua_Number)Client_GetAvgPing(client));
 	else
-		scr_pushinteger(L, (scr_Integer)Client_GetPing(client));
+		lua_pushinteger(L, (lua_Integer)Client_GetPing(client));
 	return 1;
 }
 
-static int meta_getname(scr_Context *L) {
-	scr_pushstring(L, Client_GetName(
+static int meta_getname(lua_State *L) {
+	lua_pushstring(L, Client_GetName(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getskin(scr_Context *L) {
-	scr_pushstring(L, Client_GetSkin(
+static int meta_getskin(lua_State *L) {
+	lua_pushstring(L, Client_GetSkin(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getgroup(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Client_GetGroupID(
+static int meta_getgroup(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetGroupID(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getheldblock(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Client_GetHeldBlock(
+static int meta_getheldblock(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetHeldBlock(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getdispname(scr_Context *L) {
-	scr_pushstring(L, Client_GetDisplayName(
+static int meta_getdispname(lua_State *L) {
+	lua_pushstring(L, Client_GetDisplayName(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getappname(scr_Context *L) {
-	scr_pushstring(L, Client_GetAppName(
+static int meta_getappname(lua_State *L) {
+	lua_pushstring(L, Client_GetAppName(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getposition(scr_Context *L) {
+static int meta_getposition(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
 	Vec *vector = scr_tofloatvector(L, 2);
 
@@ -154,7 +154,7 @@ static int meta_getposition(scr_Context *L) {
 	return 1;
 }
 
-static int meta_getrotation(scr_Context *L) {
+static int meta_getrotation(lua_State *L) {
 	Ang *angle = scr_toangle(L, 2);
 	if(!angle) angle = scr_newangle(L);
 
@@ -166,59 +166,59 @@ static int meta_getrotation(scr_Context *L) {
 	return 1;
 }
 
-static int meta_getfluidlvl(scr_Context *L) {
+static int meta_getfluidlvl(lua_State *L) {
 	BlockID fluid = BLOCK_AIR;
-	scr_pushinteger(L, (scr_Integer)Client_GetFluidLevel(
+	lua_pushinteger(L, (lua_Integer)Client_GetFluidLevel(
 		scr_checkclient(L, 1),
 		&fluid
 	));
-	scr_pushinteger(L, fluid);
+	lua_pushinteger(L, fluid);
 	return 2;
 }
 
-static int meta_getstandblock(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Client_GetStandBlock(
+static int meta_getstandblock(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetStandBlock(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getclickdist(scr_Context *L) {
+static int meta_getclickdist(lua_State *L) {
 	if(!scr_toboolean(L, 2))
-		scr_pushinteger(L, (scr_Integer)Client_GetClickDistance(
+		lua_pushinteger(L, (lua_Integer)Client_GetClickDistance(
 			scr_checkclient(L, 1)
 		));
 	else
-		scr_pushnumber(L, (scr_Number)Client_GetClickDistanceInBlocks(
+		lua_pushnumber(L, (lua_Number)Client_GetClickDistanceInBlocks(
 			scr_checkclient(L, 1)
 		));
 	return 1;
 }
 
-static int meta_getmodel(scr_Context *L) {
-	scr_pushinteger(L, (scr_Integer)Client_GetModel(
+static int meta_getmodel(lua_State *L) {
+	lua_pushinteger(L, (lua_Integer)Client_GetModel(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_getworld(scr_Context *L) {
+static int meta_getworld(lua_State *L) {
 	scr_pushworld(L, Client_GetWorld(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_setop(scr_Context *L) {
-	scr_pushboolean(L, Client_SetOP(
+static int meta_setop(lua_State *L) {
+	lua_pushboolean(L, Client_SetOP(
 		scr_checkclient(L, 1),
 		scr_toboolean(L, 2)
 	));
 	return 1;
 }
 
-static int meta_setspawn(scr_Context *L) {
-	scr_pushboolean(L, Client_SetSpawn(
+static int meta_setspawn(lua_State *L) {
+	lua_pushboolean(L, Client_SetSpawn(
 		scr_checkclient(L, 1),
 		scr_checkfloatvector(L, 2),
 		scr_checkangle(L, 3)
@@ -226,132 +226,132 @@ static int meta_setspawn(scr_Context *L) {
 	return 1;
 }
 
-static int meta_setgroup(scr_Context *L) {
-	scr_pushboolean(L, Client_SetGroup(
+static int meta_setgroup(lua_State *L) {
+	lua_pushboolean(L, Client_SetGroup(
 		scr_checkclient(L, 1),
-		(cs_uintptr)scr_checkinteger(L, 2)
+		(cs_uintptr)luaL_checkinteger(L, 2)
 	));
 	return 1;
 }
 
-static int meta_setmdlrotation(scr_Context *L) {
+static int meta_setmdlrotation(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
-	scr_pushboolean(L,
-		Client_SetProp(client, ENTITY_PROP_ROT_X, (cs_int32)scr_checkinteger(L, 2)) &&
-		Client_SetProp(client, ENTITY_PROP_ROT_Y, (cs_int32)scr_checkinteger(L, 3)) &&
-		Client_SetProp(client, ENTITY_PROP_ROT_Z, (cs_int32)scr_checkinteger(L, 4))
+	lua_pushboolean(L,
+		Client_SetProp(client, ENTITY_PROP_ROT_X, (cs_int32)luaL_checkinteger(L, 2)) &&
+		Client_SetProp(client, ENTITY_PROP_ROT_Y, (cs_int32)luaL_checkinteger(L, 3)) &&
+		Client_SetProp(client, ENTITY_PROP_ROT_Z, (cs_int32)luaL_checkinteger(L, 4))
 	);
 	return 1;
 }
 
-static int meta_setweather(scr_Context *L) {
-	scr_pushboolean(L, Client_SetWeather(
+static int meta_setweather(lua_State *L) {
+	lua_pushboolean(L, Client_SetWeather(
 		scr_checkclient(L, 1),
-		(EWeather)scr_checkinteger(L, 2)
+		(EWeather)luaL_checkinteger(L, 2)
 	));
 	return 1;
 }
 
-static int meta_setenvprop(scr_Context *L) {
-	scr_pushboolean(L, Client_SetEnvProperty(
+static int meta_setenvprop(lua_State *L) {
+	lua_pushboolean(L, Client_SetEnvProperty(
 		scr_checkclient(L, 1),
-		(EProp)scr_checkinteger(L, 2),
-		(cs_int32)scr_checkinteger(L, 3)
+		(EProp)luaL_checkinteger(L, 2),
+		(cs_int32)luaL_checkinteger(L, 3)
 	));
 	return 1;
 }
 
-static int meta_setenvcolor(scr_Context *L) {
-	scr_pushboolean(L, Client_SetEnvColor(
+static int meta_setenvcolor(lua_State *L) {
+	lua_pushboolean(L, Client_SetEnvColor(
 		scr_checkclient(L, 1),
-		(EColor)scr_checkinteger(L, 2),
+		(EColor)luaL_checkinteger(L, 2),
 		scr_checkcolor3(L, 3)
 	));
 	return 1;
 }
 
-static int meta_setclickdist(scr_Context *L) {
-	scr_pushboolean(L, Client_SetClickDistance(
+static int meta_setclickdist(lua_State *L) {
+	lua_pushboolean(L, Client_SetClickDistance(
 		scr_checkclient(L, 1),
-		(cs_int16)scr_checkinteger(L, 2)
+		(cs_int16)luaL_checkinteger(L, 2)
 	));
 	return 1;
 }
 
-static int meta_setblockperm(scr_Context *L) {
-	scr_pushboolean(L, Client_SetBlockPerm(
+static int meta_setblockperm(lua_State *L) {
+	lua_pushboolean(L, Client_SetBlockPerm(
 		scr_checkclient(L, 1),
-		(BlockID)scr_checkinteger(L, 2),
+		(BlockID)luaL_checkinteger(L, 2),
 		scr_toboolean(L, 3),
 		scr_toboolean(L, 4)
 	));
 	return 1;
 }
 
-static int meta_settextcolor(scr_Context *L) {
-	scr_pushboolean(L, Client_AddTextColor(
+static int meta_settextcolor(lua_State *L) {
+	lua_pushboolean(L, Client_AddTextColor(
 		scr_checkclient(L, 1),
 		scr_checkcolor4(L, 2),
-		*scr_checkstring(L, 3)
+		*luaL_checkstring(L, 3)
 	));
 	return 1;
 }
 
-static int meta_setmotd(scr_Context *L) {
-	scr_pushboolean(L, Client_SetServerIdent(
+static int meta_setmotd(lua_State *L) {
+	lua_pushboolean(L, Client_SetServerIdent(
 		scr_checkclient(L, 1),
-		scr_checkstring(L, 2),
-		scr_checkstring(L, 3)
+		luaL_checkstring(L, 2),
+		luaL_checkstring(L, 3)
 	));
 	return 1;
 }
 
-static int meta_sethotkey(scr_Context *L) {
-	scr_pushboolean(L, Client_SetHotkey(
+static int meta_sethotkey(lua_State *L) {
+	lua_pushboolean(L, Client_SetHotkey(
 		scr_checkclient(L, 1),
-		scr_checkstring(L, 2),
-		(ELWJGLKey)scr_checkinteger(L, 3),
-		(ELWJGLMod)scr_checkinteger(L, 4)
+		luaL_checkstring(L, 2),
+		(ELWJGLKey)luaL_checkinteger(L, 3),
+		(ELWJGLMod)luaL_checkinteger(L, 4)
 	));
 	return 1;
 }
 
-static int meta_setmodel(scr_Context *L) {
+static int meta_setmodel(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
-	if(scr_isnumber(L, 2))
-		scr_pushboolean(L, Client_SetModel(client, (cs_int16)scr_checkinteger(L, 2)));
+	if(lua_isnumber(L, 2))
+		lua_pushboolean(L, Client_SetModel(client, (cs_int16)luaL_checkinteger(L, 2)));
 	else
-		scr_pushboolean(L, Client_SetModelStr(client, scr_checkstring(L, 2)));
+		lua_pushboolean(L, Client_SetModelStr(client, luaL_checkstring(L, 2)));
 	return 1;
 }
 
-static int meta_setdispname(scr_Context *L) {
-	scr_pushboolean(L, Client_SetDisplayName(
+static int meta_setdispname(lua_State *L) {
+	lua_pushboolean(L, Client_SetDisplayName(
 		scr_checkclient(L, 1),
-		scr_checkstring(L, 2)
+		luaL_checkstring(L, 2)
 	));
 	return 1;
 }
 
-static int meta_sethotbar(scr_Context *L) {
-	scr_pushboolean(L, Client_SetHotbar(
+static int meta_sethotbar(lua_State *L) {
+	lua_pushboolean(L, Client_SetHotbar(
 		scr_checkclient(L, 1),
-		(cs_byte)scr_checkinteger(L, 2),
-		(BlockID)scr_checkinteger(L, 3)
+		(cs_byte)luaL_checkinteger(L, 2),
+		(BlockID)luaL_checkinteger(L, 3)
 	));
 	return 1;
 }
 
-static int meta_sethacks(scr_Context *L) {
+static int meta_sethacks(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
 	luaL_checktype(L, 2, LUA_TTABLE);
 
-	scr_gettabfield(L, 2, "jumpheight");
-	scr_gettabfield(L, 2, "thirdperson");
-	scr_gettabfield(L, 2, "spawncontrol");
-	scr_gettabfield(L, 2, "speeding");
-	scr_gettabfield(L, 2, "noclip");
-	scr_gettabfield(L, 2, "flying");
+	lua_getfield(L, 2, "jumpheight");
+	lua_getfield(L, 2, "thirdperson");
+	lua_getfield(L, 2, "spawncontrol");
+	lua_getfield(L, 2, "speeding");
+	lua_getfield(L, 2, "noclip");
+	lua_getfield(L, 2, "flying");
 
 	CPEHacks hacks = {
 		.flying = scr_toboolean(L, -1),
@@ -359,154 +359,154 @@ static int meta_sethacks(scr_Context *L) {
 		.speeding = scr_toboolean(L, -3),
 		.spawnControl = scr_toboolean(L, -4),
 		.tpv = scr_toboolean(L, -5),
-		.jumpHeight = (cs_int16)scr_optinteger(L, -6, -1)
+		.jumpHeight = (cs_int16)luaL_optinteger(L, -6, -1)
 	};
-	scr_stackpop(L, 6);
+	lua_pop(L, 6);
 
-	scr_pushboolean(L, Client_SendHacks(client, &hacks));
+	lua_pushboolean(L, Client_SendHacks(client, &hacks));
 	return 1;
 }
 
-static int meta_setheldblock(scr_Context *L) {
-	scr_pushboolean(L, Client_SetHeldBlock(
+static int meta_setheldblock(lua_State *L) {
+	lua_pushboolean(L, Client_SetHeldBlock(
 		scr_checkclient(L, 1),
-		(BlockID)scr_checkinteger(L, 2),
+		(BlockID)luaL_checkinteger(L, 2),
 		scr_toboolean(L, 3)
 	));
 	return 1;
 }
 
-static int meta_setorderblock(scr_Context *L) {
-	scr_pushboolean(L, Client_SetInvOrder(
+static int meta_setorderblock(lua_State *L) {
+	lua_pushboolean(L, Client_SetInvOrder(
 		scr_checkclient(L, 1),
-		(cs_byte)scr_checkinteger(L, 2),
-		(BlockID)scr_checkinteger(L, 3)
+		(cs_byte)luaL_checkinteger(L, 2),
+		(BlockID)luaL_checkinteger(L, 3)
 	));
 	return 1;
 }
 
-static int meta_setskin(scr_Context *L) {
+static int meta_setskin(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
-	cs_str url = (cs_str)scr_checkstring(L, 2);
-	scr_argassert(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
-	scr_pushboolean(L, Client_SetSkin(client, url));
+	cs_str url = (cs_str)luaL_checkstring(L, 2);
+	luaL_argcheck(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
+	lua_pushboolean(L, Client_SetSkin(client, url));
 	return 1;
 }
 
-static int meta_settexpack(scr_Context *L) {
+static int meta_settexpack(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
-	cs_str url = (cs_str)scr_checkstring(L, 2);
-	scr_argassert(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
-	scr_pushboolean(L, Client_SetTexturePack(client, url));
+	cs_str url = (cs_str)luaL_checkstring(L, 2);
+	luaL_argcheck(L, String_Length(url) < MAX_STR_LEN, 2, "URL is too long");
+	lua_pushboolean(L, Client_SetTexturePack(client, url));
 	return 1;
 }
 
-static int meta_setvelocity(scr_Context *L) {
-	scr_pushboolean(L, Client_SetVelocity(
+static int meta_setvelocity(lua_State *L) {
+	lua_pushboolean(L, Client_SetVelocity(
 		scr_checkclient(L, 1),
 		scr_checkfloatvector(L, 2),
-		(cs_byte)scr_optinteger(L, 3, 0)
+		(cs_byte)luaL_optinteger(L, 3, 0)
 	));
 	return 1;
 }
 
-static int meta_setlighting(scr_Context *L) {
-	scr_pushboolean(L, Client_SetLighting(
+static int meta_setlighting(lua_State *L) {
+	lua_pushboolean(L, Client_SetLighting(
 		scr_checkclient(L, 1),
-		(ELightMode)scr_checkinteger(L, 2),
+		(ELightMode)luaL_checkinteger(L, 2),
 		(cs_bool)scr_toboolean(L, 3)
 	));
 	return 1;
 }
 
-static int meta_gotoworld(scr_Context *L) {
-	scr_pushboolean(L, Client_ChangeWorld(
+static int meta_gotoworld(lua_State *L) {
+	lua_pushboolean(L, Client_ChangeWorld(
 		scr_checkclient(L, 1),
 		scr_checkworld(L, 2)
 	));
 	return 1;
 }
 
-static int meta_reload(scr_Context *L) {
+static int meta_reload(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
 	World *world = Client_GetWorld(client);
-	scr_pushboolean(L, Client_ChangeWorld(client, world));
+	lua_pushboolean(L, Client_ChangeWorld(client, world));
 	return 1;
 }
 
-static int meta_islocal(scr_Context *L) {
-	scr_pushboolean(L, Client_IsLocal(
+static int meta_islocal(lua_State *L) {
+	lua_pushboolean(L, Client_IsLocal(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isspawned(scr_Context *L) {
-	scr_pushboolean(L, Client_IsSpawned(
+static int meta_isspawned(lua_State *L) {
+	lua_pushboolean(L, Client_IsSpawned(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isinsameworld(scr_Context *L) {
-	scr_pushboolean(L, Client_IsInSameWorld(
+static int meta_isinsameworld(lua_State *L) {
+	lua_pushboolean(L, Client_IsInSameWorld(
 		scr_checkclient(L, 1),
 		scr_checkclient(L, 2)
 	));
 	return 1;
 }
 
-static int meta_isfirstspawn(scr_Context *L) {
-	scr_pushboolean(L, Client_IsFirstSpawn(
+static int meta_isfirstspawn(lua_State *L) {
+	lua_pushboolean(L, Client_IsFirstSpawn(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isinstate(scr_Context *L) {
+static int meta_isinstate(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
-	int top = scr_stacktop(L);
+	int top = lua_gettop(L);
 	for(int i = 2; i <= top; i++) {
-		EClientState state = (EClientState)scr_checkinteger(L, i);
+		EClientState state = (EClientState)luaL_checkinteger(L, i);
 		if(Client_CheckState(client, state)) {
-			scr_pushboolean(L, 1);
+			lua_pushboolean(L, 1);
 			return 1;
 		}
 	}
 
-	scr_pushboolean(L, 0);
+	lua_pushboolean(L, 0);
 	return 1;
 }
 
-static int meta_isbot(scr_Context *L) {
-	scr_pushboolean(L, Client_IsBot(
+static int meta_isbot(lua_State *L) {
+	lua_pushboolean(L, Client_IsBot(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_isop(scr_Context *L) {
-	scr_pushboolean(L, Client_IsOP(
+static int meta_isop(lua_State *L) {
+	lua_pushboolean(L, Client_IsOP(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_spawn(scr_Context *L) {
-	scr_pushboolean(L, Client_Spawn(
+static int meta_spawn(lua_State *L) {
+	lua_pushboolean(L, Client_Spawn(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_despawn(scr_Context *L) {
-	scr_pushboolean(L, Client_Despawn(
+static int meta_despawn(lua_State *L) {
+	lua_pushboolean(L, Client_Despawn(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_sendbulk(scr_Context *L) {
+static int meta_sendbulk(lua_State *L) {
 	Client_BulkBlockUpdate(
 		scr_checkclient(L, 1),
 		scr_checkbulk(L, 2)
@@ -514,50 +514,50 @@ static int meta_sendbulk(scr_Context *L) {
 	return 0;
 }
 
-static int meta_particle(scr_Context *L) {
+static int meta_particle(lua_State *L) {
 	Vec *position = scr_checkfloatvector(L, 3);
 	Vec *origin = scr_tofloatvector(L, 4);
 	if(!origin) origin = position;
-	scr_pushboolean(L, Client_SpawnParticle(
+	lua_pushboolean(L, Client_SpawnParticle(
 		scr_checkclient(L, 1),
-		(cs_byte)scr_checkinteger(L, 2),
+		(cs_byte)luaL_checkinteger(L, 2),
 		position, origin
 	));
 	return 1;
 }
 
-static int meta_newcuboid(scr_Context *L) {
+static int meta_newcuboid(lua_State *L) {
 	Client *client = scr_checkclient(L, 1);
 	scr_newcubref(L, client, Client_NewSelection(client));
 	return 1;
 }
 
-static int meta_plmesg(scr_Context *L) {
-	scr_pushboolean(L, Client_SendPluginMessage(
+static int meta_plmesg(lua_State *L) {
+	lua_pushboolean(L, Client_SendPluginMessage(
 		scr_checkclient(L, 1),
-		(cs_byte)scr_checkinteger(L, 2),
-		scr_checkstring(L, 3)
+		(cs_byte)luaL_checkinteger(L, 2),
+		luaL_checkstring(L, 3)
 	));
 	return 1;
 }
 
-static int meta_update(scr_Context *L) {
-	scr_pushboolean(L, Client_Update(
+static int meta_update(lua_State *L) {
+	lua_pushboolean(L, Client_Update(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_teleport(scr_Context *L) {
-	if (scr_isnumber(L, 2)) {
-		scr_pushboolean(L, Client_ExtTeleportTo(
+static int meta_teleport(lua_State *L) {
+	if (lua_isnumber(L, 2)) {
+		lua_pushboolean(L, Client_ExtTeleportTo(
 			scr_checkclient(L, 1),
-			(cs_byte)scr_checkinteger(L, 2),
+			(cs_byte)luaL_checkinteger(L, 2),
 			scr_checkfloatvector(L, 3),
 			scr_checkangle(L, 4)
 		));
 	} else
-		scr_pushboolean(L, Client_TeleportTo(
+		lua_pushboolean(L, Client_TeleportTo(
 			scr_checkclient(L, 1),
 			scr_checkfloatvector(L, 2),
 			scr_checkangle(L, 3)
@@ -565,14 +565,14 @@ static int meta_teleport(scr_Context *L) {
 	return 1;
 }
 
-static int meta_tospawn(scr_Context *L) {
-	scr_pushboolean(L, Client_TeleportToSpawn(
+static int meta_tospawn(lua_State *L) {
+	lua_pushboolean(L, Client_TeleportToSpawn(
 		scr_checkclient(L, 1)
 	));
 	return 1;
 }
 
-static int meta_kick(scr_Context *L) {
+static int meta_kick(lua_State *L) {
 	Client_Kick(
 		scr_checkclient(L, 1),
 		luaL_optstring(L, 2, NULL)
@@ -580,23 +580,23 @@ static int meta_kick(scr_Context *L) {
 	return 0;
 }
 
-static int meta_chat(scr_Context *L) {
+static int meta_chat(lua_State *L) {
 	Client *client = scr_toclient(L, 1);
 	EMesgType type = MESSAGE_TYPE_CHAT;
 	cs_str mesg = NULL;
 
-	if(scr_stacktop(L) == 2)
-		mesg = scr_checkstring(L, 2);
+	if(lua_gettop(L) == 2)
+		mesg = luaL_checkstring(L, 2);
 	else {
-		type = (EMesgType)scr_checkinteger(L, 2);
-		mesg = scr_checkstring(L, 3);
+		type = (EMesgType)luaL_checkinteger(L, 2);
+		mesg = luaL_checkstring(L, 3);
 	}
 
 	Client_Chat(client, type, mesg);
 	return 0;
 }
 
-static const scr_RegFuncs clientmeta[] = {
+static const luaL_Reg clientmeta[] = {
 	{"getid", meta_getid},
 	{"getstate", meta_getstate},
 	{"getaddr", meta_getaddr},
@@ -663,41 +663,41 @@ static const scr_RegFuncs clientmeta[] = {
 	{NULL, NULL}
 };
 
-static int client_get(scr_Context *L) {
-	int count = scr_stacktop(L);
+static int client_get(lua_State *L) {
+	int count = lua_gettop(L);
 	for(int i = 1; i <= count; i++)
 		scr_pushclient(L, Client_GetByID(
-			(ClientID)scr_checknumber(L, i)
+			(ClientID)luaL_checknumber(L, i)
 		));
 	return count;
 }
 
-static int client_getname(scr_Context *L) {
-	int count = scr_stacktop(L);
+static int client_getname(lua_State *L) {
+	int count = lua_gettop(L);
 	for(int i = 1; i <= count; i++)
 		scr_pushclient(L, Client_GetByName(
-			(cs_str)scr_checkstring(L, i)
+			(cs_str)luaL_checkstring(L, i)
 		));
 	return count;
 }
 
-static int client_getcount(scr_Context *L) {
-	scr_pushinteger(L, Clients_GetCount(
-		(EClientState)scr_checkinteger(L, 1)
+static int client_getcount(lua_State *L) {
+	lua_pushinteger(L, Clients_GetCount(
+		(EClientState)luaL_checkinteger(L, 1)
 	));
 	return 1;
 }
 
-static int client_iterall(scr_Context *L) {
+static int client_iterall(lua_State *L) {
 	luaL_checktype(L, 1, LUA_TFUNCTION);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client && !Client_IsBot(client)) {
-			scr_stackpush(L, 1);
+			lua_pushvalue(L, 1);
 			scr_pushclient(L, client);
-			if(scr_protectedcall(L, 1, 0, 0) != 0) {
-				scr_error(L);
+			if(lua_pcall(L, 1, 0, 0) != 0) {
+				lua_error(L);
 				return 0;
 			}
 		}
@@ -706,12 +706,12 @@ static int client_iterall(scr_Context *L) {
 	return 0;
 }
 
-static int client_newbot(scr_Context *L) {
+static int client_newbot(lua_State *L) {
 	scr_pushclient(L, Client_NewBot());
 	return 1;
 }
 
-static const scr_RegFuncs clientlib[] = {
+static const luaL_Reg clientlib[] = {
 	{"getbyid", client_get},
 	{"getbyname", client_getname},
 	{"getcount", client_getcount},
@@ -722,9 +722,9 @@ static const scr_RegFuncs clientlib[] = {
 	{NULL, NULL}
 };
 
-int scr_libfunc(client)(scr_Context *L) {
-	scr_newntable(L, MAX_CLIENTS, 0);
-	scr_settabfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCLIENTS);
+int scr_libfunc(client)(lua_State *L) {
+	lua_createtable(L, MAX_CLIENTS, 0);
+	lua_setfield(L, LUA_REGISTRYINDEX, CSSCRIPTS_RCLIENTS);
 	scr_createtype(L, CSSCRIPTS_MCLIENT, clientmeta);
 
 	scr_addintconst(L, MESSAGE_TYPE_CHAT);
@@ -752,10 +752,10 @@ int scr_libfunc(client)(scr_Context *L) {
 	scr_addintconst(L, CPE_VELCTL_SETZ);
 	scr_addintconst(L, CPE_VELCTL_SETALL);
 
-	scr_newlib(L, clientlib);
-	*(void **)scr_allocmem(L, sizeof(Client *)) = CLIENT_BROADCAST;
-	scr_setmemtype(L, CSSCRIPTS_MCLIENT);
-	scr_settabfield(L, -2, "broadcast");
+	luaL_newlib(L, clientlib);
+	*(void **)lua_newuserdata(L, sizeof(Client *)) = CLIENT_BROADCAST;
+	luaL_setmetatable(L, CSSCRIPTS_MCLIENT);
+	lua_setfield(L, -2, "broadcast");
 
 	return 1;
 }

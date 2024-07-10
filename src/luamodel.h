@@ -3,7 +3,7 @@
 #include <types/cpe.h>
 #include "scripting.h"
 
-CPEModel *scr_checkmodel(scr_Context *L, int idx);
+CPEModel *scr_checkmodel(lua_State *L, int idx);
 
-int scr_libfunc(model)(scr_Context *L);
+int scr_libfunc(model)(lua_State *L);
 #endif

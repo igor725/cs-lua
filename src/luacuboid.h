@@ -4,7 +4,7 @@
 #include <types/cpe.h>
 #include "scripting.h"
 
-void scr_newcubref(scr_Context *L, Client *client, CPECuboid *cub);
-void scr_clearcuboids(scr_Context *L, Client *client);
-void luainit_cuboid(scr_Context *L);
+void scr_newcubref(lua_State *L, Client *client, CPECuboid *cub);
+void scr_clearcuboids(lua_State *L, Client *client);
+void luainit_cuboid(lua_State *L);
 #endif

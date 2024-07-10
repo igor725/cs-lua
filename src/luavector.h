@@ -17,14 +17,14 @@ typedef struct _LuaVector {
 	} value;
 } LuaVector;
 
-cs_bool scr_isvector(scr_Context *L, int idx);
-LuaVector *scr_newvector(scr_Context *L);
-LuaVector *scr_checkvector(scr_Context *L, int idx);
-LuaVector *scr_tovector(scr_Context *L, int idx);
-Vec *scr_checkfloatvector(scr_Context *L, int idx);
-Vec *scr_tofloatvector(scr_Context *L, int idx);
-SVec *scr_checkshortvector(scr_Context *L, int idx);
-SVec *scr_toshortvector(scr_Context *L, int idx);
+cs_bool scr_isvector(lua_State *L, int idx);
+LuaVector *scr_newvector(lua_State *L);
+LuaVector *scr_checkvector(lua_State *L, int idx);
+LuaVector *scr_tovector(lua_State *L, int idx);
+Vec *scr_checkfloatvector(lua_State *L, int idx);
+Vec *scr_tofloatvector(lua_State *L, int idx);
+SVec *scr_checkshortvector(lua_State *L, int idx);
+SVec *scr_toshortvector(lua_State *L, int idx);
 
-int scr_libfunc(vector)(scr_Context *L);
+int scr_libfunc(vector)(lua_State *L);
 #endif

@@ -70,8 +70,8 @@ cs_bool LuaReload(Script *script) {
 			Script_Unlock(script);
 			return false;
 		}
-		if(!scr_isnull(script->L, -1) && !scr_toboolean(script->L, -1)) {
-			scr_stackpop(script->L, 1);
+		if(!lua_isnil(script->L, -1) && !scr_toboolean(script->L, -1)) {
+			lua_pop(script->L, 1);
 			goto noreload;
 		}
 	}
@@ -86,12 +86,12 @@ cs_bool LuaUnload(Script *script, cs_bool force) {
 
 	Script_Lock(script);
 	if(Script_GlobalLookup(script, "onStop")) {
-		scr_pushboolean(script->L, force);
+		lua_pushboolean(script->L, force);
 		if(!Script_Call(script, 1, 1)) {
 			goto unlerr;
 		} else {
-			if(!scr_isnull(script->L, -1) && !scr_toboolean(script->L, -1)) {
-				scr_stackpop(script->L, 1);
+			if(!lua_isnil(script->L, -1) && !scr_toboolean(script->L, -1)) {
+				lua_pop(script->L, 1);
 				goto unlerr;
 			}
 		}
@@ -130,7 +130,7 @@ COMMAND_FUNC(Lua) {
 				Pager_Step(pager);
 
 				Script_Lock(script);
-				int usage = scr_contextusage(script->L);
+				int usage = lua_gc(script->L, LUA_GCCOUNT, 0);
 				COMMAND_APPENDF(temparg1, 64, "\r\n  %d. &9%.32s&f, &a%dKb&f used", idx, script->name, usage);
 				Script_Unlock(script);
 			}

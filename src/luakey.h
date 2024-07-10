@@ -2,5 +2,5 @@
 #define CSLUAKEYS_H
 #include "scripting.h"
 
-int scr_libfunc(key)(scr_Context *L);
+int scr_libfunc(key)(lua_State *L);
 #endif
