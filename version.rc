@@ -12,7 +12,7 @@ FILETYPE VFT_DLL
 			VALUE "FileDescription", "Lua plugin for CServer\000"
 			VALUE "ProductName", "Lua plugin\000"
 			VALUE "ProductVersion", "1.0\000"
-			VALUE "LegalCopyright", "Copyright (c) 2023 igor725"
+			VALUE "LegalCopyright", "Copyright (c) 2024 igor725"
 			VALUE "OriginalFilename", "lua.dll\000"
 		}
 	}
